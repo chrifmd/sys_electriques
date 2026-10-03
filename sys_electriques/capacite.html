@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TP : Détermination de la capacité d'un condensateur</title>
+<style>
+  :root{
+    --bg: #11161a;
+    --panel: #161d22;
+    --panel-alt: #1c242a;
+    --line: #2a353c;
+    --line-soft: #202a30;
+    --text: #dbe4e8;
+    --text-dim: #7c8a92;
+    --text-faint: #52616a;
+    --in-color: #e5a93b; 
+    --out-color: #2bbd8e; 
+    --time-color: #38bdf8;
+    --accent: #4fc3e8;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius: 4px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+  body { padding: 18px; }
+  .rig {
+    max-width: 1180px;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--panel), var(--bg) 140%);
+    overflow: hidden;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .topbar a { color: var(--text-dim); text-decoration: none; font-size: 13px; }
+  .topbar a:hover { color: var(--accent); }
+
+  .plate {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .plate h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  .plate .sub { color: var(--text-dim); font-size: 12.5px; margin-top: 3px; }
+  .fc-readout { text-align: right; line-height: 1.15; }
+  .fc-readout .label { color: var(--text-dim); font-size: 11px; }
+  .fc-readout .value { font-family: var(--font-mono); font-size: 22px; color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 1fr 280px; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .controls { border-left: 1px solid var(--line); padding: 18px; background: var(--panel); }
+  .section-title {
+    font-size: 11px; color: var(--text-faint); letter-spacing: 0.4px;
+    margin: 18px 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--line-soft);
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .ctrl { margin-bottom: 14px; }
+  .ctrl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .ctrl-row .name { font-size: 12.5px; color: var(--text); }
+  .ctrl-row .val { font-family: var(--font-mono); font-size: 12.5px; color: var(--out-color); }
+  .ctrl-row .val.in-tone { color: var(--in-color); }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 3px;
+    background: var(--line); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+  }
+
+  .btn-switch {
+    width: 100%; padding: 10px; font-size: 13px; font-weight: bold;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--panel-alt); color: var(--text-dim); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-switch.closed { background: #e8574f; color: #fff; }
+
+  .btn-action {
+    width: 100%; padding: 8px 12px; font-size: 12px; font-weight: 600;
+    color: #fff; background: #232d39; border: 1px solid var(--line);
+    border-radius: var(--radius); cursor: pointer; margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .btn-action:hover { background: #2f3d4d; }
+
+  .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
+  .readout-grid .item .k { font-size: 10px; color: var(--text-faint); }
+  .readout-grid .item .v { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
+
+  .main-area { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .montage-row { display: flex; gap: 16px; align-items: stretch; }
+  @media (max-width: 700px) { .montage-row { flex-direction: column; } }
+  
+  .schematic-wrap { 
+    border: 1px solid var(--line); border-radius: var(--radius); 
+    background: #0d1316; padding: 10px; flex: 1; 
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .schematic-wrap svg { display: block; width: 100%; max-height: 190px; height: auto; margin: 0 auto; }
+  .sch-wire   { stroke: var(--text-dim); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .sch-node   { fill: var(--text); }
+  .sch-label  { fill: var(--text); font-size: 13px; font-weight: 600; }
+  .sch-label.c  { fill: var(--out-color); font-size: 15px; font-weight: bold; }
+
+  /* Multimètres Numériques */
+  .meters-panel {
+    display: flex; justify-content: space-around; gap: 10px;
+    margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line-soft);
+  }
+  .digital-meter {
+    background: #06090b; border: 1px solid var(--line); border-radius: 4px;
+    padding: 6px 10px; text-align: center; flex: 1;
+  }
+  .digital-meter .m-label { font-size: 10px; color: var(--text-dim); font-weight: bold; margin-bottom: 2px; }
+  .digital-meter .m-display { 
+    font-family: var(--font-mono); font-size: 16px; font-weight: bold; 
+    color: #10b981; text-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+  }
+  .digital-meter.amp .m-display { color: var(--in-color); text-shadow: 0 0 5px rgba(229, 169, 59, 0.3); }
+
+  .chrono-panel {
+    width: 220px; flex-shrink: 0; border: 1px solid var(--line); border-radius: var(--radius);
+    background: #0d1316; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  }
+  .chrono-display {
+    font-family: var(--font-mono); font-size: 28px; color: var(--time-color);
+    background: #080c0e; border: 1px solid var(--line); border-radius: 4px;
+    padding: 8px; text-align: center;
+  }
+
+  /* Tableau de mesures */
+  .table-wrap {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: #0d1316; max-height: 180px; overflow-y: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; text-align: center; }
+  th { background: var(--panel-alt); color: var(--accent); padding: 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; }
+  td { padding: 6px; border-bottom: 1px solid var(--line-soft); color: var(--text); }
+
+  /* Section Graphes */
+  .graph-container {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: #0d1316; padding: 12px; display: none; position: relative;
+  }
+  canvas { display: block; width: 100%; background: #0d1316; border-radius: var(--radius); cursor: crosshair; }
+
+  /* Section Aperçu Théorique */
+  .theory-panel {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: #0d1316; padding: 14px 16px; display: none;
+    font-size: 12.5px; line-height: 1.5; color: var(--text-dim);
+  }
+  .theory-panel h3 { margin: 18px 0 8px 0; font-size: 13.5px; color: var(--accent); }
+  .theory-panel h3:first-child { margin-top: 0; }
+  .theory-panel h4 { margin: 0 0 6px 0; font-size: 12.5px; color: var(--out-color); }
+  .theory-panel code { font-family: var(--font-mono); color: var(--in-color); background: #162026; padding: 2px 4px; border-radius: 3px; }
+  .theory-panel .formula-box {
+    background: #162026; border: 1px solid var(--line); border-left: 3px solid var(--out-color);
+    border-radius: 3px; padding: 8px 12px; margin: 8px 0; font-family: var(--font-mono);
+    color: var(--text); font-size: 13px;
+  }
+  .theory-panel .formula-box .ref { display:block; margin-top:4px; font-family: var(--font-sans); font-size: 11px; color: var(--text-faint); }
+  .theory-panel table.factors { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+  .theory-panel table.factors th, .theory-panel table.factors td { border: 1px solid var(--line-soft); padding: 6px 8px; text-align: left; }
+  .theory-panel table.factors th { background: var(--panel-alt); color: var(--accent); font-weight: 600; }
+  .theory-panel table.factors td.sym { color: var(--in-color); font-family: var(--font-mono); white-space: nowrap; }
+  .theory-panel .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  @media (max-width: 700px) { .theory-panel .two-col { grid-template-columns: 1fr; } }
+
+  /* En-tête commun : titre du site + menu déroulant de navigation */
+  .site-header {
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+    text-align: center;
+  }
+  .site-header .site-title {
+    margin: 0 0 10px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .page-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-switcher label {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .page-switcher select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 12.5px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    outline: none;
+  }
+  .page-switcher select:hover { border-color: var(--accent); }
+  .signature{
+text-align: center;
+font-family: "Arial";
+font-size: 12px;
+font-weight: bold;
+color: rgb(170, 221, 241);
+margin-top: 30px;
+}
+</style>
+</head>
+<body>
+
+
+<div class="rig">
+  <div class="site-header">
+    <h1 class="site-title">LE CONDENSATEUR - LE DIPOLE RC</h1>
+    <div class="page-switcher">
+      <label for="pageSwitch">Choisir le TP :</label>
+      <select id="pageSwitch" onchange="if(this.value) window.location.href=this.value;">
+       <option value="capacite.html" selected>Capacité d'un condensateur</option>
+        <option value="dipole_RC.html">Réponse d'un dipôle RC à un échelon de tension</option> 
+       
+      </select>
+    </div>
+  </div>
+  <div class="topbar">
+    <a href="index.html">← Retour à l'accueil</a>
+    <span style="color:var(--text-dim); font-size:12.5px;">TP : Détermination de la capacité d'un condensateur</span>
+  </div>
+
+  <div class="plate">
+    <div>
+      <h1>Mesure de la capacité C d'un condensateur</h1>
+      <div class="sub">Étude de la charge à courant constant I = cte</div>
+    </div>
+    <div class="fc-readout">
+      <div class="label">CAPACITÉ RÉGLÉE C</div>
+      <div class="value" id="cTheoValue">100 µF</div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="main-area">
+
+      <!-- MONTAGE ET CHRONO -->
+      <div class="montage-row">
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Générateur de courant -->
+            <circle cx="40" cy="90" r="18" stroke="var(--in-color)" stroke-width="1.8" fill="#16222a"/>
+            <line x1="28" y1="90" x2="52" y2="90" stroke="var(--in-color)" stroke-width="1.8"/>
+            <text x="12" y="94" font-size="13" font-weight="700" fill="var(--in-color)">I</text>
+
+            <path d="M 40,20 L 40,72" class="sch-wire"/>
+            <path d="M 40,108 L 40,160" class="sch-wire"/>
+
+            <!-- Interrupteur K -->
+            <path d="M 40,20 L 70,20" class="sch-wire"/>
+            <circle cx="70" cy="20" r="2.8" class="sch-node"/>
+            <circle cx="100" cy="20" r="2.8" class="sch-node"/>
+            <line id="switchArm" x1="70" y1="20" x2="98" y2="8" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+            <text x="83" y="10" text-anchor="middle" class="sch-label">K</text>
+            <path d="M 100,20 L 130,20" class="sch-wire"/>
+
+            <!-- Ampèremètre -->
+            <circle cx="150" cy="20" r="14" stroke="var(--text)" stroke-width="1.5" fill="#16222a"/>
+            <text x="150" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text)">A</text>
+            <path d="M 130,20 L 136,20" class="sch-wire"/>
+            <path d="M 164,20 L 190,20 L 190,55" class="sch-wire"/>
+
+            <!-- Condensateur C -->
+            <path d="M 190,55 L 190,75" class="sch-wire"/>
+            <path d="M 172,75 L 208,75" stroke="var(--out-color)" stroke-width="2.5"/>
+            <path d="M 172,83 L 208,83" stroke="var(--out-color)" stroke-width="2.5"/>
+            <path d="M 190,83 L 190,160" class="sch-wire"/>
+            <text x="214" y="83" class="sch-label c">C</text>
+
+            <!-- Voltmètre -->
+            <path d="M 190,45 L 240,45 L 240,76" class="sch-wire"/>
+            <circle cx="240" cy="90" r="14" stroke="var(--out-color)" stroke-width="1.5" fill="#16222a"/>
+            <text x="240" y="95" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--out-color)">V</text>
+            <path d="M 240,104 L 240,135 L 190,135" class="sch-wire"/>
+            <circle cx="190" cy="45" r="2.5" class="sch-node"/>
+            <circle cx="190" cy="135" r="2.5" class="sch-node"/>
+
+            <path d="M 40,160 L 190,160" class="sch-wire"/>
+          </svg>
+
+          <!-- Afficheurs Numériques -->
+          <div class="meters-panel">
+            <div class="digital-meter amp">
+              <div class="m-label">AMPÈREMÈTRE (A)</div>
+              <div class="m-display" id="digitalAmp">0.0 µA</div>
+            </div>
+            <div class="digital-meter">
+              <div class="m-label">VOLTMÈTRE (V)</div>
+              <div class="m-display" id="digitalVolt">0.00 V</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chrono-panel">
+          <div style="font-size:11px; color:var(--text-faint); text-align:center;">CHRONOMÈTRE</div>
+          <div class="chrono-display" id="chronoVal">00:00.0s</div>
+          <button id="btnSwitch" class="btn-switch">Fermer K (Démarrer)</button>
+          <button id="btnReset" class="btn-action">↺ Réinitialiser & Décharger</button>
+        </div>
+      </div>
+
+      <!-- TABLEAU DE MESURES -->
+      <div>
+        <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+          <span>TABLEAU DE MESURES (Automatique toutes les 10s)</span>
+          <button id="btnToggleGraph" class="btn-action" style="width:auto; margin-top:0;">Afficher / Masquer le graphe u_C(t)</button>
+        </div>
+        <div class="table-wrap">
+          <table id="measureTable">
+            <thead>
+              <tr>
+                <th>Temps t (s)</th>
+                <th>Tension u<sub>C</sub> (V)</th>
+                <th>Charge q (µC)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rempli dynamiquement -->
+            </tbody>
+          </table>
+        </div>
+    
+      </div>
+
+      <!-- GRAPHIQUE UC(T) -->
+      <div id="graphContainer" class="graph-container">
+        <div style="font-size:12px; color:var(--accent); margin-bottom:8px; font-weight:bold;">Graphe u<sub>C</sub>(t) = f(t)</div>
+        <canvas id="graphCanvas" height="250"></canvas>
+      </div>
+
+      <!-- BOUTON & SECTION : APERÇU THÉORIQUE (SOUS LE GRAPHE) -->
+      <div>
+        <button id="btnToggleTheory" class="btn-action" style="background:#1c242a; border-color:var(--accent); color:var(--accent);">
+          📘 Afficher / Masquer l'aperçu théorique (Rappel)
+        </button>
+        <div id="theoryPanel" class="theory-panel" style="margin-top:10px;">
+
+          <h3>1. Le condensateur</h3>
+          <p style="margin: 4px 0 8px;">
+            Un <strong>condensateur</strong> est un composant électrique constitué de deux surfaces conductrices, appelées <strong>armatures</strong> (ou électrodes), séparées par un isolant non conducteur appelé <strong>diélectrique</strong> (air, papier, céramique, film plastique...). Lorsqu'il est soumis à une tension <code>u<sub>C</sub></code>, il accumule des charges électriques de signes opposés sur ses deux armatures : une charge <code>+q</code> sur l'une, <code>−q</code> sur l'autre. Le condensateur est donc un composant capable de <strong>stocker de l'énergie électrique</strong> sous forme de charges séparées.
+          </p>
+
+          <h3>2. La capacité électrique</h3>
+          <p style="margin: 4px 0 8px;">
+            La <strong>capacité</strong> <code>C</code> d'un condensateur caractérise son <em>aptitude à stocker des charges électriques</em> pour une tension donnée. Elle est définie comme le rapport constant entre la charge <code>q</code> portée par une armature et la tension <code>u<sub>C</sub></code> à ses bornes :
+          </p>
+          <div class="formula-box">
+            C = q / u<sub>C</sub>
+            <span class="ref">C : capacité (farad, F) — q : charge (coulomb, C) — u<sub>C</sub> : tension (volt, V)</span>
+          </div>
+          <p style="margin: 4px 0 8px;">
+            L'unité de capacité est le <strong>farad (F)</strong>. Cette unité étant très grande pour les composants usuels, on utilise le plus souvent ses sous-multiples :
+          </p>
+          <table class="factors">
+            <tr><th>Sous-multiple</th><th>Symbole</th><th>Valeur</th></tr>
+            <tr><td>millifarad</td><td class="sym">mF</td><td>10⁻³ F</td></tr>
+            <tr><td>microfarad</td><td class="sym">µF</td><td>10⁻⁶ F</td></tr>
+            <tr><td>nanofarad</td><td class="sym">nF</td><td>10⁻⁹ F</td></tr>
+            <tr><td>picofarad</td><td class="sym">pF</td><td>10⁻¹² F</td></tr>
+          </table>
+
+          <h3>3. Facteurs dont dépend la capacité</h3>
+          <p style="margin: 4px 0 8px;">
+            Pour un condensateur plan (deux armatures parallèles), la capacité dépend uniquement de sa <strong>géométrie</strong> et de la nature du <strong>diélectrique</strong> — elle ne dépend ni de la tension appliquée ni de la charge :
+          </p>
+          <table class="factors">
+            <tr><th>Facteur</th><th>Symbole</th><th>Effet sur C</th></tr>
+            <tr><td>Surface des armatures en regard</td><td class="sym">S</td><td>C augmente si S augmente (proportionnalité directe)</td></tr>
+            <tr><td>Distance entre les armatures</td><td class="sym">e (ou d)</td><td>C diminue si e augmente (proportionnalité inverse)</td></tr>
+            <tr><td>Nature du diélectrique</td><td class="sym">ε<sub>r</sub></td><td>C augmente avec la permittivité relative du matériau isolant</td></tr>
+          </table>
+
+          <h3>4. Expression de la capacité (condensateur plan)</h3>
+          <div class="formula-box">
+            C = ε<sub>0</sub> × ε<sub>r</sub> × S / e
+            <span class="ref">ε₀ : permittivité du vide (≈ 8,85 × 10⁻¹² F/m) — ε<sub>r</sub> : permittivité relative du diélectrique — S : surface des armatures (m²) — e : distance entre armatures (m)</span>
+          </div>
+
+          <h3>5. Charge à courant constant : principe de la mesure</h3>
+          <p style="margin: 4px 0 8px;">
+            Lorsqu'un condensateur de capacité <code>C</code> est alimenté par un générateur fournissant un courant constant <code>I</code> :
+          </p>
+          <div class="two-col">
+            <div>
+              <h4>Charge accumulée</h4>
+              <div class="formula-box">q(t) = I × t</div>
+            </div>
+            <div>
+              <h4>Tension aux bornes</h4>
+              <div class="formula-box">u<sub>C</sub>(t) = q(t) / C = (I / C) × t</div>
+            </div>
+          </div>
+          <ul style="margin:8px 0 0; padding-left:20px;">
+            <li>La représentation graphique de <code>u<sub>C</sub> = f(t)</code> est une droite passant par l'origine, de pente <code>p = I / C</code>.</li>
+            <li>La mesure expérimentale de cette pente permet de déterminer la capacité : <code>C = I / p</code>.</li>
+          </ul>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- REGLAGES ET MESURES EN DIRECT -->
+    <div class="controls">
+
+      <div class="section-title">GÉNÉRATEUR DE COURANT</div>
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Courant I</span><span class="val in-tone" id="iVal">10.0 µA</span></div>
+        <input type="range" id="iSlider" min="1" max="100" step="1" value="10">
+      </div>
+
+      <div class="section-title">CONDENSATEUR</div>
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Capacité C</span><span class="val" id="cVal">100 µF</span></div>
+        <input type="range" id="cSlider" min="10" max="500" step="5" value="100">
+      </div>
+
+      <div class="section-title">MESURES EN DIRECT</div>
+      <div class="readout-grid">
+        <div class="item"><div class="k">Capacité C</div><div class="v" id="cReadout">100 µF</div></div>
+        <div class="item"><div class="k">Courant I</div><div class="v" id="iReadout">10.0 µA</div></div>
+        <div class="item"><div class="k">Tension u_C</div><div class="v" id="ucReadout">0.00 V</div></div>
+        <div class="item"><div class="k">Charge q(t)</div><div class="v" id="qReadout">0.00 µC</div></div>
+        <div class="item"><div class="k">Temps t</div><div class="v" id="tReadout">0.00 s</div></div>
+        <div class="item"><div class="k">Pente I/C</div><div class="v" id="penteReadout">0.100 V/s</div></div>
+      </div>
+
+    </div>
+
+  </div>
+       <div class="signature"> TP Simulation Physique - Capacité d'un condensateur - chrif.md@gmail.com - Octobre 2026 </div>
+     
+      
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const state = {
+    I: 10e-6,         // 10 µA
+    C: 100e-6,        // 100 µF
+    
+    kClosed: false,   
+    tCurrent: 0,
+    lastLoggedStep: -1,
+    measures: [],     // Points enregistrés : {t, uc, q}
+
+    showGraph: false,
+    showTheory: false,
+
+    // Réticule
+    mousePos: null
+  };
+
+  const el = {
+    iSlider: document.getElementById("iSlider"),
+    cSlider: document.getElementById("cSlider"),
+    iVal: document.getElementById("iVal"),
+    cVal: document.getElementById("cVal"),
+    cTheoValue: document.getElementById("cTheoValue"),
+    cReadout: document.getElementById("cReadout"),
+    iReadout: document.getElementById("iReadout"),
+    ucReadout: document.getElementById("ucReadout"),
+    qReadout: document.getElementById("qReadout"),
+    tReadout: document.getElementById("tReadout"),
+    penteReadout: document.getElementById("penteReadout"),
+    digitalAmp: document.getElementById("digitalAmp"),
+    digitalVolt: document.getElementById("digitalVolt"),
+    btnSwitch: document.getElementById("btnSwitch"),
+    chronoVal: document.getElementById("chronoVal"),
+    btnReset: document.getElementById("btnReset"),
+    btnToggleGraph: document.getElementById("btnToggleGraph"),
+    btnToggleTheory: document.getElementById("btnToggleTheory"),
+    theoryPanel: document.getElementById("theoryPanel"),
+    graphContainer: document.getElementById("graphContainer"),
+    graphCanvas: document.getElementById("graphCanvas"),
+    switchArm: document.getElementById("switchArm"),
+    measureTableBody: document.querySelector("#measureTable tbody")
+  };
+
+  function fmtEng(value, unit){
+    if (value === 0) return "0 " + unit;
+    const abs = Math.abs(value);
+    const prefixes = [
+      {exp: 9, sym: "G"}, {exp: 6, sym: "M"}, {exp: 3, sym: "k"},
+      {exp: 0, sym: ""},
+      {exp: -3, sym: "m"}, {exp: -6, sym: "µ"}, {exp: -9, sym: "n"}, {exp: -12, sym: "p"}
+    ];
+    for (const p of prefixes){
+      if (abs >= Math.pow(10, p.exp) * 0.999){
+        const scaled = value / Math.pow(10, p.exp);
+        const digits = scaled >= 100 ? 0 : (scaled >= 10 ? 1 : 2);
+        return scaled.toFixed(digits) + " " + p.sym + unit;
+      }
+    }
+    return value.toExponential(2) + " " + unit;
+  }
+
+  function updateReadouts(){
+    el.iVal.textContent = fmtEng(state.I, "A");
+    el.cVal.textContent = fmtEng(state.C, "F");
+
+    const cStr = fmtEng(state.C, "F");
+    el.cTheoValue.textContent = cStr;
+    el.cReadout.textContent = cStr;
+    el.iReadout.textContent = fmtEng(state.I, "A");
+
+    const uc = (state.I / state.C) * state.tCurrent;
+    const q = state.I * state.tCurrent;
+    
+    // Voltmètre et Ampèremètre Numériques
+    el.digitalAmp.textContent = state.kClosed ? fmtEng(state.I, "A") : "0.0 µA";
+    el.digitalVolt.textContent = uc.toFixed(2) + " V";
+
+    el.ucReadout.textContent = uc.toFixed(2) + " V";
+    el.qReadout.textContent = fmtEng(q, "C");
+    el.tReadout.textContent = state.tCurrent.toFixed(2) + " s";
+    el.penteReadout.textContent = fmtEng(state.I / state.C, "V/s");
+
+    // Chronomètre UI
+    const totalSecs = state.tCurrent;
+    const mins = Math.floor(totalSecs / 60);
+    const secs = (totalSecs % 60).toFixed(1);
+    el.chronoVal.textContent = 
+      String(mins).padStart(2, '0') + ":" + 
+      (secs < 10 ? "0" : "") + secs + "s";
+  }
+
+  function addMeasureRecord(t, uc, q){
+    state.measures.push({t, uc, q});
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${t.toFixed(0)}</td><td>${uc.toFixed(2)}</td><td>${(q * 1e6).toFixed(2)}</td>`;
+    el.measureTableBody.appendChild(tr);
+  }
+
+  // Interrupteur K fermer/ouvrir
+  el.btnSwitch.addEventListener("click", () => {
+    state.kClosed = !state.kClosed;
+    if (state.kClosed) {
+      el.btnSwitch.textContent = "Ouvrir K (Pause)";
+      el.btnSwitch.classList.add("closed");
+      el.switchArm.setAttribute("y2", "20");
+    } else {
+      el.btnSwitch.textContent = "Fermer K (Démarrer)";
+      el.btnSwitch.classList.remove("closed");
+      el.switchArm.setAttribute("y2", "8");
+    }
+    updateReadouts();
+  });
+
+  // Réinitialiser & Décharger (si K ouvert)
+  el.btnReset.addEventListener("click", () => {
+    if (state.kClosed) {
+      alert("Veuillez d'abord ouvrir l'interrupteur K pour décharger le condensateur.");
+      return;
+    }
+    state.tCurrent = 0;
+    state.lastLoggedStep = -1;
+    state.measures = [];
+    el.measureTableBody.innerHTML = "";
+    updateReadouts();
+    if (state.showGraph) drawGraph();
+  });
+
+  // Afficher / Masquer Graphe
+  el.btnToggleGraph.addEventListener("click", () => {
+    state.showGraph = !state.showGraph;
+    el.graphContainer.style.display = state.showGraph ? "block" : "none";
+    if (state.showGraph) drawGraph();
+  });
+
+  // Afficher / Masquer Aperçu théorique
+  el.btnToggleTheory.addEventListener("click", () => {
+    state.showTheory = !state.showTheory;
+    el.theoryPanel.style.display = state.showTheory ? "block" : "none";
+  });
+
+  // Sliders
+  el.iSlider.addEventListener("input", () => { state.I = parseFloat(el.iSlider.value) * 1e-6; updateReadouts(); });
+  el.cSlider.addEventListener("input", () => { state.C = parseFloat(el.cSlider.value) * 1e-6; updateReadouts(); });
+
+  // Gestion du réticule à la souris
+  el.graphCanvas.addEventListener("mousemove", (evt) => {
+    const rect = el.graphCanvas.getBoundingClientRect();
+    state.mousePos = {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top
+    };
+    if (state.showGraph) drawGraph();
+  });
+
+  el.graphCanvas.addEventListener("mouseleave", () => {
+    state.mousePos = null;
+    if (state.showGraph) drawGraph();
+  });
+
+  // Tracer de la courbe uc(t) avec réticule
+  function drawGraph(){
+    const canvas = el.graphCanvas;
+    const cssW = canvas.clientWidth || 600;
+    const cssH = 250;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    const padL = 45, padR = 15, padT = 15, padB = 30;
+    const plotW = cssW - padL - padR;
+    const plotH = cssH - padT - padB;
+
+    // AXES
+    ctx.strokeStyle = "#2a353c";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
+    ctx.stroke();
+
+    if (state.measures.length === 0) {
+      ctx.fillStyle = "#52616a";
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Aucune donnée enregistrée", cssW / 2, cssH / 2);
+      return;
+    }
+
+    const maxT = Math.max(60, state.measures[state.measures.length - 1].t);
+    const maxUc = Math.max(2, state.measures[state.measures.length - 1].uc * 1.2);
+
+    // Grille légère
+    ctx.strokeStyle = "#162026";
+    for (let i = 1; i <= 5; i++) {
+      let y = padT + plotH - (i / 5) * plotH;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(cssW - padR, y); ctx.stroke();
+    }
+
+    // Courbe
+    ctx.strokeStyle = "#2bbd8e";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    state.measures.forEach((pt, idx) => {
+      let x = padL + (pt.t / maxT) * plotW;
+      let y = padT + plotH - (pt.uc / maxUc) * plotH;
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Points
+    ctx.fillStyle = "#38bdf8";
+    state.measures.forEach(pt => {
+      let x = padL + (pt.t / maxT) * plotW;
+      let y = padT + plotH - (pt.uc / maxUc) * plotH;
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, 2 * Math.PI); ctx.fill();
+    });
+
+    // RÉTICULE ET PENTE AU SURVOL
+    if (state.mousePos && state.mousePos.x >= padL && state.mousePos.x <= cssW - padR) {
+      const mx = state.mousePos.x;
+      const tHover = ((mx - padL) / plotW) * maxT;
+      const pente = state.I / state.C; // pente p = I / C
+      const ucHover = pente * tHover;
+
+      const my = padT + plotH - (ucHover / maxUc) * plotH;
+
+      if (my >= padT && my <= cssH - padB) {
+        // Lignes du réticule
+        ctx.strokeStyle = "#e5a93b";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+
+        // Ligne verticale
+        ctx.beginPath(); ctx.moveTo(mx, padT); ctx.lineTo(mx, cssH - padB); ctx.stroke();
+        // Ligne horizontale
+        ctx.beginPath(); ctx.moveTo(padL, my); ctx.lineTo(cssW - padR, my); ctx.stroke();
+        
+        ctx.setLineDash([]); // Reset trait plein
+
+        // Point sur la droite
+        ctx.fillStyle = "#e5a93b";
+        ctx.beginPath(); ctx.arc(mx, my, 4, 0, 2 * Math.PI); ctx.fill();
+
+        // Info-bulle (Tooltip)
+        const label = `t = ${tHover.toFixed(1)}s | uC = ${ucHover.toFixed(2)}V | p = ${pente.toFixed(3)} V/s`;
+        ctx.font = "11px monospace";
+        const textWidth = ctx.measureText(label).width;
+        
+        let boxX = mx + 10;
+        let boxY = my - 25;
+        if (boxX + textWidth + 12 > cssW - padR) boxX = mx - textWidth - 15;
+        if (boxY < padT) boxY = my + 15;
+
+        ctx.fillStyle = "rgba(22, 29, 34, 0.9)";
+        ctx.strokeStyle = "#e5a93b";
+        ctx.lineWidth = 1;
+        ctx.fillRect(boxX, boxY, textWidth + 12, 20);
+        ctx.strokeRect(boxX, boxY, textWidth + 12, 20);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "left";
+        ctx.fillText(label, boxX + 6, boxY + 14);
+      }
+    }
+
+    // Labels axes
+    ctx.fillStyle = "#7c8a92";
+    ctx.font = "10px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("t (s)", cssW - padR, cssH - 8);
+    ctx.textAlign = "right";
+    ctx.fillText("uC (V)", padL - 5, padT + 10);
+  }
+
+  // Boucle principale de temps
+  let lastTs = null;
+  function loop(ts){
+    if (lastTs === null) lastTs = ts;
+    const dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+
+    if (state.kClosed) {
+      state.tCurrent += dt;
+      
+      // Enregistrement tous les 10s (0s, 10s, 20s, ...)
+      const currentStep = Math.floor(state.tCurrent / 10);
+      if (currentStep > state.lastLoggedStep) {
+        state.lastLoggedStep = currentStep;
+        const tLogged = currentStep * 10;
+        const ucLogged = (state.I / state.C) * tLogged;
+        const qLogged = state.I * tLogged;
+        addMeasureRecord(tLogged, ucLogged, qLogged);
+        if (state.showGraph) drawGraph();
+      }
+
+      updateReadouts();
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  updateReadouts();
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>

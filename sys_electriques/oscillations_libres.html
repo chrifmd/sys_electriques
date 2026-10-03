@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oscillations Libres dans un Circuit RLC Série</title>
+<style>
+  :root{
+    --bg: #11161a;
+    --panel: #161d22;
+    --panel-alt: #1c242a;
+    --line: #2a353c;
+    --line-soft: #202a30;
+    --text: #dbe4e8;
+    --text-dim: #7c8a92;
+    --text-faint: #52616a;
+    --in-color: #e5a93b;
+    --out-color: #2bbd8e;
+    --ur-color: #c792ea;
+    --time-color: #38bdf8;
+    --energy-e: #38bdf8;
+    --energy-m: #f59e0b;
+    --energy-tot: #ef4444;
+    --accent: #4fc3e8;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius: 4px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+  body { padding: 18px; }
+  .rig {
+    max-width: 1180px;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--panel), var(--bg) 140%);
+    overflow: hidden;
+  }
+
+  .site-header {
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+    text-align: center;
+  }
+  .site-header .site-title {
+    margin: 0 0 10px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .page-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-switcher label {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .page-switcher select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 12.5px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .topbar a { color: var(--text-dim); text-decoration: none; font-size: 13px; }
+  .topbar a:hover { color: var(--accent); }
+  .topbar .regime-picker { display: flex; align-items: center; gap: 8px; }
+  .topbar .regime-picker label { color: var(--text-faint); font-size: 11.5px; }
+
+  .plate {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .plate h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  .plate .sub { color: var(--text-dim); font-size: 12.5px; margin-top: 3px; }
+  .fc-readout { text-align: right; line-height: 1.15; }
+  .fc-readout .label { color: var(--text-dim); font-size: 11px; }
+  .fc-readout .value { font-family: var(--font-mono); font-size: 22px; color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 1fr 270px; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+    .controls { border-left: none; border-top: 1px solid var(--line); order: 2; }
+    .scopes { order: 1; }
+  }
+
+  .controls { border-left: 1px solid var(--line); padding: 18px 18px 22px; background: var(--panel); }
+  .section-title {
+    font-size: 11px; color: var(--text-faint); letter-spacing: 0.4px;
+    margin: 20px 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--line-soft);
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .ctrl { margin-bottom: 14px; }
+  .ctrl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .ctrl-row .name { font-size: 12.5px; color: var(--text); }
+  .ctrl-row .val { font-family: var(--font-mono); font-size: 12.5px; color: var(--out-color); }
+  .ctrl-row .val.in-tone { color: var(--in-color); }
+  .ctrl-row .val.speed-tone { color: var(--time-color); }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 3px;
+    background: var(--line); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer;
+  }
+
+  .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
+  .readout-grid .item .k { font-size: 10px; color: var(--text-faint); }
+  .readout-grid .item .v { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
+
+  .scopes { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .oscillo-panel { background-color: transparent; width: 100%; position: relative; }
+  .oscillo-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+  .oscillo-title { text-transform: uppercase; color: var(--text-dim); }
+  .oscillo-legend { display: flex; gap: 16px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0b0c0; transition: opacity 0.2s; }
+  .color-dot { width: 12px; height: 2px; display: inline-block; }
+  .color-dot.purple { background-color: var(--ur-color); }
+  .color-dot.green { background-color: var(--out-color); }
+  .color-dot.orange { background-color: var(--in-color); }
+  .color-dot.blue { background-color: var(--energy-e); }
+  .color-dot.yellow { background-color: var(--energy-m); }
+  .color-dot.red { background-color: var(--energy-tot); }
+  .legend-item.dim { opacity: 0.35; }
+
+  .oscillo-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px;
+  }
+  .position-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .control-group { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+  .pos-group { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+  .pos-group input[type=range] { width: 90px; }
+  .pos-group .pv { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); min-width: 34px; }
+
+  .label-ch1 { color: var(--ur-color); }
+  .label-ch2 { color: var(--out-color); }
+  .label-ch3 { color: var(--in-color); }
+  .label-time { color: var(--time-color); }
+  .toolbar-check.ch3 { color: var(--in-color); }
+  .toolbar-check.ch3 input { accent-color: var(--in-color); }
+
+  .toolbar-check { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; }
+  .toolbar-check input { width: 14px; height: 14px; cursor: pointer; }
+  .toolbar-check.ch1 { color: var(--ur-color); }
+  .toolbar-check.ch1 input { accent-color: var(--ur-color); }
+  .toolbar-check.ch2 { color: var(--out-color); }
+  .toolbar-check.ch2 input { accent-color: var(--out-color); }
+  .toolbar-check.ee { color: var(--energy-e); }
+  .toolbar-check.ee input { accent-color: var(--energy-e); }
+  .toolbar-check.em { color: var(--energy-m); }
+  .toolbar-check.em input { accent-color: var(--energy-m); }
+  .toolbar-check.etot { color: var(--energy-tot); }
+  .toolbar-check.etot input { accent-color: var(--energy-tot); }
+
+  .oscillo-toolbar select {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer;
+  }
+
+  .btn-inv {
+    background-color: #0e1318; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 3px 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-inv.ch1-btn { color: var(--ur-color); }
+  .btn-inv.ch1-btn.active { background-color: var(--ur-color); color: #0b1114; border-color: var(--ur-color); }
+  .btn-inv.ch2-btn { color: var(--out-color); }
+  .btn-inv.ch2-btn.active { background-color: var(--out-color); color: #0b1114; border-color: var(--out-color); }
+  .btn-inv.ch3-btn { color: var(--in-color); }
+  .btn-inv.ch3-btn.active { background-color: var(--in-color); color: #0b1114; border-color: var(--in-color); }
+
+  .btn-pause, .btn-reset {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: background-color 0.2s;
+  }
+  .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
+
+  .top-screen-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; gap: 10px; flex-wrap: wrap;
+  }
+  .top-buttons { display: flex; align-items: center; gap: 8px; }
+
+  .canvas-wrapper { position: relative; width: 100%; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; }
+
+  .scope-tooltip {
+    position: absolute; pointer-events: none; background: rgba(14, 20, 26, 0.92);
+    border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; z-index: 10; line-height: 1.4; white-space: nowrap;
+  }
+
+  .montage-row { display: flex; gap: 12px; align-items: stretch; }
+  @media (max-width: 700px) { .montage-row { flex-direction: column; } }
+  
+  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
+  .schematic-wrap svg { display: block; width: 100%; max-height: 290px; height: auto; margin: 0 auto; }
+  
+  .switch-clickable { cursor: pointer; }
+  .switch-clickable:hover .sch-switch-line { stroke: #38bdf8; stroke-width: 2.5; }
+
+  .sch-wire   { stroke: var(--text-dim); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .sch-comp   { stroke: #4fc3e8; stroke-width: 1.6; fill: rgba(79,195,232,0.12); }
+  .sch-node   { fill: var(--text); }
+  .sch-label  { fill: var(--text); font-size: 13px; font-weight: 600; }
+  .sch-label.r  { fill: var(--out-color); font-size: 14px; font-weight: bold; }
+  .sch-label.c  { fill: var(--ur-color); font-size: 14px; font-weight: bold; }
+  .sch-label.l  { fill: var(--in-color); font-size: 14px; font-weight: bold; }
+
+  .energy-card-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;
+  }
+  @media (max-width: 600px) { .energy-card-grid { grid-template-columns: 1fr; } }
+  .energy-stat {
+    background: #141c22; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 8px 12px; text-align: center;
+  }
+  .energy-stat .lbl { font-size: 11px; color: var(--text-dim); }
+  .energy-stat .val { font-family: var(--font-mono); font-size: 15px; font-weight: bold; margin-top: 2px; }
+
+  .btn-theory-toggle {
+    width: 100%; padding: 8px 12px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--accent); background: var(--panel-alt); border: 1px solid var(--line);
+    border-radius: var(--radius); cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-theory-toggle:hover { background: var(--line); border-color: var(--accent); }
+  .theory-container.hidden { display: none; }
+  .oscillo-panel.panel-collapsed { display: none; }
+  .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .theory-grid { grid-template-columns: 1fr; } }
+  .theory-card {
+    border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316;
+    padding: 12px 14px; font-size: 12px; line-height: 1.4; color: var(--text-dim);
+  }
+  .theory-card h3 { margin: 0 0 6px; font-size: 12.5px; color: var(--accent); }
+  .theory-card p { margin: 3px 0; }
+  .formula {
+    font-family: var(--font-mono); color: var(--text); background: var(--panel-alt);
+    padding: 3px 6px; border-radius: 3px; display: inline-block; margin: 3px 0;
+  }
+  .theory-wide { grid-column: 1 / -1; }
+  .theory-card ul { margin: 4px 0 6px; padding-left: 18px; }
+  .theory-card li { margin: 2px 0; }
+  .theory-card ol { margin: 4px 0 6px; padding-left: 20px; }
+  .theory-card ol li { margin: 3px 0; }
+  .theory-card b { color: var(--text); }
+  .theory-card .note {
+    margin-top: 6px; padding: 5px 8px; border-left: 2px solid #e0b040;
+    background: var(--panel-alt); color: var(--text); font-size: 11.5px;
+  }
+  .theory-card .live {
+    margin-top: 8px; padding: 6px 8px; border-left: 2px solid var(--accent);
+    background: var(--panel-alt); font-family: var(--font-mono); font-size: 11.5px; color: var(--text);
+  }
+  .theory-card table { border-collapse: collapse; margin: 6px 0; font-size: 11.5px; }
+  .theory-card th, .theory-card td { border: 1px solid var(--line); padding: 3px 8px; text-align: center; color: var(--text); }
+  .theory-card th { background: var(--panel-alt); color: var(--accent); }
+  .theory-card svg { display: block; width: 100%; height: auto; max-height: 240px; }
+  .theory-card svg { max-height: none; margin: 6px 0 2px; }
+  .theory-card svg .pg { stroke: var(--line-soft); stroke-width: 1; }
+  .theory-card svg .pa { stroke: var(--text-faint); stroke-width: 1; }
+  .theory-card svg .pt { fill: var(--text-dim); font-size: 9px; font-family: var(--font-mono); }
+  .theory-card svg path { fill: none; stroke-width: 1.8; stroke-linejoin: round; }
+  .c-pseudo, .c-uc { stroke: var(--out-color); }
+  .c-crit  { stroke: var(--in-color); }
+  .c-aper  { stroke: var(--ur-color); }
+  .c-env   { stroke: var(--text-dim); }
+  .c-i     { stroke: var(--ur-color); }
+  .c-ee    { stroke: var(--energy-e); }
+  .c-em    { stroke: var(--energy-m); }
+  .c-et    { stroke: var(--energy-tot); }
+  .theory-card svg path.c-env { stroke-width: 1; stroke-dasharray: 4 3; }
+  .curve-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 2px 0 8px; font-size: 11px; color: var(--text-dim); }
+  .curve-legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+  .curve-legend .ln { display: inline-block; width: 16px; height: 0; border-top: 2px solid; }
+  .curve-legend .ln.c-pseudo, .curve-legend .ln.c-uc { border-color: var(--out-color); }
+  .curve-legend .ln.c-crit { border-color: var(--in-color); }
+  .curve-legend .ln.c-aper, .curve-legend .ln.c-i { border-color: var(--ur-color); }
+  .curve-legend .ln.c-env { border-color: var(--text-dim); border-top-width: 1px; }
+  .curve-legend .ln.dash { border-top-style: dashed; }
+  .curve-legend .ln.c-ee { border-color: var(--energy-e); }
+  .curve-legend .ln.c-em { border-color: var(--energy-m); }
+  .curve-legend .ln.c-et { border-color: var(--energy-tot); }
+  .signature{
+    text-align: center; font-family: "Arial"; font-size: 12px; font-weight: bold;
+    color: rgb(170, 221, 241); margin-top: 30px;
+  }
+  .remarque {
+color: #0066cc;
+font-size: 12px;
+font-style: italic;
+font-weight: bold;
+background: #c3d3e6;
+padding: 4px 8px;
+border-radius: 5px;
+}
+</style>
+</head>
+<body>
+
+<div class="rig">
+  <div class="site-header">
+    <h1 class="site-title">CIRCUIT RLC - OSCILLATIONS LIBRES</h1>
+    <div class="page-switcher">
+      <label for="pageSwitch">Choisir le TP :</label>
+      <select id="pageSwitch" onchange="if(this.value) window.location.href=this.value;">   
+     
+        <option value="oscillations_libres.html"selected>Oscillations libres amorties et non amorties </option>
+        <option value="oscillations_forcees.html" >Oscillations forcées en régime sinusoïdal</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <a href="index.html">← Retour à l'accueil</a>
+    <div class="regime-picker">
+      <label>TP :</label>
+      <span style="color:var(--text-dim); font-size:12.5px;">Décharge d'un condensateur dans une bobine et une résistance</span>
+    </div>
+  </div>
+
+  <div class="plate">
+    <div>
+      <h1>Oscillations libres dans un circuit RLC série</h1>
+      <div class="sub">Basculez K en position (1) pour charger C, puis en position (2) pour simuler la décharge libre.</div>
+    </div>
+    <div class="fc-readout">
+      <div class="label">PÉRIODE PROPRE T₀ / PSEUDO-PÉRIODE T</div>
+      <div class="value" id="tauHeaderValue">0.00 ms</div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="scopes">
+
+      <div class="scope-block">
+        <div class="oscillo-header"><span class="oscillo-title">SCHÉMA DU MONTAGE (CLIQUEZ SUR LE COMMUTATEUR K)</span></div>
+        <div class="montage-row">
+          <div class="schematic-wrap" style="flex:1;">
+            <!-- Schéma : K en haut, C au centre relié à M, Bobine + R0 ajustable à droite -->
+            <svg viewBox="0 0 240 230" xmlns="http://www.w3.org/2000/svg">
+              <!-- Fil inférieur / Masse M -->
+              <path d="M 20,200 L 200,200" class="sch-wire"/>
+              
+              <!-- Repère Masse M -->
+              <path d="M 120,200 L 120,208" stroke="var(--text)" stroke-width="1.5"/>
+              <line x1="110" y1="208" x2="130" y2="208" stroke="var(--text)" stroke-width="1.8"/>
+              <line x1="113" y1="212" x2="127" y2="212" stroke="var(--text)" stroke-width="1.4"/>
+              <line x1="116" y1="216" x2="124" y2="216" stroke="var(--text)" stroke-width="1.2"/>
+              <line x1="119" y1="220" x2="121" y2="220" stroke="var(--text)" stroke-width="1.0"/>
+              <text x="108" y="196" class="sch-label">M</text>
+
+              <!-- Générateur E (Branche gauche) -->
+              <path d="M 20,115 L 20,25" class="sch-wire"/>
+              <path d="M 20,200 L 20,125" class="sch-wire"/>
+              <line x1="10" y1="115" x2="30" y2="115" stroke="var(--text)" stroke-width="1.5"/>
+              <line x1="14" y1="125" x2="26" y2="125" stroke="var(--text)" stroke-width="2.5"/>
+              <text x="1" y="124" font-size="13" font-weight="bold" fill="var(--in-color)">E</text>
+
+              <!-- Borne 1 -->
+              <path d="M 20,25 L 80,25" class="sch-wire"/>
+              <circle cx="80" cy="25" r="2.5" class="sch-node"/>
+              <text x="80" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--accent)">1</text>
+
+              <!-- Commutateur K & Borne 2 -->
+              <g id="switchClickGroup" class="switch-clickable">
+                <rect x="70" y="5" width="80" height="35" fill="transparent"/>
+                <circle cx="140" cy="25" r="2.5" class="sch-node"/>
+                <text x="140" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--accent)">2</text>
+                
+                <circle cx="110" cy="25" r="2.8" class="sch-node"/>
+                <path id="switchContact" class="sch-switch-line" d="M 110,25 L 82,25" stroke="var(--accent)" stroke-width="2" style="transition: transform 0.15s ease, stroke 0.15s ease; transform-origin: 110px 25px;"/>
+                <text x="110" y="16" text-anchor="middle" class="sch-label" fill="var(--accent)">K</text>
+              </g>
+
+              <!-- Branche centrale : Condensateur C & Voie Y1 -->
+              <path d="M 110,115 L 110,200" class="sch-wire"/>
+               <path d="M 110,25 L 110,108" class="sch-wire"/>
+              <line x1="96" y1="108" x2="124" y2="108" stroke="var(--ur-color)" stroke-width="2"/>
+              <line x1="96" y1="116" x2="124" y2="116" stroke="var(--ur-color)" stroke-width="2"/>
+              <text x="84" y="115" class="sch-label c">C</text>
+
+              <!-- Flèche Voie Y1 -->
+              <path d="M 110,65 L 140,65" stroke="var(--ur-color)" stroke-width="1.5"/>
+              <path d="M 134,61 L 142,65 L 134,69" fill="var(--ur-color)" stroke="var(--ur-color)" stroke-width="1"/>
+              <text x="146" y="69" font-size="13" font-weight="bold" fill="var(--ur-color)">Y<tspan baseline-shift="sub" font-size="9">1</tspan></text>
+
+              <!-- Branche droite : Bobine (L, r) + Point A / Y2 + R0 variable -->
+              <path d="M 140,25 L 200,25 L 200,45" class="sch-wire"/>
+              
+              <!-- Bobine (L, r) -->
+              <path d="M 200,45 C 212,45 212,55 200,55 C 212,55 212,65 200,65 C 212,65 212,75 200,75 C 212,75 212,85 200,85 C 212,85 212,95 200,95" stroke="var(--in-color)" stroke-width="2" fill="none"/>
+              <text x="215" y="72" class="sch-label l">(L;r)</text>
+              <path d="M 200,95 L 200,120" class="sch-wire"/>
+
+              <!-- Point A & Flèche Voie Y2 -->
+              <circle cx="200" cy="120" r="2.5" class="sch-node"/>
+              <text x="188" y="124" class="sch-label">A</text>
+              <path d="M 200,120 L 222,120" stroke="var(--out-color)" stroke-width="1.5"/>
+              <path d="M 216,116 L 224,120 L 216,124" fill="var(--out-color)" stroke="var(--out-color)" stroke-width="1"/>
+              <text x="226" y="124" font-size="13" font-weight="bold" fill="var(--out-color)">Y<tspan baseline-shift="sub" font-size="9">2</tspan></text>
+
+              <!-- Résistance variable R0 -->
+              <path d="M 200,120 L 200,135" class="sch-wire"/>
+              <rect x="191" y="135" width="18" height="42" class="sch-comp"/>
+              <!-- Flèche de variabilité de R0 -->
+              <path d="M 183,183 L 217,129" stroke="var(--out-color)" stroke-width="1.5"/>
+              <path d="M 212,128 L 220,126 L 217,134" fill="var(--out-color)"/>
+              <text x="215" y="162" class="sch-label r">R<tspan baseline-shift="sub" font-size="10">0</tspan></text>
+
+              <path d="M 200,177 L 200,200" class="sch-wire"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- OSCILLOSCOPE TENSIONS -->
+      <div class="oscillo-panel">
+        <div class="oscillo-header">
+          <span class="oscillo-title">OSCILLOSCOPE — RÉPONSE TEMPORELLE DES TENSIONS</span>
+          <div class="oscillo-legend">
+            <span class="legend-item" id="legendCh1"><span class="color-dot purple"></span>Voie 1 (Y1) : u<sub>C</sub>(t)</span>
+            <span class="legend-item" id="legendCh2"><span class="color-dot green"></span>Voie 2 (Y2) : u<sub>R0</sub>(t) = R<sub>0</sub>·i(t)</span>
+            <span class="legend-item dim" id="legendCh3"><span class="color-dot orange"></span>Math (Y1 − Y2) : u<sub>bobine</sub>(t)</span>
+          </div>
+        </div>
+
+        <div class="top-screen-bar">
+          <div class="ctrl-hint" style="margin-bottom:0;">Y1 mesure u<sub>C</sub>(t) | Y2 mesure u<sub>R0</sub>(t) (image de i) | Math (Y1−Y2) mesure u<sub>bobine</sub>(t)</div>
+          <div class="top-buttons">
+            <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
+            <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
+          </div>
+        </div>
+
+        <!-- Toolbar Oscilloscope -->
+        <div class="oscillo-toolbar">
+          <div class="control-group">
+            <label class="label-ch1">CH1 (Y1):</label>
+            <select id="v1SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1">1 V/div</option>
+              <option value="2" selected>2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch1"><input type="checkbox" id="showChan1Check" checked> u<sub>C</sub>(t)</label>
+          <button id="invY1Btn" class="btn-inv ch1-btn" title="Inverser Y1">INV Y1</button>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-ch2">CH2 (Y2):</label>
+            <select id="v2SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1" selected>1 V/div</option>
+              <option value="2">2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch2"><input type="checkbox" id="showChan2Check" checked> u<sub>R0</sub>(t)</label>
+          <button id="invY2Btn" class="btn-inv ch2-btn" title="Inverser Y2">INV Y2</button>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-ch3">MATH (Y1−Y2):</label>
+            <select id="v3SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1">1 V/div</option>
+              <option value="2" selected>2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch3"><input type="checkbox" id="showChan3Check"> u<sub>bobine</sub>(t)</label>
+          <button id="invY3Btn" class="btn-inv ch3-btn" title="Inverser Voie Math">INV MATH</button>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-time">Base de temps:</label>
+            <select id="hSensSelect">
+              <option value="0.0002">0.2 ms/div</option>
+              <option value="0.0005" selected>0.5 ms/div</option>
+              <option value="0.001">1 ms/div</option>
+              <option value="0.002">2 ms/div</option>
+              <option value="0.005">5 ms/div</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Position Toolbar -->
+        <div class="position-toolbar">
+          <div class="pos-group">↔ Position X<input type="range" id="posXSlider" min="-5" max="5" step="0.5" value="0"><span class="pv" id="posXVal">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--ur-color)">↕ Position Y1<input type="range" id="posY1Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY1Val">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--out-color)">↕ Position Y2<input type="range" id="posY2Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY2Val">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--in-color)">↕ Position Math<input type="range" id="posY3Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY3Val">0.0 div</span></div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="scopeCanvas" height="320"></canvas>
+          <div id="scopeTooltip" class="scope-tooltip"></div>
+        </div>
+      </div>
+
+      <!-- CARTE NOUVELLE : VISUALISATION DES ÉNERGIES -->
+      <button id="toggleEnergyBtn" class="btn-theory-toggle" aria-expanded="false" aria-controls="energyPanel">AFFICHER LES COURBES DES ÉNERGIES</button>
+      <div class="oscillo-panel panel-collapsed" id="energyPanel">
+        <div class="oscillo-header">
+          <span class="oscillo-title">BILA ENERGÉTIQUE — ÉNERGIES ÉLECTRIQUE, MAGNÉTIQUE ET TOTALE</span>
+          <div class="oscillo-legend">
+            <span class="legend-item" id="legendEe"><span class="color-dot blue"></span>Électrique E<sub>e</sub> = ½ C u<sub>C</sub>²</span>
+            <span class="legend-item" id="legendEm"><span class="color-dot yellow"></span>Magnétique E<sub>m</sub> = ½ L i²</span>
+            <span class="legend-item" id="legendEtot"><span class="color-dot red"></span>Totale E<sub>tot</sub> = E<sub>e</sub> + E<sub>m</sub></span>
+          </div>
+        </div>
+
+        <div class="energy-card-grid">
+          <div class="energy-stat" style="border-top: 3px solid var(--energy-e);">
+            <div class="lbl">Énergie Électrique E<sub>e</sub></div>
+            <div class="val" id="eeValNow" style="color: var(--energy-e);">0.00 µJ</div>
+          </div>
+          <div class="energy-stat" style="border-top: 3px solid var(--energy-m);">
+            <div class="lbl">Énergie Magnétique E<sub>m</sub></div>
+            <div class="val" id="emValNow" style="color: var(--energy-m);">0.00 µJ</div>
+          </div>
+          <div class="energy-stat" style="border-top: 3px solid var(--energy-tot);">
+            <div class="lbl">Énergie Totale E<sub>tot</sub></div>
+            <div class="val" id="etotValNow" style="color: var(--energy-tot);">0.00 µJ</div>
+          </div>
+        </div>
+
+        <div class="oscillo-toolbar">
+          <label class="toolbar-check ee"><input type="checkbox" id="showEeCheck" checked> E<sub>e</sub>(t)</label>
+          <label class="toolbar-check em"><input type="checkbox" id="showEmCheck" checked> E<sub>m</sub>(t)</label>
+          <label class="toolbar-check etot"><input type="checkbox" id="showEtotCheck" checked> E<sub>tot</sub>(t)</label>
+
+          <div class="control-group" style="margin-left: auto;">
+            <label class="label-time">Échelle Énergie:</label>
+            <select id="eSensSelect">
+              <option value="auto" selected>Auto-adaptative</option>
+              <option value="0.000001">1 µJ/div</option>
+              <option value="0.000005">5 µJ/div</option>
+              <option value="0.000010">10 µJ/div</option>
+              <option value="0.000050">50 µJ/div</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="energyCanvas" height="240"></canvas>
+          <div id="energyTooltip" class="scope-tooltip"></div>
+        </div>
+      </div>
+
+      <button id="toggleTheoryBtn" class="btn-theory-toggle">APERÇU THÉORIQUE — ÉQUATIONS DIFFÉRENTIELLES & RÉGIMES D'OSCILLATION</button>
+
+      <div id="theoryContainer" class="theory-container hidden">
+        <div class="theory-grid">
+
+          <div class="theory-card theory-wide">
+            <h3>Vue d'ensemble : Décharge oscillante d'un circuit RLC du 2<sup>nd</sup> ordre</h3>
+            <p>Lorsque le commutateur K bascule en position (2), le condensateur C préalablement chargé sous la tension E se décharge dans la bobine (L, r) et le conducteur ohmique ajustable R<sub>0</sub>. La résistance totale du circuit vaut R = R<sub>0</sub> + r.</p>
+          </div>
+
+          <div class="theory-card">
+            <h3>1. Équation différentielle</h3>
+            <p>Loi des mailles lors de la décharge :</p>
+            <div class="formula">u<sub>C</sub>(t) + u<sub>L,r</sub>(t) + u<sub>R0</sub>(t) = 0</div>
+            <p>Avec i(t) = Cdu<sub>C</sub>/dt et u<sub>b</sub>(t) = L di/dt + ri(t) </p>
+            <div class="formula">L C · d²u<sub>C</sub>/dt² + R C · du<sub>C</sub>/dt + u<sub>C</sub> = 0</div>
+            
+          </div>
+
+          <div class="theory-card">
+            <h3>2. Les Régimes de fonctionnement</h3>
+            <ul>
+              <li><b>Résistance critique :</b> <span class="formula">R<sub>c</sub> = 2 · √(L / C)</span></li>
+              <li><b>Régime pseudo-périodique (R &lt; R<sub>c</sub>) :</b> Oscillations amorties de pseudo-période <span class="formula">T = 2π / ω</span>.</li>
+              <li><b>Régime critique (R = R<sub>c</sub>) :</b> Décharge sans oscillation la plus rapide possible.</li>
+              <li><b>Régime apériodique (R &gt; R<sub>c</sub>) :</b> Amortissement fort, retour lent à l'équilibre sans oscillation.</li>
+            </ul>
+          </div>
+
+          <div class="theory-card">
+            <h3>3. Période propre T₀ et Pseudo-période T</h3>
+            <div class="formula">T₀ = 2π · √(L · C)</div>
+            <p>Si l'amortissement est faible (R \ll R_c), la pseudo-période T est très proche de la période propre T_0 :</p>
+            <div class="formula">T = T₀ / √(1 − (R / R<sub>c</sub>)²) ≈ T₀</div>
+            <div class="live" id="thLiveT"></div>
+          </div>
+
+          <div class="theory-card">
+            <h3>4. Transfert &amp; Dissipation de l'Énergie</h3>
+            <p>L'énergie totale emmagasinée à l'instant t vaut :</p>
+            <div class="formula">E<sub>tot</sub>(t) = E<sub>e</sub> + E<sub>m</sub> = ½ C u<sub>C</sub>² + ½ L i²</div>
+            <p>Diminution continue par effet Joule :</p>
+            <div class="formula">dE<sub>tot</sub>/dt = −R·i² ≤ 0</div>
+
+           
+
+            <div class="live" id="thLiveE"></div>
+          </div>
+
+          <div class="theory-card">
+            <h3>5. Courbes u<sub>C</sub>(t) des trois régimes</h3>
+            <p>Décharge du condensateur avec u<sub>C</sub>(0) = E et i(0) = 0 (mêmes L et C, seule R change) :</p>
+            <svg viewBox="0 0 340 230" xmlns="http://www.w3.org/2000/svg" role="img">
+<line class="pg" x1="40.0" y1="14" x2="40.0" y2="196"/>
+<text class="pt" x="40.0" y="209" text-anchor="middle">0</text>
+<line class="pg" x1="136.0" y1="14" x2="136.0" y2="196"/>
+<text class="pt" x="136.0" y="209" text-anchor="middle">1T₀</text>
+<line class="pg" x1="232.0" y1="14" x2="232.0" y2="196"/>
+<text class="pt" x="232.0" y="209" text-anchor="middle">2T₀</text>
+<line class="pg" x1="328.0" y1="14" x2="328.0" y2="196"/>
+<text class="pt" x="328.0" y="209" text-anchor="middle">3T₀</text>
+<line class="pg" x1="40" y1="187.7" x2="328" y2="187.7"/>
+<text class="pt" x="35" y="190.7" text-anchor="end">−E</text>
+<line class="pg" x1="40" y1="146.4" x2="328" y2="146.4"/>
+<text class="pt" x="35" y="149.4" text-anchor="end">−E/2</text>
+<line class="pg" x1="40" y1="105.0" x2="328" y2="105.0"/>
+<text class="pt" x="35" y="108.0" text-anchor="end">0</text>
+<line class="pg" x1="40" y1="63.6" x2="328" y2="63.6"/>
+<text class="pt" x="35" y="66.6" text-anchor="end">E/2</text>
+<line class="pg" x1="40" y1="22.3" x2="328" y2="22.3"/>
+<text class="pt" x="35" y="25.3" text-anchor="end">E</text>
+<line class="pa" x1="40" y1="105.0" x2="328" y2="105.0"/>
+<line class="pa" x1="40" y1="14" x2="40" y2="196"/>
+<text class="pt" x="184" y="226" text-anchor="middle">temps t  (en unités de T₀)</text>
+<text class="pt" x="10" y="105" text-anchor="middle" transform="rotate(-90 10 105)">uC(t)</text>
+<path class="c-env" d="M40.0,22.3 L40.5,22.7 L41.0,23.0 L41.4,23.4 L41.9,23.8 L42.4,24.2 L42.9,24.6 L43.4,25.0 L43.8,25.3 L44.3,25.7 L44.8,26.1 L45.3,26.5 L45.8,26.8 L46.2,27.2 L46.7,27.6 L47.2,27.9 L47.7,28.3 L48.2,28.6 L48.6,29.0 L49.1,29.4 L49.6,29.7 L50.1,30.1 L50.6,30.4 L51.0,30.8 L51.5,31.1 L52.0,31.5 L52.5,31.8 L53.0,32.2 L53.4,32.5 L53.9,32.8 L54.4,33.2 L54.9,33.5 L55.4,33.9 L55.8,34.2 L56.3,34.5 L56.8,34.9 L57.3,35.2 L57.8,35.5 L58.2,35.8 L58.7,36.2 L59.2,36.5 L59.7,36.8 L60.2,37.1 L60.6,37.4 L61.1,37.8 L61.6,38.1 L62.1,38.4 L62.6,38.7 L63.0,39.0 L63.5,39.3 L64.0,39.6 L64.5,39.9 L65.0,40.3 L65.4,40.6 L65.9,40.9 L66.4,41.2 L66.9,41.5 L67.4,41.8 L67.8,42.1 L68.3,42.4 L68.8,42.6 L69.3,42.9 L69.8,43.2 L70.2,43.5 L70.7,43.8 L71.2,44.1 L71.7,44.4 L72.2,44.7 L72.6,45.0 L73.1,45.2 L73.6,45.5 L74.1,45.8 L74.6,46.1 L75.0,46.4 L75.5,46.6 L76.0,46.9 L76.5,47.2 L77.0,47.4 L77.4,47.7 L77.9,48.0 L78.4,48.3 L78.9,48.5 L79.4,48.8 L79.8,49.1 L80.3,49.3 L80.8,49.6 L81.3,49.8 L81.8,50.1 L82.2,50.4 L82.7,50.6 L83.2,50.9 L83.7,51.1 L84.2,51.4 L84.6,51.6 L85.1,51.9 L85.6,52.1 L86.1,52.4 L86.6,52.6 L87.0,52.9 L87.5,53.1 L88.0,53.4 L88.5,53.6 L89.0,53.8 L89.4,54.1 L89.9,54.3 L90.4,54.6 L90.9,54.8 L91.4,55.0 L91.8,55.3 L92.3,55.5 L92.8,55.7 L93.3,56.0 L93.8,56.2 L94.2,56.4 L94.7,56.7 L95.2,56.9 L95.7,57.1 L96.2,57.3 L96.6,57.6 L97.1,57.8 L97.6,58.0 L98.1,58.2 L98.6,58.4 L99.0,58.7 L99.5,58.9 L100.0,59.1 L100.5,59.3 L101.0,59.5 L101.4,59.7 L101.9,60.0 L102.4,60.2 L102.9,60.4 L103.4,60.6 L103.8,60.8 L104.3,61.0 L104.8,61.2 L105.3,61.4 L105.8,61.6 L106.2,61.8 L106.7,62.0 L107.2,62.2 L107.7,62.4 L108.2,62.6 L108.6,62.8 L109.1,63.0 L109.6,63.2 L110.1,63.4 L110.6,63.6 L111.0,63.8 L111.5,64.0 L112.0,64.2 L112.5,64.4 L113.0,64.6 L113.4,64.8 L113.9,65.0 L114.4,65.1 L114.9,65.3 L115.4,65.5 L115.8,65.7 L116.3,65.9 L116.8,66.1 L117.3,66.3 L117.8,66.4 L118.2,66.6 L118.7,66.8 L119.2,67.0 L119.7,67.2 L120.2,67.3 L120.6,67.5 L121.1,67.7 L121.6,67.9 L122.1,68.0 L122.6,68.2 L123.0,68.4 L123.5,68.6 L124.0,68.7 L124.5,68.9 L125.0,69.1 L125.4,69.2 L125.9,69.4 L126.4,69.6 L126.9,69.7 L127.4,69.9 L127.8,70.1 L128.3,70.2 L128.8,70.4 L129.3,70.6 L129.8,70.7 L130.2,70.9 L130.7,71.0 L131.2,71.2 L131.7,71.4 L132.2,71.5 L132.6,71.7 L133.1,71.8 L133.6,72.0 L134.1,72.2 L134.6,72.3 L135.0,72.5 L135.5,72.6 L136.0,72.8 L136.5,72.9 L137.0,73.1 L137.4,73.2 L137.9,73.4 L138.4,73.5 L138.9,73.7 L139.4,73.8 L139.8,74.0 L140.3,74.1 L140.8,74.2 L141.3,74.4 L141.8,74.5 L142.2,74.7 L142.7,74.8 L143.2,75.0 L143.7,75.1 L144.2,75.2 L144.6,75.4 L145.1,75.5 L145.6,75.7 L146.1,75.8 L146.6,75.9 L147.0,76.1 L147.5,76.2 L148.0,76.3 L148.5,76.5 L149.0,76.6 L149.4,76.7 L149.9,76.9 L150.4,77.0 L150.9,77.1 L151.4,77.3 L151.8,77.4 L152.3,77.5 L152.8,77.7 L153.3,77.8 L153.8,77.9 L154.2,78.0 L154.7,78.2 L155.2,78.3 L155.7,78.4 L156.2,78.6 L156.6,78.7 L157.1,78.8 L157.6,78.9 L158.1,79.0 L158.6,79.2 L159.0,79.3 L159.5,79.4 L160.0,79.5 L160.5,79.7 L161.0,79.8 L161.4,79.9 L161.9,80.0 L162.4,80.1 L162.9,80.2 L163.4,80.4 L163.8,80.5 L164.3,80.6 L164.8,80.7 L165.3,80.8 L165.8,80.9 L166.2,81.0 L166.7,81.2 L167.2,81.3 L167.7,81.4 L168.2,81.5 L168.6,81.6 L169.1,81.7 L169.6,81.8 L170.1,81.9 L170.6,82.0 L171.0,82.1 L171.5,82.3 L172.0,82.4 L172.5,82.5 L173.0,82.6 L173.4,82.7 L173.9,82.8 L174.4,82.9 L174.9,83.0 L175.4,83.1 L175.8,83.2 L176.3,83.3 L176.8,83.4 L177.3,83.5 L177.8,83.6 L178.2,83.7 L178.7,83.8 L179.2,83.9 L179.7,84.0 L180.2,84.1 L180.6,84.2 L181.1,84.3 L181.6,84.4 L182.1,84.5 L182.6,84.6 L183.0,84.7 L183.5,84.8 L184.0,84.9 L184.5,85.0 L185.0,85.1 L185.4,85.2 L185.9,85.3 L186.4,85.3 L186.9,85.4 L187.4,85.5 L187.8,85.6 L188.3,85.7 L188.8,85.8 L189.3,85.9 L189.8,86.0 L190.2,86.1 L190.7,86.2 L191.2,86.3 L191.7,86.3 L192.2,86.4 L192.6,86.5 L193.1,86.6 L193.6,86.7 L194.1,86.8 L194.6,86.9 L195.0,86.9 L195.5,87.0 L196.0,87.1 L196.5,87.2 L197.0,87.3 L197.4,87.4 L197.9,87.4 L198.4,87.5 L198.9,87.6 L199.4,87.7 L199.8,87.8 L200.3,87.9 L200.8,87.9 L201.3,88.0 L201.8,88.1 L202.2,88.2 L202.7,88.3 L203.2,88.3 L203.7,88.4 L204.2,88.5 L204.6,88.6 L205.1,88.6 L205.6,88.7 L206.1,88.8 L206.6,88.9 L207.0,89.0 L207.5,89.0 L208.0,89.1 L208.5,89.2 L209.0,89.3 L209.4,89.3 L209.9,89.4 L210.4,89.5 L210.9,89.5 L211.4,89.6 L211.8,89.7 L212.3,89.8 L212.8,89.8 L213.3,89.9 L213.8,90.0 L214.2,90.0 L214.7,90.1 L215.2,90.2 L215.7,90.3 L216.2,90.3 L216.6,90.4 L217.1,90.5 L217.6,90.5 L218.1,90.6 L218.6,90.7 L219.0,90.7 L219.5,90.8 L220.0,90.9 L220.5,90.9 L221.0,91.0 L221.4,91.1 L221.9,91.1 L222.4,91.2 L222.9,91.3 L223.4,91.3 L223.8,91.4 L224.3,91.5 L224.8,91.5 L225.3,91.6 L225.8,91.6 L226.2,91.7 L226.7,91.8 L227.2,91.8 L227.7,91.9 L228.2,92.0 L228.6,92.0 L229.1,92.1 L229.6,92.1 L230.1,92.2 L230.6,92.3 L231.0,92.3 L231.5,92.4 L232.0,92.4 L232.5,92.5 L233.0,92.6 L233.4,92.6 L233.9,92.7 L234.4,92.7 L234.9,92.8 L235.4,92.8 L235.8,92.9 L236.3,93.0 L236.8,93.0 L237.3,93.1 L237.8,93.1 L238.2,93.2 L238.7,93.2 L239.2,93.3 L239.7,93.4 L240.2,93.4 L240.6,93.5 L241.1,93.5 L241.6,93.6 L242.1,93.6 L242.6,93.7 L243.0,93.7 L243.5,93.8 L244.0,93.8 L244.5,93.9 L245.0,93.9 L245.4,94.0 L245.9,94.0 L246.4,94.1 L246.9,94.1 L247.4,94.2 L247.8,94.2 L248.3,94.3 L248.8,94.3 L249.3,94.4 L249.8,94.4 L250.2,94.5 L250.7,94.5 L251.2,94.6 L251.7,94.6 L252.2,94.7 L252.6,94.7 L253.1,94.8 L253.6,94.8 L254.1,94.9 L254.6,94.9 L255.0,95.0 L255.5,95.0 L256.0,95.1 L256.5,95.1 L257.0,95.2 L257.4,95.2 L257.9,95.3 L258.4,95.3 L258.9,95.4 L259.4,95.4 L259.8,95.4 L260.3,95.5 L260.8,95.5 L261.3,95.6 L261.8,95.6 L262.2,95.7 L262.7,95.7 L263.2,95.8 L263.7,95.8 L264.2,95.8 L264.6,95.9 L265.1,95.9 L265.6,96.0 L266.1,96.0 L266.6,96.1 L267.0,96.1 L267.5,96.1 L268.0,96.2 L268.5,96.2 L269.0,96.3 L269.4,96.3 L269.9,96.3 L270.4,96.4 L270.9,96.4 L271.4,96.5 L271.8,96.5 L272.3,96.5 L272.8,96.6 L273.3,96.6 L273.8,96.7 L274.2,96.7 L274.7,96.7 L275.2,96.8 L275.7,96.8 L276.2,96.9 L276.6,96.9 L277.1,96.9 L277.6,97.0 L278.1,97.0 L278.6,97.0 L279.0,97.1 L279.5,97.1 L280.0,97.2 L280.5,97.2 L281.0,97.2 L281.4,97.3 L281.9,97.3 L282.4,97.3 L282.9,97.4 L283.4,97.4 L283.8,97.4 L284.3,97.5 L284.8,97.5 L285.3,97.6 L285.8,97.6 L286.2,97.6 L286.7,97.7 L287.2,97.7 L287.7,97.7 L288.2,97.8 L288.6,97.8 L289.1,97.8 L289.6,97.9 L290.1,97.9 L290.6,97.9 L291.0,98.0 L291.5,98.0 L292.0,98.0 L292.5,98.1 L293.0,98.1 L293.4,98.1 L293.9,98.2 L294.4,98.2 L294.9,98.2 L295.4,98.3 L295.8,98.3 L296.3,98.3 L296.8,98.4 L297.3,98.4 L297.8,98.4 L298.2,98.4 L298.7,98.5 L299.2,98.5 L299.7,98.5 L300.2,98.6 L300.6,98.6 L301.1,98.6 L301.6,98.7 L302.1,98.7 L302.6,98.7 L303.0,98.7 L303.5,98.8 L304.0,98.8 L304.5,98.8 L305.0,98.9 L305.4,98.9 L305.9,98.9 L306.4,98.9 L306.9,99.0 L307.4,99.0 L307.8,99.0 L308.3,99.1 L308.8,99.1 L309.3,99.1 L309.8,99.1 L310.2,99.2 L310.7,99.2 L311.2,99.2 L311.7,99.3 L312.2,99.3 L312.6,99.3 L313.1,99.3 L313.6,99.4 L314.1,99.4 L314.6,99.4 L315.0,99.4 L315.5,99.5 L316.0,99.5 L316.5,99.5 L317.0,99.5 L317.4,99.6 L317.9,99.6 L318.4,99.6 L318.9,99.6 L319.4,99.7 L319.8,99.7 L320.3,99.7 L320.8,99.7 L321.3,99.8 L321.8,99.8 L322.2,99.8 L322.7,99.8 L323.2,99.9 L323.7,99.9 L324.2,99.9 L324.6,99.9 L325.1,100.0 L325.6,100.0 L326.1,100.0 L326.6,100.0 L327.0,100.1 L327.5,100.1 L328.0,100.1"/>
+<path class="c-env" d="M40.0,187.7 L40.5,187.3 L41.0,187.0 L41.4,186.6 L41.9,186.2 L42.4,185.8 L42.9,185.4 L43.4,185.0 L43.8,184.7 L44.3,184.3 L44.8,183.9 L45.3,183.5 L45.8,183.2 L46.2,182.8 L46.7,182.4 L47.2,182.1 L47.7,181.7 L48.2,181.4 L48.6,181.0 L49.1,180.6 L49.6,180.3 L50.1,179.9 L50.6,179.6 L51.0,179.2 L51.5,178.9 L52.0,178.5 L52.5,178.2 L53.0,177.8 L53.4,177.5 L53.9,177.2 L54.4,176.8 L54.9,176.5 L55.4,176.1 L55.8,175.8 L56.3,175.5 L56.8,175.1 L57.3,174.8 L57.8,174.5 L58.2,174.2 L58.7,173.8 L59.2,173.5 L59.7,173.2 L60.2,172.9 L60.6,172.6 L61.1,172.2 L61.6,171.9 L62.1,171.6 L62.6,171.3 L63.0,171.0 L63.5,170.7 L64.0,170.4 L64.5,170.1 L65.0,169.7 L65.4,169.4 L65.9,169.1 L66.4,168.8 L66.9,168.5 L67.4,168.2 L67.8,167.9 L68.3,167.6 L68.8,167.4 L69.3,167.1 L69.8,166.8 L70.2,166.5 L70.7,166.2 L71.2,165.9 L71.7,165.6 L72.2,165.3 L72.6,165.0 L73.1,164.8 L73.6,164.5 L74.1,164.2 L74.6,163.9 L75.0,163.6 L75.5,163.4 L76.0,163.1 L76.5,162.8 L77.0,162.6 L77.4,162.3 L77.9,162.0 L78.4,161.7 L78.9,161.5 L79.4,161.2 L79.8,160.9 L80.3,160.7 L80.8,160.4 L81.3,160.2 L81.8,159.9 L82.2,159.6 L82.7,159.4 L83.2,159.1 L83.7,158.9 L84.2,158.6 L84.6,158.4 L85.1,158.1 L85.6,157.9 L86.1,157.6 L86.6,157.4 L87.0,157.1 L87.5,156.9 L88.0,156.6 L88.5,156.4 L89.0,156.2 L89.4,155.9 L89.9,155.7 L90.4,155.4 L90.9,155.2 L91.4,155.0 L91.8,154.7 L92.3,154.5 L92.8,154.3 L93.3,154.0 L93.8,153.8 L94.2,153.6 L94.7,153.3 L95.2,153.1 L95.7,152.9 L96.2,152.7 L96.6,152.4 L97.1,152.2 L97.6,152.0 L98.1,151.8 L98.6,151.6 L99.0,151.3 L99.5,151.1 L100.0,150.9 L100.5,150.7 L101.0,150.5 L101.4,150.3 L101.9,150.0 L102.4,149.8 L102.9,149.6 L103.4,149.4 L103.8,149.2 L104.3,149.0 L104.8,148.8 L105.3,148.6 L105.8,148.4 L106.2,148.2 L106.7,148.0 L107.2,147.8 L107.7,147.6 L108.2,147.4 L108.6,147.2 L109.1,147.0 L109.6,146.8 L110.1,146.6 L110.6,146.4 L111.0,146.2 L111.5,146.0 L112.0,145.8 L112.5,145.6 L113.0,145.4 L113.4,145.2 L113.9,145.0 L114.4,144.9 L114.9,144.7 L115.4,144.5 L115.8,144.3 L116.3,144.1 L116.8,143.9 L117.3,143.7 L117.8,143.6 L118.2,143.4 L118.7,143.2 L119.2,143.0 L119.7,142.8 L120.2,142.7 L120.6,142.5 L121.1,142.3 L121.6,142.1 L122.1,142.0 L122.6,141.8 L123.0,141.6 L123.5,141.4 L124.0,141.3 L124.5,141.1 L125.0,140.9 L125.4,140.8 L125.9,140.6 L126.4,140.4 L126.9,140.3 L127.4,140.1 L127.8,139.9 L128.3,139.8 L128.8,139.6 L129.3,139.4 L129.8,139.3 L130.2,139.1 L130.7,139.0 L131.2,138.8 L131.7,138.6 L132.2,138.5 L132.6,138.3 L133.1,138.2 L133.6,138.0 L134.1,137.8 L134.6,137.7 L135.0,137.5 L135.5,137.4 L136.0,137.2 L136.5,137.1 L137.0,136.9 L137.4,136.8 L137.9,136.6 L138.4,136.5 L138.9,136.3 L139.4,136.2 L139.8,136.0 L140.3,135.9 L140.8,135.8 L141.3,135.6 L141.8,135.5 L142.2,135.3 L142.7,135.2 L143.2,135.0 L143.7,134.9 L144.2,134.8 L144.6,134.6 L145.1,134.5 L145.6,134.3 L146.1,134.2 L146.6,134.1 L147.0,133.9 L147.5,133.8 L148.0,133.7 L148.5,133.5 L149.0,133.4 L149.4,133.3 L149.9,133.1 L150.4,133.0 L150.9,132.9 L151.4,132.7 L151.8,132.6 L152.3,132.5 L152.8,132.3 L153.3,132.2 L153.8,132.1 L154.2,132.0 L154.7,131.8 L155.2,131.7 L155.7,131.6 L156.2,131.4 L156.6,131.3 L157.1,131.2 L157.6,131.1 L158.1,131.0 L158.6,130.8 L159.0,130.7 L159.5,130.6 L160.0,130.5 L160.5,130.3 L161.0,130.2 L161.4,130.1 L161.9,130.0 L162.4,129.9 L162.9,129.8 L163.4,129.6 L163.8,129.5 L164.3,129.4 L164.8,129.3 L165.3,129.2 L165.8,129.1 L166.2,129.0 L166.7,128.8 L167.2,128.7 L167.7,128.6 L168.2,128.5 L168.6,128.4 L169.1,128.3 L169.6,128.2 L170.1,128.1 L170.6,128.0 L171.0,127.9 L171.5,127.7 L172.0,127.6 L172.5,127.5 L173.0,127.4 L173.4,127.3 L173.9,127.2 L174.4,127.1 L174.9,127.0 L175.4,126.9 L175.8,126.8 L176.3,126.7 L176.8,126.6 L177.3,126.5 L177.8,126.4 L178.2,126.3 L178.7,126.2 L179.2,126.1 L179.7,126.0 L180.2,125.9 L180.6,125.8 L181.1,125.7 L181.6,125.6 L182.1,125.5 L182.6,125.4 L183.0,125.3 L183.5,125.2 L184.0,125.1 L184.5,125.0 L185.0,124.9 L185.4,124.8 L185.9,124.7 L186.4,124.7 L186.9,124.6 L187.4,124.5 L187.8,124.4 L188.3,124.3 L188.8,124.2 L189.3,124.1 L189.8,124.0 L190.2,123.9 L190.7,123.8 L191.2,123.7 L191.7,123.7 L192.2,123.6 L192.6,123.5 L193.1,123.4 L193.6,123.3 L194.1,123.2 L194.6,123.1 L195.0,123.1 L195.5,123.0 L196.0,122.9 L196.5,122.8 L197.0,122.7 L197.4,122.6 L197.9,122.6 L198.4,122.5 L198.9,122.4 L199.4,122.3 L199.8,122.2 L200.3,122.1 L200.8,122.1 L201.3,122.0 L201.8,121.9 L202.2,121.8 L202.7,121.7 L203.2,121.7 L203.7,121.6 L204.2,121.5 L204.6,121.4 L205.1,121.4 L205.6,121.3 L206.1,121.2 L206.6,121.1 L207.0,121.0 L207.5,121.0 L208.0,120.9 L208.5,120.8 L209.0,120.7 L209.4,120.7 L209.9,120.6 L210.4,120.5 L210.9,120.5 L211.4,120.4 L211.8,120.3 L212.3,120.2 L212.8,120.2 L213.3,120.1 L213.8,120.0 L214.2,120.0 L214.7,119.9 L215.2,119.8 L215.7,119.7 L216.2,119.7 L216.6,119.6 L217.1,119.5 L217.6,119.5 L218.1,119.4 L218.6,119.3 L219.0,119.3 L219.5,119.2 L220.0,119.1 L220.5,119.1 L221.0,119.0 L221.4,118.9 L221.9,118.9 L222.4,118.8 L222.9,118.7 L223.4,118.7 L223.8,118.6 L224.3,118.5 L224.8,118.5 L225.3,118.4 L225.8,118.4 L226.2,118.3 L226.7,118.2 L227.2,118.2 L227.7,118.1 L228.2,118.0 L228.6,118.0 L229.1,117.9 L229.6,117.9 L230.1,117.8 L230.6,117.7 L231.0,117.7 L231.5,117.6 L232.0,117.6 L232.5,117.5 L233.0,117.4 L233.4,117.4 L233.9,117.3 L234.4,117.3 L234.9,117.2 L235.4,117.2 L235.8,117.1 L236.3,117.0 L236.8,117.0 L237.3,116.9 L237.8,116.9 L238.2,116.8 L238.7,116.8 L239.2,116.7 L239.7,116.6 L240.2,116.6 L240.6,116.5 L241.1,116.5 L241.6,116.4 L242.1,116.4 L242.6,116.3 L243.0,116.3 L243.5,116.2 L244.0,116.2 L244.5,116.1 L245.0,116.1 L245.4,116.0 L245.9,116.0 L246.4,115.9 L246.9,115.9 L247.4,115.8 L247.8,115.8 L248.3,115.7 L248.8,115.7 L249.3,115.6 L249.8,115.6 L250.2,115.5 L250.7,115.5 L251.2,115.4 L251.7,115.4 L252.2,115.3 L252.6,115.3 L253.1,115.2 L253.6,115.2 L254.1,115.1 L254.6,115.1 L255.0,115.0 L255.5,115.0 L256.0,114.9 L256.5,114.9 L257.0,114.8 L257.4,114.8 L257.9,114.7 L258.4,114.7 L258.9,114.6 L259.4,114.6 L259.8,114.6 L260.3,114.5 L260.8,114.5 L261.3,114.4 L261.8,114.4 L262.2,114.3 L262.7,114.3 L263.2,114.2 L263.7,114.2 L264.2,114.2 L264.6,114.1 L265.1,114.1 L265.6,114.0 L266.1,114.0 L266.6,113.9 L267.0,113.9 L267.5,113.9 L268.0,113.8 L268.5,113.8 L269.0,113.7 L269.4,113.7 L269.9,113.7 L270.4,113.6 L270.9,113.6 L271.4,113.5 L271.8,113.5 L272.3,113.5 L272.8,113.4 L273.3,113.4 L273.8,113.3 L274.2,113.3 L274.7,113.3 L275.2,113.2 L275.7,113.2 L276.2,113.1 L276.6,113.1 L277.1,113.1 L277.6,113.0 L278.1,113.0 L278.6,113.0 L279.0,112.9 L279.5,112.9 L280.0,112.8 L280.5,112.8 L281.0,112.8 L281.4,112.7 L281.9,112.7 L282.4,112.7 L282.9,112.6 L283.4,112.6 L283.8,112.6 L284.3,112.5 L284.8,112.5 L285.3,112.4 L285.8,112.4 L286.2,112.4 L286.7,112.3 L287.2,112.3 L287.7,112.3 L288.2,112.2 L288.6,112.2 L289.1,112.2 L289.6,112.1 L290.1,112.1 L290.6,112.1 L291.0,112.0 L291.5,112.0 L292.0,112.0 L292.5,111.9 L293.0,111.9 L293.4,111.9 L293.9,111.8 L294.4,111.8 L294.9,111.8 L295.4,111.7 L295.8,111.7 L296.3,111.7 L296.8,111.6 L297.3,111.6 L297.8,111.6 L298.2,111.6 L298.7,111.5 L299.2,111.5 L299.7,111.5 L300.2,111.4 L300.6,111.4 L301.1,111.4 L301.6,111.3 L302.1,111.3 L302.6,111.3 L303.0,111.3 L303.5,111.2 L304.0,111.2 L304.5,111.2 L305.0,111.1 L305.4,111.1 L305.9,111.1 L306.4,111.1 L306.9,111.0 L307.4,111.0 L307.8,111.0 L308.3,110.9 L308.8,110.9 L309.3,110.9 L309.8,110.9 L310.2,110.8 L310.7,110.8 L311.2,110.8 L311.7,110.7 L312.2,110.7 L312.6,110.7 L313.1,110.7 L313.6,110.6 L314.1,110.6 L314.6,110.6 L315.0,110.6 L315.5,110.5 L316.0,110.5 L316.5,110.5 L317.0,110.5 L317.4,110.4 L317.9,110.4 L318.4,110.4 L318.9,110.4 L319.4,110.3 L319.8,110.3 L320.3,110.3 L320.8,110.3 L321.3,110.2 L321.8,110.2 L322.2,110.2 L322.7,110.2 L323.2,110.1 L323.7,110.1 L324.2,110.1 L324.6,110.1 L325.1,110.0 L325.6,110.0 L326.1,110.0 L326.6,110.0 L327.0,109.9 L327.5,109.9 L328.0,109.9"/>
+<path class="c-aper" d="M40.0,22.3 L40.5,22.3 L41.0,22.4 L41.4,22.6 L41.9,22.8 L42.4,23.1 L42.9,23.4 L43.4,23.7 L43.8,24.1 L44.3,24.4 L44.8,24.8 L45.3,25.2 L45.8,25.7 L46.2,26.1 L46.7,26.5 L47.2,27.0 L47.7,27.5 L48.2,27.9 L48.6,28.4 L49.1,28.9 L49.6,29.3 L50.1,29.8 L50.6,30.3 L51.0,30.7 L51.5,31.2 L52.0,31.7 L52.5,32.1 L53.0,32.6 L53.4,33.1 L53.9,33.5 L54.4,34.0 L54.9,34.5 L55.4,34.9 L55.8,35.4 L56.3,35.8 L56.8,36.3 L57.3,36.7 L57.8,37.2 L58.2,37.6 L58.7,38.0 L59.2,38.5 L59.7,38.9 L60.2,39.3 L60.6,39.8 L61.1,40.2 L61.6,40.6 L62.1,41.0 L62.6,41.4 L63.0,41.9 L63.5,42.3 L64.0,42.7 L64.5,43.1 L65.0,43.5 L65.4,43.9 L65.9,44.3 L66.4,44.7 L66.9,45.1 L67.4,45.5 L67.8,45.9 L68.3,46.3 L68.8,46.6 L69.3,47.0 L69.8,47.4 L70.2,47.8 L70.7,48.1 L71.2,48.5 L71.7,48.9 L72.2,49.3 L72.6,49.6 L73.1,50.0 L73.6,50.3 L74.1,50.7 L74.6,51.1 L75.0,51.4 L75.5,51.8 L76.0,52.1 L76.5,52.5 L77.0,52.8 L77.4,53.1 L77.9,53.5 L78.4,53.8 L78.9,54.1 L79.4,54.5 L79.8,54.8 L80.3,55.1 L80.8,55.5 L81.3,55.8 L81.8,56.1 L82.2,56.4 L82.7,56.7 L83.2,57.1 L83.7,57.4 L84.2,57.7 L84.6,58.0 L85.1,58.3 L85.6,58.6 L86.1,58.9 L86.6,59.2 L87.0,59.5 L87.5,59.8 L88.0,60.1 L88.5,60.4 L89.0,60.7 L89.4,61.0 L89.9,61.3 L90.4,61.5 L90.9,61.8 L91.4,62.1 L91.8,62.4 L92.3,62.7 L92.8,63.0 L93.3,63.2 L93.8,63.5 L94.2,63.8 L94.7,64.0 L95.2,64.3 L95.7,64.6 L96.2,64.8 L96.6,65.1 L97.1,65.4 L97.6,65.6 L98.1,65.9 L98.6,66.1 L99.0,66.4 L99.5,66.6 L100.0,66.9 L100.5,67.1 L101.0,67.4 L101.4,67.6 L101.9,67.9 L102.4,68.1 L102.9,68.4 L103.4,68.6 L103.8,68.8 L104.3,69.1 L104.8,69.3 L105.3,69.5 L105.8,69.8 L106.2,70.0 L106.7,70.2 L107.2,70.5 L107.7,70.7 L108.2,70.9 L108.6,71.1 L109.1,71.4 L109.6,71.6 L110.1,71.8 L110.6,72.0 L111.0,72.2 L111.5,72.4 L112.0,72.7 L112.5,72.9 L113.0,73.1 L113.4,73.3 L113.9,73.5 L114.4,73.7 L114.9,73.9 L115.4,74.1 L115.8,74.3 L116.3,74.5 L116.8,74.7 L117.3,74.9 L117.8,75.1 L118.2,75.3 L118.7,75.5 L119.2,75.7 L119.7,75.9 L120.2,76.1 L120.6,76.3 L121.1,76.4 L121.6,76.6 L122.1,76.8 L122.6,77.0 L123.0,77.2 L123.5,77.4 L124.0,77.5 L124.5,77.7 L125.0,77.9 L125.4,78.1 L125.9,78.3 L126.4,78.4 L126.9,78.6 L127.4,78.8 L127.8,78.9 L128.3,79.1 L128.8,79.3 L129.3,79.5 L129.8,79.6 L130.2,79.8 L130.7,80.0 L131.2,80.1 L131.7,80.3 L132.2,80.4 L132.6,80.6 L133.1,80.8 L133.6,80.9 L134.1,81.1 L134.6,81.2 L135.0,81.4 L135.5,81.5 L136.0,81.7 L136.5,81.8 L137.0,82.0 L137.4,82.1 L137.9,82.3 L138.4,82.4 L138.9,82.6 L139.4,82.7 L139.8,82.9 L140.3,83.0 L140.8,83.2 L141.3,83.3 L141.8,83.5 L142.2,83.6 L142.7,83.7 L143.2,83.9 L143.7,84.0 L144.2,84.2 L144.6,84.3 L145.1,84.4 L145.6,84.6 L146.1,84.7 L146.6,84.8 L147.0,85.0 L147.5,85.1 L148.0,85.2 L148.5,85.3 L149.0,85.5 L149.4,85.6 L149.9,85.7 L150.4,85.9 L150.9,86.0 L151.4,86.1 L151.8,86.2 L152.3,86.4 L152.8,86.5 L153.3,86.6 L153.8,86.7 L154.2,86.8 L154.7,87.0 L155.2,87.1 L155.7,87.2 L156.2,87.3 L156.6,87.4 L157.1,87.5 L157.6,87.6 L158.1,87.8 L158.6,87.9 L159.0,88.0 L159.5,88.1 L160.0,88.2 L160.5,88.3 L161.0,88.4 L161.4,88.5 L161.9,88.6 L162.4,88.8 L162.9,88.9 L163.4,89.0 L163.8,89.1 L164.3,89.2 L164.8,89.3 L165.3,89.4 L165.8,89.5 L166.2,89.6 L166.7,89.7 L167.2,89.8 L167.7,89.9 L168.2,90.0 L168.6,90.1 L169.1,90.2 L169.6,90.3 L170.1,90.4 L170.6,90.5 L171.0,90.6 L171.5,90.7 L172.0,90.7 L172.5,90.8 L173.0,90.9 L173.4,91.0 L173.9,91.1 L174.4,91.2 L174.9,91.3 L175.4,91.4 L175.8,91.5 L176.3,91.6 L176.8,91.7 L177.3,91.7 L177.8,91.8 L178.2,91.9 L178.7,92.0 L179.2,92.1 L179.7,92.2 L180.2,92.3 L180.6,92.3 L181.1,92.4 L181.6,92.5 L182.1,92.6 L182.6,92.7 L183.0,92.7 L183.5,92.8 L184.0,92.9 L184.5,93.0 L185.0,93.1 L185.4,93.1 L185.9,93.2 L186.4,93.3 L186.9,93.4 L187.4,93.4 L187.8,93.5 L188.3,93.6 L188.8,93.7 L189.3,93.7 L189.8,93.8 L190.2,93.9 L190.7,94.0 L191.2,94.0 L191.7,94.1 L192.2,94.2 L192.6,94.2 L193.1,94.3 L193.6,94.4 L194.1,94.5 L194.6,94.5 L195.0,94.6 L195.5,94.7 L196.0,94.7 L196.5,94.8 L197.0,94.9 L197.4,94.9 L197.9,95.0 L198.4,95.1 L198.9,95.1 L199.4,95.2 L199.8,95.3 L200.3,95.3 L200.8,95.4 L201.3,95.4 L201.8,95.5 L202.2,95.6 L202.7,95.6 L203.2,95.7 L203.7,95.8 L204.2,95.8 L204.6,95.9 L205.1,95.9 L205.6,96.0 L206.1,96.1 L206.6,96.1 L207.0,96.2 L207.5,96.2 L208.0,96.3 L208.5,96.3 L209.0,96.4 L209.4,96.5 L209.9,96.5 L210.4,96.6 L210.9,96.6 L211.4,96.7 L211.8,96.7 L212.3,96.8 L212.8,96.8 L213.3,96.9 L213.8,96.9 L214.2,97.0 L214.7,97.0 L215.2,97.1 L215.7,97.2 L216.2,97.2 L216.6,97.3 L217.1,97.3 L217.6,97.4 L218.1,97.4 L218.6,97.5 L219.0,97.5 L219.5,97.6 L220.0,97.6 L220.5,97.7 L221.0,97.7 L221.4,97.7 L221.9,97.8 L222.4,97.8 L222.9,97.9 L223.4,97.9 L223.8,98.0 L224.3,98.0 L224.8,98.1 L225.3,98.1 L225.8,98.2 L226.2,98.2 L226.7,98.3 L227.2,98.3 L227.7,98.3 L228.2,98.4 L228.6,98.4 L229.1,98.5 L229.6,98.5 L230.1,98.6 L230.6,98.6 L231.0,98.6 L231.5,98.7 L232.0,98.7 L232.5,98.8 L233.0,98.8 L233.4,98.8 L233.9,98.9 L234.4,98.9 L234.9,99.0 L235.4,99.0 L235.8,99.0 L236.3,99.1 L236.8,99.1 L237.3,99.2 L237.8,99.2 L238.2,99.2 L238.7,99.3 L239.2,99.3 L239.7,99.3 L240.2,99.4 L240.6,99.4 L241.1,99.5 L241.6,99.5 L242.1,99.5 L242.6,99.6 L243.0,99.6 L243.5,99.6 L244.0,99.7 L244.5,99.7 L245.0,99.7 L245.4,99.8 L245.9,99.8 L246.4,99.8 L246.9,99.9 L247.4,99.9 L247.8,99.9 L248.3,100.0 L248.8,100.0 L249.3,100.0 L249.8,100.1 L250.2,100.1 L250.7,100.1 L251.2,100.2 L251.7,100.2 L252.2,100.2 L252.6,100.3 L253.1,100.3 L253.6,100.3 L254.1,100.4 L254.6,100.4 L255.0,100.4 L255.5,100.4 L256.0,100.5 L256.5,100.5 L257.0,100.5 L257.4,100.6 L257.9,100.6 L258.4,100.6 L258.9,100.7 L259.4,100.7 L259.8,100.7 L260.3,100.7 L260.8,100.8 L261.3,100.8 L261.8,100.8 L262.2,100.8 L262.7,100.9 L263.2,100.9 L263.7,100.9 L264.2,101.0 L264.6,101.0 L265.1,101.0 L265.6,101.0 L266.1,101.1 L266.6,101.1 L267.0,101.1 L267.5,101.1 L268.0,101.2 L268.5,101.2 L269.0,101.2 L269.4,101.2 L269.9,101.3 L270.4,101.3 L270.9,101.3 L271.4,101.3 L271.8,101.4 L272.3,101.4 L272.8,101.4 L273.3,101.4 L273.8,101.5 L274.2,101.5 L274.7,101.5 L275.2,101.5 L275.7,101.5 L276.2,101.6 L276.6,101.6 L277.1,101.6 L277.6,101.6 L278.1,101.7 L278.6,101.7 L279.0,101.7 L279.5,101.7 L280.0,101.7 L280.5,101.8 L281.0,101.8 L281.4,101.8 L281.9,101.8 L282.4,101.8 L282.9,101.9 L283.4,101.9 L283.8,101.9 L284.3,101.9 L284.8,101.9 L285.3,102.0 L285.8,102.0 L286.2,102.0 L286.7,102.0 L287.2,102.0 L287.7,102.1 L288.2,102.1 L288.6,102.1 L289.1,102.1 L289.6,102.1 L290.1,102.2 L290.6,102.2 L291.0,102.2 L291.5,102.2 L292.0,102.2 L292.5,102.3 L293.0,102.3 L293.4,102.3 L293.9,102.3 L294.4,102.3 L294.9,102.3 L295.4,102.4 L295.8,102.4 L296.3,102.4 L296.8,102.4 L297.3,102.4 L297.8,102.4 L298.2,102.5 L298.7,102.5 L299.2,102.5 L299.7,102.5 L300.2,102.5 L300.6,102.5 L301.1,102.6 L301.6,102.6 L302.1,102.6 L302.6,102.6 L303.0,102.6 L303.5,102.6 L304.0,102.7 L304.5,102.7 L305.0,102.7 L305.4,102.7 L305.9,102.7 L306.4,102.7 L306.9,102.7 L307.4,102.8 L307.8,102.8 L308.3,102.8 L308.8,102.8 L309.3,102.8 L309.8,102.8 L310.2,102.8 L310.7,102.9 L311.2,102.9 L311.7,102.9 L312.2,102.9 L312.6,102.9 L313.1,102.9 L313.6,102.9 L314.1,103.0 L314.6,103.0 L315.0,103.0 L315.5,103.0 L316.0,103.0 L316.5,103.0 L317.0,103.0 L317.4,103.0 L317.9,103.1 L318.4,103.1 L318.9,103.1 L319.4,103.1 L319.8,103.1 L320.3,103.1 L320.8,103.1 L321.3,103.1 L321.8,103.2 L322.2,103.2 L322.7,103.2 L323.2,103.2 L323.7,103.2 L324.2,103.2 L324.6,103.2 L325.1,103.2 L325.6,103.3 L326.1,103.3 L326.6,103.3 L327.0,103.3 L327.5,103.3 L328.0,103.3"/>
+<path class="c-crit" d="M40.0,22.3 L40.5,22.3 L41.0,22.4 L41.4,22.6 L41.9,22.9 L42.4,23.2 L42.9,23.6 L43.4,24.0 L43.8,24.5 L44.3,25.0 L44.8,25.6 L45.3,26.2 L45.8,26.9 L46.2,27.6 L46.7,28.3 L47.2,29.0 L47.7,29.8 L48.2,30.6 L48.6,31.4 L49.1,32.3 L49.6,33.1 L50.1,34.0 L50.6,34.9 L51.0,35.8 L51.5,36.7 L52.0,37.7 L52.5,38.6 L53.0,39.5 L53.4,40.5 L53.9,41.4 L54.4,42.4 L54.9,43.3 L55.4,44.3 L55.8,45.3 L56.3,46.2 L56.8,47.2 L57.3,48.1 L57.8,49.1 L58.2,50.0 L58.7,50.9 L59.2,51.9 L59.7,52.8 L60.2,53.7 L60.6,54.6 L61.1,55.5 L61.6,56.4 L62.1,57.3 L62.6,58.2 L63.0,59.1 L63.5,59.9 L64.0,60.8 L64.5,61.6 L65.0,62.5 L65.4,63.3 L65.9,64.1 L66.4,64.9 L66.9,65.7 L67.4,66.5 L67.8,67.3 L68.3,68.0 L68.8,68.8 L69.3,69.5 L69.8,70.2 L70.2,70.9 L70.7,71.6 L71.2,72.3 L71.7,73.0 L72.2,73.7 L72.6,74.4 L73.1,75.0 L73.6,75.6 L74.1,76.3 L74.6,76.9 L75.0,77.5 L75.5,78.1 L76.0,78.7 L76.5,79.3 L77.0,79.8 L77.4,80.4 L77.9,80.9 L78.4,81.5 L78.9,82.0 L79.4,82.5 L79.8,83.0 L80.3,83.5 L80.8,84.0 L81.3,84.5 L81.8,84.9 L82.2,85.4 L82.7,85.8 L83.2,86.3 L83.7,86.7 L84.2,87.1 L84.6,87.5 L85.1,87.9 L85.6,88.3 L86.1,88.7 L86.6,89.1 L87.0,89.5 L87.5,89.8 L88.0,90.2 L88.5,90.5 L89.0,90.9 L89.4,91.2 L89.9,91.5 L90.4,91.9 L90.9,92.2 L91.4,92.5 L91.8,92.8 L92.3,93.1 L92.8,93.4 L93.3,93.6 L93.8,93.9 L94.2,94.2 L94.7,94.4 L95.2,94.7 L95.7,95.0 L96.2,95.2 L96.6,95.4 L97.1,95.7 L97.6,95.9 L98.1,96.1 L98.6,96.3 L99.0,96.6 L99.5,96.8 L100.0,97.0 L100.5,97.2 L101.0,97.4 L101.4,97.6 L101.9,97.7 L102.4,97.9 L102.9,98.1 L103.4,98.3 L103.8,98.4 L104.3,98.6 L104.8,98.8 L105.3,98.9 L105.8,99.1 L106.2,99.2 L106.7,99.4 L107.2,99.5 L107.7,99.6 L108.2,99.8 L108.6,99.9 L109.1,100.0 L109.6,100.2 L110.1,100.3 L110.6,100.4 L111.0,100.5 L111.5,100.6 L112.0,100.8 L112.5,100.9 L113.0,101.0 L113.4,101.1 L113.9,101.2 L114.4,101.3 L114.9,101.4 L115.4,101.5 L115.8,101.6 L116.3,101.6 L116.8,101.7 L117.3,101.8 L117.8,101.9 L118.2,102.0 L118.7,102.1 L119.2,102.1 L119.7,102.2 L120.2,102.3 L120.6,102.3 L121.1,102.4 L121.6,102.5 L122.1,102.6 L122.6,102.6 L123.0,102.7 L123.5,102.7 L124.0,102.8 L124.5,102.9 L125.0,102.9 L125.4,103.0 L125.9,103.0 L126.4,103.1 L126.9,103.1 L127.4,103.2 L127.8,103.2 L128.3,103.3 L128.8,103.3 L129.3,103.4 L129.8,103.4 L130.2,103.4 L130.7,103.5 L131.2,103.5 L131.7,103.6 L132.2,103.6 L132.6,103.6 L133.1,103.7 L133.6,103.7 L134.1,103.7 L134.6,103.8 L135.0,103.8 L135.5,103.8 L136.0,103.9 L136.5,103.9 L137.0,103.9 L137.4,104.0 L137.9,104.0 L138.4,104.0 L138.9,104.0 L139.4,104.1 L139.8,104.1 L140.3,104.1 L140.8,104.1 L141.3,104.2 L141.8,104.2 L142.2,104.2 L142.7,104.2 L143.2,104.3 L143.7,104.3 L144.2,104.3 L144.6,104.3 L145.1,104.3 L145.6,104.3 L146.1,104.4 L146.6,104.4 L147.0,104.4 L147.5,104.4 L148.0,104.4 L148.5,104.4 L149.0,104.5 L149.4,104.5 L149.9,104.5 L150.4,104.5 L150.9,104.5 L151.4,104.5 L151.8,104.5 L152.3,104.6 L152.8,104.6 L153.3,104.6 L153.8,104.6 L154.2,104.6 L154.7,104.6 L155.2,104.6 L155.7,104.6 L156.2,104.6 L156.6,104.7 L157.1,104.7 L157.6,104.7 L158.1,104.7 L158.6,104.7 L159.0,104.7 L159.5,104.7 L160.0,104.7 L160.5,104.7 L161.0,104.7 L161.4,104.7 L161.9,104.7 L162.4,104.8 L162.9,104.8 L163.4,104.8 L163.8,104.8 L164.3,104.8 L164.8,104.8 L165.3,104.8 L165.8,104.8 L166.2,104.8 L166.7,104.8 L167.2,104.8 L167.7,104.8 L168.2,104.8 L168.6,104.8 L169.1,104.8 L169.6,104.8 L170.1,104.8 L170.6,104.8 L171.0,104.9 L171.5,104.9 L172.0,104.9 L172.5,104.9 L173.0,104.9 L173.4,104.9 L173.9,104.9 L174.4,104.9 L174.9,104.9 L175.4,104.9 L175.8,104.9 L176.3,104.9 L176.8,104.9 L177.3,104.9 L177.8,104.9 L178.2,104.9 L178.7,104.9 L179.2,104.9 L179.7,104.9 L180.2,104.9 L180.6,104.9 L181.1,104.9 L181.6,104.9 L182.1,104.9 L182.6,104.9 L183.0,104.9 L183.5,104.9 L184.0,104.9 L184.5,104.9 L185.0,104.9 L185.4,104.9 L185.9,104.9 L186.4,104.9 L186.9,104.9 L187.4,104.9 L187.8,104.9 L188.3,104.9 L188.8,104.9 L189.3,104.9 L189.8,105.0 L190.2,105.0 L190.7,105.0 L191.2,105.0 L191.7,105.0 L192.2,105.0 L192.6,105.0 L193.1,105.0 L193.6,105.0 L194.1,105.0 L194.6,105.0 L195.0,105.0 L195.5,105.0 L196.0,105.0 L196.5,105.0 L197.0,105.0 L197.4,105.0 L197.9,105.0 L198.4,105.0 L198.9,105.0 L199.4,105.0 L199.8,105.0 L200.3,105.0 L200.8,105.0 L201.3,105.0 L201.8,105.0 L202.2,105.0 L202.7,105.0 L203.2,105.0 L203.7,105.0 L204.2,105.0 L204.6,105.0 L205.1,105.0 L205.6,105.0 L206.1,105.0 L206.6,105.0 L207.0,105.0 L207.5,105.0 L208.0,105.0 L208.5,105.0 L209.0,105.0 L209.4,105.0 L209.9,105.0 L210.4,105.0 L210.9,105.0 L211.4,105.0 L211.8,105.0 L212.3,105.0 L212.8,105.0 L213.3,105.0 L213.8,105.0 L214.2,105.0 L214.7,105.0 L215.2,105.0 L215.7,105.0 L216.2,105.0 L216.6,105.0 L217.1,105.0 L217.6,105.0 L218.1,105.0 L218.6,105.0 L219.0,105.0 L219.5,105.0 L220.0,105.0 L220.5,105.0 L221.0,105.0 L221.4,105.0 L221.9,105.0 L222.4,105.0 L222.9,105.0 L223.4,105.0 L223.8,105.0 L224.3,105.0 L224.8,105.0 L225.3,105.0 L225.8,105.0 L226.2,105.0 L226.7,105.0 L227.2,105.0 L227.7,105.0 L228.2,105.0 L228.6,105.0 L229.1,105.0 L229.6,105.0 L230.1,105.0 L230.6,105.0 L231.0,105.0 L231.5,105.0 L232.0,105.0 L232.5,105.0 L233.0,105.0 L233.4,105.0 L233.9,105.0 L234.4,105.0 L234.9,105.0 L235.4,105.0 L235.8,105.0 L236.3,105.0 L236.8,105.0 L237.3,105.0 L237.8,105.0 L238.2,105.0 L238.7,105.0 L239.2,105.0 L239.7,105.0 L240.2,105.0 L240.6,105.0 L241.1,105.0 L241.6,105.0 L242.1,105.0 L242.6,105.0 L243.0,105.0 L243.5,105.0 L244.0,105.0 L244.5,105.0 L245.0,105.0 L245.4,105.0 L245.9,105.0 L246.4,105.0 L246.9,105.0 L247.4,105.0 L247.8,105.0 L248.3,105.0 L248.8,105.0 L249.3,105.0 L249.8,105.0 L250.2,105.0 L250.7,105.0 L251.2,105.0 L251.7,105.0 L252.2,105.0 L252.6,105.0 L253.1,105.0 L253.6,105.0 L254.1,105.0 L254.6,105.0 L255.0,105.0 L255.5,105.0 L256.0,105.0 L256.5,105.0 L257.0,105.0 L257.4,105.0 L257.9,105.0 L258.4,105.0 L258.9,105.0 L259.4,105.0 L259.8,105.0 L260.3,105.0 L260.8,105.0 L261.3,105.0 L261.8,105.0 L262.2,105.0 L262.7,105.0 L263.2,105.0 L263.7,105.0 L264.2,105.0 L264.6,105.0 L265.1,105.0 L265.6,105.0 L266.1,105.0 L266.6,105.0 L267.0,105.0 L267.5,105.0 L268.0,105.0 L268.5,105.0 L269.0,105.0 L269.4,105.0 L269.9,105.0 L270.4,105.0 L270.9,105.0 L271.4,105.0 L271.8,105.0 L272.3,105.0 L272.8,105.0 L273.3,105.0 L273.8,105.0 L274.2,105.0 L274.7,105.0 L275.2,105.0 L275.7,105.0 L276.2,105.0 L276.6,105.0 L277.1,105.0 L277.6,105.0 L278.1,105.0 L278.6,105.0 L279.0,105.0 L279.5,105.0 L280.0,105.0 L280.5,105.0 L281.0,105.0 L281.4,105.0 L281.9,105.0 L282.4,105.0 L282.9,105.0 L283.4,105.0 L283.8,105.0 L284.3,105.0 L284.8,105.0 L285.3,105.0 L285.8,105.0 L286.2,105.0 L286.7,105.0 L287.2,105.0 L287.7,105.0 L288.2,105.0 L288.6,105.0 L289.1,105.0 L289.6,105.0 L290.1,105.0 L290.6,105.0 L291.0,105.0 L291.5,105.0 L292.0,105.0 L292.5,105.0 L293.0,105.0 L293.4,105.0 L293.9,105.0 L294.4,105.0 L294.9,105.0 L295.4,105.0 L295.8,105.0 L296.3,105.0 L296.8,105.0 L297.3,105.0 L297.8,105.0 L298.2,105.0 L298.7,105.0 L299.2,105.0 L299.7,105.0 L300.2,105.0 L300.6,105.0 L301.1,105.0 L301.6,105.0 L302.1,105.0 L302.6,105.0 L303.0,105.0 L303.5,105.0 L304.0,105.0 L304.5,105.0 L305.0,105.0 L305.4,105.0 L305.9,105.0 L306.4,105.0 L306.9,105.0 L307.4,105.0 L307.8,105.0 L308.3,105.0 L308.8,105.0 L309.3,105.0 L309.8,105.0 L310.2,105.0 L310.7,105.0 L311.2,105.0 L311.7,105.0 L312.2,105.0 L312.6,105.0 L313.1,105.0 L313.6,105.0 L314.1,105.0 L314.6,105.0 L315.0,105.0 L315.5,105.0 L316.0,105.0 L316.5,105.0 L317.0,105.0 L317.4,105.0 L317.9,105.0 L318.4,105.0 L318.9,105.0 L319.4,105.0 L319.8,105.0 L320.3,105.0 L320.8,105.0 L321.3,105.0 L321.8,105.0 L322.2,105.0 L322.7,105.0 L323.2,105.0 L323.7,105.0 L324.2,105.0 L324.6,105.0 L325.1,105.0 L325.6,105.0 L326.1,105.0 L326.6,105.0 L327.0,105.0 L327.5,105.0 L328.0,105.0"/>
+<path class="c-pseudo" d="M40.0,22.3 L40.5,22.3 L41.0,22.4 L41.4,22.6 L41.9,22.9 L42.4,23.3 L42.9,23.7 L43.4,24.2 L43.8,24.8 L44.3,25.5 L44.8,26.2 L45.3,27.0 L45.8,27.9 L46.2,28.8 L46.7,29.8 L47.2,30.9 L47.7,32.0 L48.2,33.2 L48.6,34.5 L49.1,35.8 L49.6,37.1 L50.1,38.5 L50.6,40.0 L51.0,41.5 L51.5,43.1 L52.0,44.7 L52.5,46.4 L53.0,48.1 L53.4,49.8 L53.9,51.6 L54.4,53.4 L54.9,55.3 L55.4,57.1 L55.8,59.1 L56.3,61.0 L56.8,63.0 L57.3,64.9 L57.8,66.9 L58.2,69.0 L58.7,71.0 L59.2,73.1 L59.7,75.1 L60.2,77.2 L60.6,79.3 L61.1,81.4 L61.6,83.5 L62.1,85.6 L62.6,87.7 L63.0,89.8 L63.5,91.8 L64.0,93.9 L64.5,96.0 L65.0,98.1 L65.4,100.1 L65.9,102.1 L66.4,104.2 L66.9,106.2 L67.4,108.1 L67.8,110.1 L68.3,112.0 L68.8,113.9 L69.3,115.8 L69.8,117.7 L70.2,119.5 L70.7,121.3 L71.2,123.1 L71.7,124.8 L72.2,126.5 L72.6,128.1 L73.1,129.7 L73.6,131.3 L74.1,132.9 L74.6,134.4 L75.0,135.8 L75.5,137.2 L76.0,138.6 L76.5,139.9 L77.0,141.2 L77.4,142.4 L77.9,143.6 L78.4,144.7 L78.9,145.8 L79.4,146.8 L79.8,147.8 L80.3,148.7 L80.8,149.6 L81.3,150.4 L81.8,151.1 L82.2,151.9 L82.7,152.5 L83.2,153.1 L83.7,153.7 L84.2,154.2 L84.6,154.6 L85.1,155.0 L85.6,155.4 L86.1,155.7 L86.6,155.9 L87.0,156.1 L87.5,156.2 L88.0,156.3 L88.5,156.4 L89.0,156.3 L89.4,156.3 L89.9,156.2 L90.4,156.0 L90.9,155.8 L91.4,155.5 L91.8,155.2 L92.3,154.8 L92.8,154.4 L93.3,154.0 L93.8,153.5 L94.2,153.0 L94.7,152.4 L95.2,151.8 L95.7,151.1 L96.2,150.4 L96.6,149.7 L97.1,148.9 L97.6,148.1 L98.1,147.3 L98.6,146.4 L99.0,145.5 L99.5,144.5 L100.0,143.6 L100.5,142.6 L101.0,141.5 L101.4,140.5 L101.9,139.4 L102.4,138.3 L102.9,137.2 L103.4,136.0 L103.8,134.9 L104.3,133.7 L104.8,132.5 L105.3,131.3 L105.8,130.1 L106.2,128.8 L106.7,127.6 L107.2,126.3 L107.7,125.0 L108.2,123.7 L108.6,122.4 L109.1,121.1 L109.6,119.9 L110.1,118.6 L110.6,117.3 L111.0,116.0 L111.5,114.7 L112.0,113.4 L112.5,112.1 L113.0,110.8 L113.4,109.5 L113.9,108.2 L114.4,107.0 L114.9,105.7 L115.4,104.5 L115.8,103.2 L116.3,102.0 L116.8,100.8 L117.3,99.6 L117.8,98.4 L118.2,97.3 L118.7,96.2 L119.2,95.0 L119.7,93.9 L120.2,92.9 L120.6,91.8 L121.1,90.8 L121.6,89.8 L122.1,88.8 L122.6,87.8 L123.0,86.9 L123.5,86.0 L124.0,85.1 L124.5,84.3 L125.0,83.5 L125.4,82.7 L125.9,81.9 L126.4,81.2 L126.9,80.5 L127.4,79.8 L127.8,79.1 L128.3,78.5 L128.8,78.0 L129.3,77.4 L129.8,76.9 L130.2,76.4 L130.7,76.0 L131.2,75.6 L131.7,75.2 L132.2,74.8 L132.6,74.5 L133.1,74.2 L133.6,74.0 L134.1,73.7 L134.6,73.6 L135.0,73.4 L135.5,73.3 L136.0,73.2 L136.5,73.1 L137.0,73.1 L137.4,73.1 L137.9,73.2 L138.4,73.2 L138.9,73.3 L139.4,73.5 L139.8,73.6 L140.3,73.8 L140.8,74.0 L141.3,74.3 L141.8,74.5 L142.2,74.8 L142.7,75.2 L143.2,75.5 L143.7,75.9 L144.2,76.3 L144.6,76.7 L145.1,77.2 L145.6,77.7 L146.1,78.2 L146.6,78.7 L147.0,79.2 L147.5,79.8 L148.0,80.4 L148.5,81.0 L149.0,81.6 L149.4,82.2 L149.9,82.9 L150.4,83.5 L150.9,84.2 L151.4,84.9 L151.8,85.6 L152.3,86.3 L152.8,87.1 L153.3,87.8 L153.8,88.6 L154.2,89.3 L154.7,90.1 L155.2,90.9 L155.7,91.7 L156.2,92.5 L156.6,93.3 L157.1,94.1 L157.6,94.9 L158.1,95.7 L158.6,96.5 L159.0,97.3 L159.5,98.1 L160.0,98.9 L160.5,99.7 L161.0,100.5 L161.4,101.3 L161.9,102.1 L162.4,102.9 L162.9,103.7 L163.4,104.5 L163.8,105.2 L164.3,106.0 L164.8,106.7 L165.3,107.5 L165.8,108.2 L166.2,109.0 L166.7,109.7 L167.2,110.4 L167.7,111.1 L168.2,111.8 L168.6,112.4 L169.1,113.1 L169.6,113.7 L170.1,114.4 L170.6,115.0 L171.0,115.6 L171.5,116.2 L172.0,116.7 L172.5,117.3 L173.0,117.8 L173.4,118.3 L173.9,118.8 L174.4,119.3 L174.9,119.7 L175.4,120.2 L175.8,120.6 L176.3,121.0 L176.8,121.4 L177.3,121.7 L177.8,122.1 L178.2,122.4 L178.7,122.7 L179.2,123.0 L179.7,123.2 L180.2,123.5 L180.6,123.7 L181.1,123.9 L181.6,124.1 L182.1,124.2 L182.6,124.4 L183.0,124.5 L183.5,124.6 L184.0,124.7 L184.5,124.7 L185.0,124.8 L185.4,124.8 L185.9,124.8 L186.4,124.8 L186.9,124.7 L187.4,124.7 L187.8,124.6 L188.3,124.5 L188.8,124.4 L189.3,124.3 L189.8,124.1 L190.2,123.9 L190.7,123.8 L191.2,123.6 L191.7,123.3 L192.2,123.1 L192.6,122.9 L193.1,122.6 L193.6,122.3 L194.1,122.0 L194.6,121.7 L195.0,121.4 L195.5,121.1 L196.0,120.7 L196.5,120.3 L197.0,120.0 L197.4,119.6 L197.9,119.2 L198.4,118.8 L198.9,118.4 L199.4,118.0 L199.8,117.5 L200.3,117.1 L200.8,116.6 L201.3,116.2 L201.8,115.7 L202.2,115.3 L202.7,114.8 L203.2,114.3 L203.7,113.8 L204.2,113.3 L204.6,112.9 L205.1,112.4 L205.6,111.9 L206.1,111.4 L206.6,110.9 L207.0,110.4 L207.5,109.9 L208.0,109.4 L208.5,108.9 L209.0,108.4 L209.4,107.9 L209.9,107.4 L210.4,106.9 L210.9,106.4 L211.4,105.9 L211.8,105.4 L212.3,104.9 L212.8,104.5 L213.3,104.0 L213.8,103.5 L214.2,103.1 L214.7,102.6 L215.2,102.2 L215.7,101.7 L216.2,101.3 L216.6,100.9 L217.1,100.4 L217.6,100.0 L218.1,99.6 L218.6,99.2 L219.0,98.9 L219.5,98.5 L220.0,98.1 L220.5,97.8 L221.0,97.4 L221.4,97.1 L221.9,96.8 L222.4,96.5 L222.9,96.2 L223.4,95.9 L223.8,95.6 L224.3,95.4 L224.8,95.1 L225.3,94.9 L225.8,94.6 L226.2,94.4 L226.7,94.2 L227.2,94.0 L227.7,93.9 L228.2,93.7 L228.6,93.5 L229.1,93.4 L229.6,93.3 L230.1,93.2 L230.6,93.1 L231.0,93.0 L231.5,92.9 L232.0,92.8 L232.5,92.8 L233.0,92.7 L233.4,92.7 L233.9,92.7 L234.4,92.7 L234.9,92.7 L235.4,92.7 L235.8,92.8 L236.3,92.8 L236.8,92.9 L237.3,93.0 L237.8,93.0 L238.2,93.1 L238.7,93.2 L239.2,93.3 L239.7,93.5 L240.2,93.6 L240.6,93.7 L241.1,93.9 L241.6,94.1 L242.1,94.2 L242.6,94.4 L243.0,94.6 L243.5,94.8 L244.0,95.0 L244.5,95.2 L245.0,95.4 L245.4,95.7 L245.9,95.9 L246.4,96.1 L246.9,96.4 L247.4,96.7 L247.8,96.9 L248.3,97.2 L248.8,97.5 L249.3,97.7 L249.8,98.0 L250.2,98.3 L250.7,98.6 L251.2,98.9 L251.7,99.2 L252.2,99.5 L252.6,99.8 L253.1,100.1 L253.6,100.4 L254.1,100.7 L254.6,101.0 L255.0,101.3 L255.5,101.6 L256.0,101.9 L256.5,102.2 L257.0,102.6 L257.4,102.9 L257.9,103.2 L258.4,103.5 L258.9,103.8 L259.4,104.1 L259.8,104.4 L260.3,104.7 L260.8,105.0 L261.3,105.3 L261.8,105.6 L262.2,105.9 L262.7,106.2 L263.2,106.4 L263.7,106.7 L264.2,107.0 L264.6,107.3 L265.1,107.5 L265.6,107.8 L266.1,108.0 L266.6,108.3 L267.0,108.5 L267.5,108.8 L268.0,109.0 L268.5,109.2 L269.0,109.5 L269.4,109.7 L269.9,109.9 L270.4,110.1 L270.9,110.3 L271.4,110.5 L271.8,110.6 L272.3,110.8 L272.8,111.0 L273.3,111.1 L273.8,111.3 L274.2,111.4 L274.7,111.5 L275.2,111.7 L275.7,111.8 L276.2,111.9 L276.6,112.0 L277.1,112.1 L277.6,112.2 L278.1,112.3 L278.6,112.3 L279.0,112.4 L279.5,112.5 L280.0,112.5 L280.5,112.5 L281.0,112.6 L281.4,112.6 L281.9,112.6 L282.4,112.6 L282.9,112.6 L283.4,112.6 L283.8,112.6 L284.3,112.6 L284.8,112.6 L285.3,112.5 L285.8,112.5 L286.2,112.4 L286.7,112.4 L287.2,112.3 L287.7,112.3 L288.2,112.2 L288.6,112.1 L289.1,112.0 L289.6,111.9 L290.1,111.8 L290.6,111.7 L291.0,111.6 L291.5,111.5 L292.0,111.4 L292.5,111.2 L293.0,111.1 L293.4,111.0 L293.9,110.8 L294.4,110.7 L294.9,110.5 L295.4,110.4 L295.8,110.2 L296.3,110.0 L296.8,109.9 L297.3,109.7 L297.8,109.5 L298.2,109.4 L298.7,109.2 L299.2,109.0 L299.7,108.8 L300.2,108.6 L300.6,108.5 L301.1,108.3 L301.6,108.1 L302.1,107.9 L302.6,107.7 L303.0,107.5 L303.5,107.3 L304.0,107.1 L304.5,106.9 L305.0,106.7 L305.4,106.5 L305.9,106.4 L306.4,106.2 L306.9,106.0 L307.4,105.8 L307.8,105.6 L308.3,105.4 L308.8,105.2 L309.3,105.0 L309.8,104.8 L310.2,104.7 L310.7,104.5 L311.2,104.3 L311.7,104.1 L312.2,104.0 L312.6,103.8 L313.1,103.6 L313.6,103.5 L314.1,103.3 L314.6,103.1 L315.0,103.0 L315.5,102.8 L316.0,102.7 L316.5,102.5 L317.0,102.4 L317.4,102.3 L317.9,102.1 L318.4,102.0 L318.9,101.9 L319.4,101.7 L319.8,101.6 L320.3,101.5 L320.8,101.4 L321.3,101.3 L321.8,101.2 L322.2,101.1 L322.7,101.0 L323.2,100.9 L323.7,100.9 L324.2,100.8 L324.6,100.7 L325.1,100.7 L325.6,100.6 L326.1,100.5 L326.6,100.5 L327.0,100.4 L327.5,100.4 L328.0,100.4"/>
+</svg>
+            <div class="curve-legend">
+              <span class="lg"><i class="ln c-pseudo"></i><span>pseudo-périodique (R &lt; R<sub>c</sub>)</span></span>
+              <span class="lg"><i class="ln c-crit"></i><span>critique (R = R<sub>c</sub>)</span></span>
+              <span class="lg"><i class="ln c-aper"></i><span>apériodique (R &gt; R<sub>c</sub>)</span></span>
+              
+            </div>
+            <ul>
+              <li><b>Pseudo-périodique :</b> La tension change de signe et tend vers 0 en oscillant.</li>
+              <li><b>Critique :</b>  Un retour à 0 sans dépassement, le plus rapide possible.</li>
+              <li><b>Apériodique :</b>  décroissance lente, sans oscillation.</li>
+            </ul>
+            
+          </div>
+
+          <div class="theory-card">
+            <h3>6. Oscillations non amorties (R = 0)</h3>
+            <p>Sans dissipation (R<sub>0</sub> = 0 et r = 0), l'équation devient <span class="formula">d²u<sub>C</sub>/dt² + ω₀²·u<sub>C</sub> = 0</span>. Avec u<sub>C</sub>(0) = E et i(0) = 0 :</p>
+            <div class="formula">u<sub>C</sub>(t) = E·cos(2πt / T₀)</div>
+            <div class="formula">i(t) = C·du<sub>C</sub>/dt = −C·E·ω₀·sin(2πt / T₀)</div>
+            <svg viewBox="0 0 340 230" xmlns="http://www.w3.org/2000/svg" role="img">
+<line class="pg" x1="40.0" y1="14" x2="40.0" y2="196"/>
+<text class="pt" x="40.0" y="209" text-anchor="middle">0</text>
+<line class="pg" x1="112.0" y1="14" x2="112.0" y2="196"/>
+<text class="pt" x="112.0" y="209" text-anchor="middle">0.5T₀</text>
+<line class="pg" x1="184.0" y1="14" x2="184.0" y2="196"/>
+<text class="pt" x="184.0" y="209" text-anchor="middle">1T₀</text>
+<line class="pg" x1="256.0" y1="14" x2="256.0" y2="196"/>
+<text class="pt" x="256.0" y="209" text-anchor="middle">1.5T₀</text>
+<line class="pg" x1="328.0" y1="14" x2="328.0" y2="196"/>
+<text class="pt" x="328.0" y="209" text-anchor="middle">2T₀</text>
+<line class="pg" x1="40" y1="184.1" x2="328" y2="184.1"/>
+<text class="pt" x="35" y="187.1" text-anchor="end">−1</text>
+<line class="pg" x1="40" y1="105.0" x2="328" y2="105.0"/>
+<text class="pt" x="35" y="108.0" text-anchor="end">0</text>
+<line class="pg" x1="40" y1="25.9" x2="328" y2="25.9"/>
+<text class="pt" x="35" y="28.9" text-anchor="end">1</text>
+<line class="pa" x1="40" y1="105.0" x2="328" y2="105.0"/>
+<line class="pa" x1="40" y1="14" x2="40" y2="196"/>
+<text class="pt" x="184" y="226" text-anchor="middle">temps t</text>
+<text class="pt" x="10" y="105" text-anchor="middle" transform="rotate(-90 10 105)">grandeurs normalisées</text>
+<path class="c-uc" d="M40.0,25.9 L40.5,25.9 L41.0,25.9 L41.4,26.0 L41.9,26.1 L42.4,26.3 L42.9,26.5 L43.4,26.7 L43.8,27.0 L44.3,27.3 L44.8,27.6 L45.3,28.0 L45.8,28.4 L46.2,28.8 L46.7,29.2 L47.2,29.7 L47.7,30.3 L48.2,30.8 L48.6,31.4 L49.1,32.1 L49.6,32.7 L50.1,33.4 L50.6,34.1 L51.0,34.9 L51.5,35.7 L52.0,36.5 L52.5,37.3 L53.0,38.2 L53.4,39.1 L53.9,40.0 L54.4,41.0 L54.9,42.0 L55.4,43.0 L55.8,44.0 L56.3,45.1 L56.8,46.2 L57.3,47.3 L57.8,48.5 L58.2,49.6 L58.7,50.8 L59.2,52.1 L59.7,53.3 L60.2,54.6 L60.6,55.8 L61.1,57.2 L61.6,58.5 L62.1,59.8 L62.6,61.2 L63.0,62.6 L63.5,64.0 L64.0,65.4 L64.5,66.9 L65.0,68.3 L65.4,69.8 L65.9,71.3 L66.4,72.8 L66.9,74.3 L67.4,75.9 L67.8,77.4 L68.3,79.0 L68.8,80.5 L69.3,82.1 L69.8,83.7 L70.2,85.3 L70.7,86.9 L71.2,88.5 L71.7,90.2 L72.2,91.8 L72.6,93.4 L73.1,95.1 L73.6,96.7 L74.1,98.4 L74.6,100.0 L75.0,101.7 L75.5,103.3 L76.0,105.0 L76.5,106.7 L77.0,108.3 L77.4,110.0 L77.9,111.6 L78.4,113.3 L78.9,114.9 L79.4,116.6 L79.8,118.2 L80.3,119.8 L80.8,121.5 L81.3,123.1 L81.8,124.7 L82.2,126.3 L82.7,127.9 L83.2,129.5 L83.7,131.0 L84.2,132.6 L84.6,134.1 L85.1,135.7 L85.6,137.2 L86.1,138.7 L86.6,140.2 L87.0,141.7 L87.5,143.1 L88.0,144.6 L88.5,146.0 L89.0,147.4 L89.4,148.8 L89.9,150.2 L90.4,151.5 L90.9,152.8 L91.4,154.2 L91.8,155.4 L92.3,156.7 L92.8,157.9 L93.3,159.2 L93.8,160.4 L94.2,161.5 L94.7,162.7 L95.2,163.8 L95.7,164.9 L96.2,166.0 L96.6,167.0 L97.1,168.0 L97.6,169.0 L98.1,170.0 L98.6,170.9 L99.0,171.8 L99.5,172.7 L100.0,173.5 L100.5,174.3 L101.0,175.1 L101.4,175.9 L101.9,176.6 L102.4,177.3 L102.9,177.9 L103.4,178.6 L103.8,179.2 L104.3,179.7 L104.8,180.3 L105.3,180.8 L105.8,181.2 L106.2,181.6 L106.7,182.0 L107.2,182.4 L107.7,182.7 L108.2,183.0 L108.6,183.3 L109.1,183.5 L109.6,183.7 L110.1,183.9 L110.6,184.0 L111.0,184.1 L111.5,184.1 L112.0,184.1 L112.5,184.1 L113.0,184.1 L113.4,184.0 L113.9,183.9 L114.4,183.7 L114.9,183.5 L115.4,183.3 L115.8,183.0 L116.3,182.7 L116.8,182.4 L117.3,182.0 L117.8,181.6 L118.2,181.2 L118.7,180.8 L119.2,180.3 L119.7,179.7 L120.2,179.2 L120.6,178.6 L121.1,177.9 L121.6,177.3 L122.1,176.6 L122.6,175.9 L123.0,175.1 L123.5,174.3 L124.0,173.5 L124.5,172.7 L125.0,171.8 L125.4,170.9 L125.9,170.0 L126.4,169.0 L126.9,168.0 L127.4,167.0 L127.8,166.0 L128.3,164.9 L128.8,163.8 L129.3,162.7 L129.8,161.5 L130.2,160.4 L130.7,159.2 L131.2,157.9 L131.7,156.7 L132.2,155.4 L132.6,154.2 L133.1,152.8 L133.6,151.5 L134.1,150.2 L134.6,148.8 L135.0,147.4 L135.5,146.0 L136.0,144.6 L136.5,143.1 L137.0,141.7 L137.4,140.2 L137.9,138.7 L138.4,137.2 L138.9,135.7 L139.4,134.1 L139.8,132.6 L140.3,131.0 L140.8,129.5 L141.3,127.9 L141.8,126.3 L142.2,124.7 L142.7,123.1 L143.2,121.5 L143.7,119.8 L144.2,118.2 L144.6,116.6 L145.1,114.9 L145.6,113.3 L146.1,111.6 L146.6,110.0 L147.0,108.3 L147.5,106.7 L148.0,105.0 L148.5,103.3 L149.0,101.7 L149.4,100.0 L149.9,98.4 L150.4,96.7 L150.9,95.1 L151.4,93.4 L151.8,91.8 L152.3,90.2 L152.8,88.5 L153.3,86.9 L153.8,85.3 L154.2,83.7 L154.7,82.1 L155.2,80.5 L155.7,79.0 L156.2,77.4 L156.6,75.9 L157.1,74.3 L157.6,72.8 L158.1,71.3 L158.6,69.8 L159.0,68.3 L159.5,66.9 L160.0,65.4 L160.5,64.0 L161.0,62.6 L161.4,61.2 L161.9,59.8 L162.4,58.5 L162.9,57.2 L163.4,55.8 L163.8,54.6 L164.3,53.3 L164.8,52.1 L165.3,50.8 L165.8,49.6 L166.2,48.5 L166.7,47.3 L167.2,46.2 L167.7,45.1 L168.2,44.0 L168.6,43.0 L169.1,42.0 L169.6,41.0 L170.1,40.0 L170.6,39.1 L171.0,38.2 L171.5,37.3 L172.0,36.5 L172.5,35.7 L173.0,34.9 L173.4,34.1 L173.9,33.4 L174.4,32.7 L174.9,32.1 L175.4,31.4 L175.8,30.8 L176.3,30.3 L176.8,29.7 L177.3,29.2 L177.8,28.8 L178.2,28.4 L178.7,28.0 L179.2,27.6 L179.7,27.3 L180.2,27.0 L180.6,26.7 L181.1,26.5 L181.6,26.3 L182.1,26.1 L182.6,26.0 L183.0,25.9 L183.5,25.9 L184.0,25.9 L184.5,25.9 L185.0,25.9 L185.4,26.0 L185.9,26.1 L186.4,26.3 L186.9,26.5 L187.4,26.7 L187.8,27.0 L188.3,27.3 L188.8,27.6 L189.3,28.0 L189.8,28.4 L190.2,28.8 L190.7,29.2 L191.2,29.7 L191.7,30.3 L192.2,30.8 L192.6,31.4 L193.1,32.1 L193.6,32.7 L194.1,33.4 L194.6,34.1 L195.0,34.9 L195.5,35.7 L196.0,36.5 L196.5,37.3 L197.0,38.2 L197.4,39.1 L197.9,40.0 L198.4,41.0 L198.9,42.0 L199.4,43.0 L199.8,44.0 L200.3,45.1 L200.8,46.2 L201.3,47.3 L201.8,48.5 L202.2,49.6 L202.7,50.8 L203.2,52.1 L203.7,53.3 L204.2,54.6 L204.6,55.8 L205.1,57.2 L205.6,58.5 L206.1,59.8 L206.6,61.2 L207.0,62.6 L207.5,64.0 L208.0,65.4 L208.5,66.9 L209.0,68.3 L209.4,69.8 L209.9,71.3 L210.4,72.8 L210.9,74.3 L211.4,75.9 L211.8,77.4 L212.3,79.0 L212.8,80.5 L213.3,82.1 L213.8,83.7 L214.2,85.3 L214.7,86.9 L215.2,88.5 L215.7,90.2 L216.2,91.8 L216.6,93.4 L217.1,95.1 L217.6,96.7 L218.1,98.4 L218.6,100.0 L219.0,101.7 L219.5,103.3 L220.0,105.0 L220.5,106.7 L221.0,108.3 L221.4,110.0 L221.9,111.6 L222.4,113.3 L222.9,114.9 L223.4,116.6 L223.8,118.2 L224.3,119.8 L224.8,121.5 L225.3,123.1 L225.8,124.7 L226.2,126.3 L226.7,127.9 L227.2,129.5 L227.7,131.0 L228.2,132.6 L228.6,134.1 L229.1,135.7 L229.6,137.2 L230.1,138.7 L230.6,140.2 L231.0,141.7 L231.5,143.1 L232.0,144.6 L232.5,146.0 L233.0,147.4 L233.4,148.8 L233.9,150.2 L234.4,151.5 L234.9,152.8 L235.4,154.2 L235.8,155.4 L236.3,156.7 L236.8,157.9 L237.3,159.2 L237.8,160.4 L238.2,161.5 L238.7,162.7 L239.2,163.8 L239.7,164.9 L240.2,166.0 L240.6,167.0 L241.1,168.0 L241.6,169.0 L242.1,170.0 L242.6,170.9 L243.0,171.8 L243.5,172.7 L244.0,173.5 L244.5,174.3 L245.0,175.1 L245.4,175.9 L245.9,176.6 L246.4,177.3 L246.9,177.9 L247.4,178.6 L247.8,179.2 L248.3,179.7 L248.8,180.3 L249.3,180.8 L249.8,181.2 L250.2,181.6 L250.7,182.0 L251.2,182.4 L251.7,182.7 L252.2,183.0 L252.6,183.3 L253.1,183.5 L253.6,183.7 L254.1,183.9 L254.6,184.0 L255.0,184.1 L255.5,184.1 L256.0,184.1 L256.5,184.1 L257.0,184.1 L257.4,184.0 L257.9,183.9 L258.4,183.7 L258.9,183.5 L259.4,183.3 L259.8,183.0 L260.3,182.7 L260.8,182.4 L261.3,182.0 L261.8,181.6 L262.2,181.2 L262.7,180.8 L263.2,180.3 L263.7,179.7 L264.2,179.2 L264.6,178.6 L265.1,177.9 L265.6,177.3 L266.1,176.6 L266.6,175.9 L267.0,175.1 L267.5,174.3 L268.0,173.5 L268.5,172.7 L269.0,171.8 L269.4,170.9 L269.9,170.0 L270.4,169.0 L270.9,168.0 L271.4,167.0 L271.8,166.0 L272.3,164.9 L272.8,163.8 L273.3,162.7 L273.8,161.5 L274.2,160.4 L274.7,159.2 L275.2,157.9 L275.7,156.7 L276.2,155.4 L276.6,154.2 L277.1,152.8 L277.6,151.5 L278.1,150.2 L278.6,148.8 L279.0,147.4 L279.5,146.0 L280.0,144.6 L280.5,143.1 L281.0,141.7 L281.4,140.2 L281.9,138.7 L282.4,137.2 L282.9,135.7 L283.4,134.1 L283.8,132.6 L284.3,131.0 L284.8,129.5 L285.3,127.9 L285.8,126.3 L286.2,124.7 L286.7,123.1 L287.2,121.5 L287.7,119.8 L288.2,118.2 L288.6,116.6 L289.1,114.9 L289.6,113.3 L290.1,111.6 L290.6,110.0 L291.0,108.3 L291.5,106.7 L292.0,105.0 L292.5,103.3 L293.0,101.7 L293.4,100.0 L293.9,98.4 L294.4,96.7 L294.9,95.1 L295.4,93.4 L295.8,91.8 L296.3,90.2 L296.8,88.5 L297.3,86.9 L297.8,85.3 L298.2,83.7 L298.7,82.1 L299.2,80.5 L299.7,79.0 L300.2,77.4 L300.6,75.9 L301.1,74.3 L301.6,72.8 L302.1,71.3 L302.6,69.8 L303.0,68.3 L303.5,66.9 L304.0,65.4 L304.5,64.0 L305.0,62.6 L305.4,61.2 L305.9,59.8 L306.4,58.5 L306.9,57.2 L307.4,55.8 L307.8,54.6 L308.3,53.3 L308.8,52.1 L309.3,50.8 L309.8,49.6 L310.2,48.5 L310.7,47.3 L311.2,46.2 L311.7,45.1 L312.2,44.0 L312.6,43.0 L313.1,42.0 L313.6,41.0 L314.1,40.0 L314.6,39.1 L315.0,38.2 L315.5,37.3 L316.0,36.5 L316.5,35.7 L317.0,34.9 L317.4,34.1 L317.9,33.4 L318.4,32.7 L318.9,32.1 L319.4,31.4 L319.8,30.8 L320.3,30.3 L320.8,29.7 L321.3,29.2 L321.8,28.8 L322.2,28.4 L322.7,28.0 L323.2,27.6 L323.7,27.3 L324.2,27.0 L324.6,26.7 L325.1,26.5 L325.6,26.3 L326.1,26.1 L326.6,26.0 L327.0,25.9 L327.5,25.9 L328.0,25.9"/>
+<path class="c-i" d="M40.0,105.0 L40.5,106.7 L41.0,108.3 L41.4,110.0 L41.9,111.6 L42.4,113.3 L42.9,114.9 L43.4,116.6 L43.8,118.2 L44.3,119.8 L44.8,121.5 L45.3,123.1 L45.8,124.7 L46.2,126.3 L46.7,127.9 L47.2,129.5 L47.7,131.0 L48.2,132.6 L48.6,134.1 L49.1,135.7 L49.6,137.2 L50.1,138.7 L50.6,140.2 L51.0,141.7 L51.5,143.1 L52.0,144.6 L52.5,146.0 L53.0,147.4 L53.4,148.8 L53.9,150.2 L54.4,151.5 L54.9,152.8 L55.4,154.2 L55.8,155.4 L56.3,156.7 L56.8,157.9 L57.3,159.2 L57.8,160.4 L58.2,161.5 L58.7,162.7 L59.2,163.8 L59.7,164.9 L60.2,166.0 L60.6,167.0 L61.1,168.0 L61.6,169.0 L62.1,170.0 L62.6,170.9 L63.0,171.8 L63.5,172.7 L64.0,173.5 L64.5,174.3 L65.0,175.1 L65.4,175.9 L65.9,176.6 L66.4,177.3 L66.9,177.9 L67.4,178.6 L67.8,179.2 L68.3,179.7 L68.8,180.3 L69.3,180.8 L69.8,181.2 L70.2,181.6 L70.7,182.0 L71.2,182.4 L71.7,182.7 L72.2,183.0 L72.6,183.3 L73.1,183.5 L73.6,183.7 L74.1,183.9 L74.6,184.0 L75.0,184.1 L75.5,184.1 L76.0,184.1 L76.5,184.1 L77.0,184.1 L77.4,184.0 L77.9,183.9 L78.4,183.7 L78.9,183.5 L79.4,183.3 L79.8,183.0 L80.3,182.7 L80.8,182.4 L81.3,182.0 L81.8,181.6 L82.2,181.2 L82.7,180.8 L83.2,180.3 L83.7,179.7 L84.2,179.2 L84.6,178.6 L85.1,177.9 L85.6,177.3 L86.1,176.6 L86.6,175.9 L87.0,175.1 L87.5,174.3 L88.0,173.5 L88.5,172.7 L89.0,171.8 L89.4,170.9 L89.9,170.0 L90.4,169.0 L90.9,168.0 L91.4,167.0 L91.8,166.0 L92.3,164.9 L92.8,163.8 L93.3,162.7 L93.8,161.5 L94.2,160.4 L94.7,159.2 L95.2,157.9 L95.7,156.7 L96.2,155.4 L96.6,154.2 L97.1,152.8 L97.6,151.5 L98.1,150.2 L98.6,148.8 L99.0,147.4 L99.5,146.0 L100.0,144.6 L100.5,143.1 L101.0,141.7 L101.4,140.2 L101.9,138.7 L102.4,137.2 L102.9,135.7 L103.4,134.1 L103.8,132.6 L104.3,131.0 L104.8,129.5 L105.3,127.9 L105.8,126.3 L106.2,124.7 L106.7,123.1 L107.2,121.5 L107.7,119.8 L108.2,118.2 L108.6,116.6 L109.1,114.9 L109.6,113.3 L110.1,111.6 L110.6,110.0 L111.0,108.3 L111.5,106.7 L112.0,105.0 L112.5,103.3 L113.0,101.7 L113.4,100.0 L113.9,98.4 L114.4,96.7 L114.9,95.1 L115.4,93.4 L115.8,91.8 L116.3,90.2 L116.8,88.5 L117.3,86.9 L117.8,85.3 L118.2,83.7 L118.7,82.1 L119.2,80.5 L119.7,79.0 L120.2,77.4 L120.6,75.9 L121.1,74.3 L121.6,72.8 L122.1,71.3 L122.6,69.8 L123.0,68.3 L123.5,66.9 L124.0,65.4 L124.5,64.0 L125.0,62.6 L125.4,61.2 L125.9,59.8 L126.4,58.5 L126.9,57.2 L127.4,55.8 L127.8,54.6 L128.3,53.3 L128.8,52.1 L129.3,50.8 L129.8,49.6 L130.2,48.5 L130.7,47.3 L131.2,46.2 L131.7,45.1 L132.2,44.0 L132.6,43.0 L133.1,42.0 L133.6,41.0 L134.1,40.0 L134.6,39.1 L135.0,38.2 L135.5,37.3 L136.0,36.5 L136.5,35.7 L137.0,34.9 L137.4,34.1 L137.9,33.4 L138.4,32.7 L138.9,32.1 L139.4,31.4 L139.8,30.8 L140.3,30.3 L140.8,29.7 L141.3,29.2 L141.8,28.8 L142.2,28.4 L142.7,28.0 L143.2,27.6 L143.7,27.3 L144.2,27.0 L144.6,26.7 L145.1,26.5 L145.6,26.3 L146.1,26.1 L146.6,26.0 L147.0,25.9 L147.5,25.9 L148.0,25.9 L148.5,25.9 L149.0,25.9 L149.4,26.0 L149.9,26.1 L150.4,26.3 L150.9,26.5 L151.4,26.7 L151.8,27.0 L152.3,27.3 L152.8,27.6 L153.3,28.0 L153.8,28.4 L154.2,28.8 L154.7,29.2 L155.2,29.7 L155.7,30.3 L156.2,30.8 L156.6,31.4 L157.1,32.1 L157.6,32.7 L158.1,33.4 L158.6,34.1 L159.0,34.9 L159.5,35.7 L160.0,36.5 L160.5,37.3 L161.0,38.2 L161.4,39.1 L161.9,40.0 L162.4,41.0 L162.9,42.0 L163.4,43.0 L163.8,44.0 L164.3,45.1 L164.8,46.2 L165.3,47.3 L165.8,48.5 L166.2,49.6 L166.7,50.8 L167.2,52.1 L167.7,53.3 L168.2,54.6 L168.6,55.8 L169.1,57.2 L169.6,58.5 L170.1,59.8 L170.6,61.2 L171.0,62.6 L171.5,64.0 L172.0,65.4 L172.5,66.9 L173.0,68.3 L173.4,69.8 L173.9,71.3 L174.4,72.8 L174.9,74.3 L175.4,75.9 L175.8,77.4 L176.3,79.0 L176.8,80.5 L177.3,82.1 L177.8,83.7 L178.2,85.3 L178.7,86.9 L179.2,88.5 L179.7,90.2 L180.2,91.8 L180.6,93.4 L181.1,95.1 L181.6,96.7 L182.1,98.4 L182.6,100.0 L183.0,101.7 L183.5,103.3 L184.0,105.0 L184.5,106.7 L185.0,108.3 L185.4,110.0 L185.9,111.6 L186.4,113.3 L186.9,114.9 L187.4,116.6 L187.8,118.2 L188.3,119.8 L188.8,121.5 L189.3,123.1 L189.8,124.7 L190.2,126.3 L190.7,127.9 L191.2,129.5 L191.7,131.0 L192.2,132.6 L192.6,134.1 L193.1,135.7 L193.6,137.2 L194.1,138.7 L194.6,140.2 L195.0,141.7 L195.5,143.1 L196.0,144.6 L196.5,146.0 L197.0,147.4 L197.4,148.8 L197.9,150.2 L198.4,151.5 L198.9,152.8 L199.4,154.2 L199.8,155.4 L200.3,156.7 L200.8,157.9 L201.3,159.2 L201.8,160.4 L202.2,161.5 L202.7,162.7 L203.2,163.8 L203.7,164.9 L204.2,166.0 L204.6,167.0 L205.1,168.0 L205.6,169.0 L206.1,170.0 L206.6,170.9 L207.0,171.8 L207.5,172.7 L208.0,173.5 L208.5,174.3 L209.0,175.1 L209.4,175.9 L209.9,176.6 L210.4,177.3 L210.9,177.9 L211.4,178.6 L211.8,179.2 L212.3,179.7 L212.8,180.3 L213.3,180.8 L213.8,181.2 L214.2,181.6 L214.7,182.0 L215.2,182.4 L215.7,182.7 L216.2,183.0 L216.6,183.3 L217.1,183.5 L217.6,183.7 L218.1,183.9 L218.6,184.0 L219.0,184.1 L219.5,184.1 L220.0,184.1 L220.5,184.1 L221.0,184.1 L221.4,184.0 L221.9,183.9 L222.4,183.7 L222.9,183.5 L223.4,183.3 L223.8,183.0 L224.3,182.7 L224.8,182.4 L225.3,182.0 L225.8,181.6 L226.2,181.2 L226.7,180.8 L227.2,180.3 L227.7,179.7 L228.2,179.2 L228.6,178.6 L229.1,177.9 L229.6,177.3 L230.1,176.6 L230.6,175.9 L231.0,175.1 L231.5,174.3 L232.0,173.5 L232.5,172.7 L233.0,171.8 L233.4,170.9 L233.9,170.0 L234.4,169.0 L234.9,168.0 L235.4,167.0 L235.8,166.0 L236.3,164.9 L236.8,163.8 L237.3,162.7 L237.8,161.5 L238.2,160.4 L238.7,159.2 L239.2,157.9 L239.7,156.7 L240.2,155.4 L240.6,154.2 L241.1,152.8 L241.6,151.5 L242.1,150.2 L242.6,148.8 L243.0,147.4 L243.5,146.0 L244.0,144.6 L244.5,143.1 L245.0,141.7 L245.4,140.2 L245.9,138.7 L246.4,137.2 L246.9,135.7 L247.4,134.1 L247.8,132.6 L248.3,131.0 L248.8,129.5 L249.3,127.9 L249.8,126.3 L250.2,124.7 L250.7,123.1 L251.2,121.5 L251.7,119.8 L252.2,118.2 L252.6,116.6 L253.1,114.9 L253.6,113.3 L254.1,111.6 L254.6,110.0 L255.0,108.3 L255.5,106.7 L256.0,105.0 L256.5,103.3 L257.0,101.7 L257.4,100.0 L257.9,98.4 L258.4,96.7 L258.9,95.1 L259.4,93.4 L259.8,91.8 L260.3,90.2 L260.8,88.5 L261.3,86.9 L261.8,85.3 L262.2,83.7 L262.7,82.1 L263.2,80.5 L263.7,79.0 L264.2,77.4 L264.6,75.9 L265.1,74.3 L265.6,72.8 L266.1,71.3 L266.6,69.8 L267.0,68.3 L267.5,66.9 L268.0,65.4 L268.5,64.0 L269.0,62.6 L269.4,61.2 L269.9,59.8 L270.4,58.5 L270.9,57.2 L271.4,55.8 L271.8,54.6 L272.3,53.3 L272.8,52.1 L273.3,50.8 L273.8,49.6 L274.2,48.5 L274.7,47.3 L275.2,46.2 L275.7,45.1 L276.2,44.0 L276.6,43.0 L277.1,42.0 L277.6,41.0 L278.1,40.0 L278.6,39.1 L279.0,38.2 L279.5,37.3 L280.0,36.5 L280.5,35.7 L281.0,34.9 L281.4,34.1 L281.9,33.4 L282.4,32.7 L282.9,32.1 L283.4,31.4 L283.8,30.8 L284.3,30.3 L284.8,29.7 L285.3,29.2 L285.8,28.8 L286.2,28.4 L286.7,28.0 L287.2,27.6 L287.7,27.3 L288.2,27.0 L288.6,26.7 L289.1,26.5 L289.6,26.3 L290.1,26.1 L290.6,26.0 L291.0,25.9 L291.5,25.9 L292.0,25.9 L292.5,25.9 L293.0,25.9 L293.4,26.0 L293.9,26.1 L294.4,26.3 L294.9,26.5 L295.4,26.7 L295.8,27.0 L296.3,27.3 L296.8,27.6 L297.3,28.0 L297.8,28.4 L298.2,28.8 L298.7,29.2 L299.2,29.7 L299.7,30.3 L300.2,30.8 L300.6,31.4 L301.1,32.1 L301.6,32.7 L302.1,33.4 L302.6,34.1 L303.0,34.9 L303.5,35.7 L304.0,36.5 L304.5,37.3 L305.0,38.2 L305.4,39.1 L305.9,40.0 L306.4,41.0 L306.9,42.0 L307.4,43.0 L307.8,44.0 L308.3,45.1 L308.8,46.2 L309.3,47.3 L309.8,48.5 L310.2,49.6 L310.7,50.8 L311.2,52.1 L311.7,53.3 L312.2,54.6 L312.6,55.8 L313.1,57.2 L313.6,58.5 L314.1,59.8 L314.6,61.2 L315.0,62.6 L315.5,64.0 L316.0,65.4 L316.5,66.9 L317.0,68.3 L317.4,69.8 L317.9,71.3 L318.4,72.8 L318.9,74.3 L319.4,75.9 L319.8,77.4 L320.3,79.0 L320.8,80.5 L321.3,82.1 L321.8,83.7 L322.2,85.3 L322.7,86.9 L323.2,88.5 L323.7,90.2 L324.2,91.8 L324.6,93.4 L325.1,95.1 L325.6,96.7 L326.1,98.4 L326.6,100.0 L327.0,101.7 L327.5,103.3 L328.0,105.0"/>
+</svg>
+            <div class="curve-legend">
+              <span class="lg"><i class="ln c-uc"></i><span>u<sub>C</sub>/E</span></span>
+              <span class="lg"><i class="ln c-i"></i><span>i / (C·E·ω₀)</span></span>
+            </div>
+            <p>Amplitude constante, période exactement égale à la période propre T₀ ; u<sub>C</sub> et i sont en <b>quadrature de phase</b> (déphasage de π/2).</p>
+            <svg viewBox="0 0 340 230" xmlns="http://www.w3.org/2000/svg" role="img">
+<line class="pg" x1="40.0" y1="14" x2="40.0" y2="196"/>
+<text class="pt" x="40.0" y="209" text-anchor="middle">0</text>
+<line class="pg" x1="112.0" y1="14" x2="112.0" y2="196"/>
+<text class="pt" x="112.0" y="209" text-anchor="middle">0.5T₀</text>
+<line class="pg" x1="184.0" y1="14" x2="184.0" y2="196"/>
+<text class="pt" x="184.0" y="209" text-anchor="middle">1T₀</text>
+<line class="pg" x1="256.0" y1="14" x2="256.0" y2="196"/>
+<text class="pt" x="256.0" y="209" text-anchor="middle">1.5T₀</text>
+<line class="pg" x1="328.0" y1="14" x2="328.0" y2="196"/>
+<text class="pt" x="328.0" y="209" text-anchor="middle">2T₀</text>
+<line class="pg" x1="40" y1="188.4" x2="328" y2="188.4"/>
+<text class="pt" x="35" y="191.4" text-anchor="end">0</text>
+<line class="pg" x1="40" y1="112.6" x2="328" y2="112.6"/>
+<text class="pt" x="35" y="115.6" text-anchor="end">E₀/2</text>
+<line class="pg" x1="40" y1="36.7" x2="328" y2="36.7"/>
+<text class="pt" x="35" y="39.7" text-anchor="end">E₀</text>
+<line class="pa" x1="40" y1="188.4" x2="328" y2="188.4"/>
+<line class="pa" x1="40" y1="14" x2="40" y2="196"/>
+<text class="pt" x="184" y="226" text-anchor="middle">temps t</text>
+<text class="pt" x="10" y="105" text-anchor="middle" transform="rotate(-90 10 105)">énergie</text>
+<path class="c-et" d="M40.0,36.7 L40.5,36.7 L41.0,36.7 L41.4,36.7 L41.9,36.7 L42.4,36.7 L42.9,36.7 L43.4,36.7 L43.8,36.7 L44.3,36.7 L44.8,36.7 L45.3,36.7 L45.8,36.7 L46.2,36.7 L46.7,36.7 L47.2,36.7 L47.7,36.7 L48.2,36.7 L48.6,36.7 L49.1,36.7 L49.6,36.7 L50.1,36.7 L50.6,36.7 L51.0,36.7 L51.5,36.7 L52.0,36.7 L52.5,36.7 L53.0,36.7 L53.4,36.7 L53.9,36.7 L54.4,36.7 L54.9,36.7 L55.4,36.7 L55.8,36.7 L56.3,36.7 L56.8,36.7 L57.3,36.7 L57.8,36.7 L58.2,36.7 L58.7,36.7 L59.2,36.7 L59.7,36.7 L60.2,36.7 L60.6,36.7 L61.1,36.7 L61.6,36.7 L62.1,36.7 L62.6,36.7 L63.0,36.7 L63.5,36.7 L64.0,36.7 L64.5,36.7 L65.0,36.7 L65.4,36.7 L65.9,36.7 L66.4,36.7 L66.9,36.7 L67.4,36.7 L67.8,36.7 L68.3,36.7 L68.8,36.7 L69.3,36.7 L69.8,36.7 L70.2,36.7 L70.7,36.7 L71.2,36.7 L71.7,36.7 L72.2,36.7 L72.6,36.7 L73.1,36.7 L73.6,36.7 L74.1,36.7 L74.6,36.7 L75.0,36.7 L75.5,36.7 L76.0,36.7 L76.5,36.7 L77.0,36.7 L77.4,36.7 L77.9,36.7 L78.4,36.7 L78.9,36.7 L79.4,36.7 L79.8,36.7 L80.3,36.7 L80.8,36.7 L81.3,36.7 L81.8,36.7 L82.2,36.7 L82.7,36.7 L83.2,36.7 L83.7,36.7 L84.2,36.7 L84.6,36.7 L85.1,36.7 L85.6,36.7 L86.1,36.7 L86.6,36.7 L87.0,36.7 L87.5,36.7 L88.0,36.7 L88.5,36.7 L89.0,36.7 L89.4,36.7 L89.9,36.7 L90.4,36.7 L90.9,36.7 L91.4,36.7 L91.8,36.7 L92.3,36.7 L92.8,36.7 L93.3,36.7 L93.8,36.7 L94.2,36.7 L94.7,36.7 L95.2,36.7 L95.7,36.7 L96.2,36.7 L96.6,36.7 L97.1,36.7 L97.6,36.7 L98.1,36.7 L98.6,36.7 L99.0,36.7 L99.5,36.7 L100.0,36.7 L100.5,36.7 L101.0,36.7 L101.4,36.7 L101.9,36.7 L102.4,36.7 L102.9,36.7 L103.4,36.7 L103.8,36.7 L104.3,36.7 L104.8,36.7 L105.3,36.7 L105.8,36.7 L106.2,36.7 L106.7,36.7 L107.2,36.7 L107.7,36.7 L108.2,36.7 L108.6,36.7 L109.1,36.7 L109.6,36.7 L110.1,36.7 L110.6,36.7 L111.0,36.7 L111.5,36.7 L112.0,36.7 L112.5,36.7 L113.0,36.7 L113.4,36.7 L113.9,36.7 L114.4,36.7 L114.9,36.7 L115.4,36.7 L115.8,36.7 L116.3,36.7 L116.8,36.7 L117.3,36.7 L117.8,36.7 L118.2,36.7 L118.7,36.7 L119.2,36.7 L119.7,36.7 L120.2,36.7 L120.6,36.7 L121.1,36.7 L121.6,36.7 L122.1,36.7 L122.6,36.7 L123.0,36.7 L123.5,36.7 L124.0,36.7 L124.5,36.7 L125.0,36.7 L125.4,36.7 L125.9,36.7 L126.4,36.7 L126.9,36.7 L127.4,36.7 L127.8,36.7 L128.3,36.7 L128.8,36.7 L129.3,36.7 L129.8,36.7 L130.2,36.7 L130.7,36.7 L131.2,36.7 L131.7,36.7 L132.2,36.7 L132.6,36.7 L133.1,36.7 L133.6,36.7 L134.1,36.7 L134.6,36.7 L135.0,36.7 L135.5,36.7 L136.0,36.7 L136.5,36.7 L137.0,36.7 L137.4,36.7 L137.9,36.7 L138.4,36.7 L138.9,36.7 L139.4,36.7 L139.8,36.7 L140.3,36.7 L140.8,36.7 L141.3,36.7 L141.8,36.7 L142.2,36.7 L142.7,36.7 L143.2,36.7 L143.7,36.7 L144.2,36.7 L144.6,36.7 L145.1,36.7 L145.6,36.7 L146.1,36.7 L146.6,36.7 L147.0,36.7 L147.5,36.7 L148.0,36.7 L148.5,36.7 L149.0,36.7 L149.4,36.7 L149.9,36.7 L150.4,36.7 L150.9,36.7 L151.4,36.7 L151.8,36.7 L152.3,36.7 L152.8,36.7 L153.3,36.7 L153.8,36.7 L154.2,36.7 L154.7,36.7 L155.2,36.7 L155.7,36.7 L156.2,36.7 L156.6,36.7 L157.1,36.7 L157.6,36.7 L158.1,36.7 L158.6,36.7 L159.0,36.7 L159.5,36.7 L160.0,36.7 L160.5,36.7 L161.0,36.7 L161.4,36.7 L161.9,36.7 L162.4,36.7 L162.9,36.7 L163.4,36.7 L163.8,36.7 L164.3,36.7 L164.8,36.7 L165.3,36.7 L165.8,36.7 L166.2,36.7 L166.7,36.7 L167.2,36.7 L167.7,36.7 L168.2,36.7 L168.6,36.7 L169.1,36.7 L169.6,36.7 L170.1,36.7 L170.6,36.7 L171.0,36.7 L171.5,36.7 L172.0,36.7 L172.5,36.7 L173.0,36.7 L173.4,36.7 L173.9,36.7 L174.4,36.7 L174.9,36.7 L175.4,36.7 L175.8,36.7 L176.3,36.7 L176.8,36.7 L177.3,36.7 L177.8,36.7 L178.2,36.7 L178.7,36.7 L179.2,36.7 L179.7,36.7 L180.2,36.7 L180.6,36.7 L181.1,36.7 L181.6,36.7 L182.1,36.7 L182.6,36.7 L183.0,36.7 L183.5,36.7 L184.0,36.7 L184.5,36.7 L185.0,36.7 L185.4,36.7 L185.9,36.7 L186.4,36.7 L186.9,36.7 L187.4,36.7 L187.8,36.7 L188.3,36.7 L188.8,36.7 L189.3,36.7 L189.8,36.7 L190.2,36.7 L190.7,36.7 L191.2,36.7 L191.7,36.7 L192.2,36.7 L192.6,36.7 L193.1,36.7 L193.6,36.7 L194.1,36.7 L194.6,36.7 L195.0,36.7 L195.5,36.7 L196.0,36.7 L196.5,36.7 L197.0,36.7 L197.4,36.7 L197.9,36.7 L198.4,36.7 L198.9,36.7 L199.4,36.7 L199.8,36.7 L200.3,36.7 L200.8,36.7 L201.3,36.7 L201.8,36.7 L202.2,36.7 L202.7,36.7 L203.2,36.7 L203.7,36.7 L204.2,36.7 L204.6,36.7 L205.1,36.7 L205.6,36.7 L206.1,36.7 L206.6,36.7 L207.0,36.7 L207.5,36.7 L208.0,36.7 L208.5,36.7 L209.0,36.7 L209.4,36.7 L209.9,36.7 L210.4,36.7 L210.9,36.7 L211.4,36.7 L211.8,36.7 L212.3,36.7 L212.8,36.7 L213.3,36.7 L213.8,36.7 L214.2,36.7 L214.7,36.7 L215.2,36.7 L215.7,36.7 L216.2,36.7 L216.6,36.7 L217.1,36.7 L217.6,36.7 L218.1,36.7 L218.6,36.7 L219.0,36.7 L219.5,36.7 L220.0,36.7 L220.5,36.7 L221.0,36.7 L221.4,36.7 L221.9,36.7 L222.4,36.7 L222.9,36.7 L223.4,36.7 L223.8,36.7 L224.3,36.7 L224.8,36.7 L225.3,36.7 L225.8,36.7 L226.2,36.7 L226.7,36.7 L227.2,36.7 L227.7,36.7 L228.2,36.7 L228.6,36.7 L229.1,36.7 L229.6,36.7 L230.1,36.7 L230.6,36.7 L231.0,36.7 L231.5,36.7 L232.0,36.7 L232.5,36.7 L233.0,36.7 L233.4,36.7 L233.9,36.7 L234.4,36.7 L234.9,36.7 L235.4,36.7 L235.8,36.7 L236.3,36.7 L236.8,36.7 L237.3,36.7 L237.8,36.7 L238.2,36.7 L238.7,36.7 L239.2,36.7 L239.7,36.7 L240.2,36.7 L240.6,36.7 L241.1,36.7 L241.6,36.7 L242.1,36.7 L242.6,36.7 L243.0,36.7 L243.5,36.7 L244.0,36.7 L244.5,36.7 L245.0,36.7 L245.4,36.7 L245.9,36.7 L246.4,36.7 L246.9,36.7 L247.4,36.7 L247.8,36.7 L248.3,36.7 L248.8,36.7 L249.3,36.7 L249.8,36.7 L250.2,36.7 L250.7,36.7 L251.2,36.7 L251.7,36.7 L252.2,36.7 L252.6,36.7 L253.1,36.7 L253.6,36.7 L254.1,36.7 L254.6,36.7 L255.0,36.7 L255.5,36.7 L256.0,36.7 L256.5,36.7 L257.0,36.7 L257.4,36.7 L257.9,36.7 L258.4,36.7 L258.9,36.7 L259.4,36.7 L259.8,36.7 L260.3,36.7 L260.8,36.7 L261.3,36.7 L261.8,36.7 L262.2,36.7 L262.7,36.7 L263.2,36.7 L263.7,36.7 L264.2,36.7 L264.6,36.7 L265.1,36.7 L265.6,36.7 L266.1,36.7 L266.6,36.7 L267.0,36.7 L267.5,36.7 L268.0,36.7 L268.5,36.7 L269.0,36.7 L269.4,36.7 L269.9,36.7 L270.4,36.7 L270.9,36.7 L271.4,36.7 L271.8,36.7 L272.3,36.7 L272.8,36.7 L273.3,36.7 L273.8,36.7 L274.2,36.7 L274.7,36.7 L275.2,36.7 L275.7,36.7 L276.2,36.7 L276.6,36.7 L277.1,36.7 L277.6,36.7 L278.1,36.7 L278.6,36.7 L279.0,36.7 L279.5,36.7 L280.0,36.7 L280.5,36.7 L281.0,36.7 L281.4,36.7 L281.9,36.7 L282.4,36.7 L282.9,36.7 L283.4,36.7 L283.8,36.7 L284.3,36.7 L284.8,36.7 L285.3,36.7 L285.8,36.7 L286.2,36.7 L286.7,36.7 L287.2,36.7 L287.7,36.7 L288.2,36.7 L288.6,36.7 L289.1,36.7 L289.6,36.7 L290.1,36.7 L290.6,36.7 L291.0,36.7 L291.5,36.7 L292.0,36.7 L292.5,36.7 L293.0,36.7 L293.4,36.7 L293.9,36.7 L294.4,36.7 L294.9,36.7 L295.4,36.7 L295.8,36.7 L296.3,36.7 L296.8,36.7 L297.3,36.7 L297.8,36.7 L298.2,36.7 L298.7,36.7 L299.2,36.7 L299.7,36.7 L300.2,36.7 L300.6,36.7 L301.1,36.7 L301.6,36.7 L302.1,36.7 L302.6,36.7 L303.0,36.7 L303.5,36.7 L304.0,36.7 L304.5,36.7 L305.0,36.7 L305.4,36.7 L305.9,36.7 L306.4,36.7 L306.9,36.7 L307.4,36.7 L307.8,36.7 L308.3,36.7 L308.8,36.7 L309.3,36.7 L309.8,36.7 L310.2,36.7 L310.7,36.7 L311.2,36.7 L311.7,36.7 L312.2,36.7 L312.6,36.7 L313.1,36.7 L313.6,36.7 L314.1,36.7 L314.6,36.7 L315.0,36.7 L315.5,36.7 L316.0,36.7 L316.5,36.7 L317.0,36.7 L317.4,36.7 L317.9,36.7 L318.4,36.7 L318.9,36.7 L319.4,36.7 L319.8,36.7 L320.3,36.7 L320.8,36.7 L321.3,36.7 L321.8,36.7 L322.2,36.7 L322.7,36.7 L323.2,36.7 L323.7,36.7 L324.2,36.7 L324.6,36.7 L325.1,36.7 L325.6,36.7 L326.1,36.7 L326.6,36.7 L327.0,36.7 L327.5,36.7 L328.0,36.7"/>
+<path class="c-ee" d="M40.0,36.7 L40.5,36.8 L41.0,37.0 L41.4,37.3 L41.9,37.8 L42.4,38.4 L42.9,39.1 L43.4,40.0 L43.8,41.0 L44.3,42.1 L44.8,43.3 L45.3,44.7 L45.8,46.1 L46.2,47.7 L46.7,49.4 L47.2,51.2 L47.7,53.2 L48.2,55.2 L48.6,57.3 L49.1,59.5 L49.6,61.8 L50.1,64.2 L50.6,66.7 L51.0,69.3 L51.5,71.9 L52.0,74.7 L52.5,77.5 L53.0,80.3 L53.4,83.2 L53.9,86.1 L54.4,89.1 L54.9,92.2 L55.4,95.3 L55.8,98.4 L56.3,101.5 L56.8,104.7 L57.3,107.8 L57.8,111.0 L58.2,114.2 L58.7,117.3 L59.2,120.5 L59.7,123.7 L60.2,126.8 L60.6,129.9 L61.1,133.0 L61.6,136.0 L62.1,139.0 L62.6,142.0 L63.0,144.9 L63.5,147.7 L64.0,150.5 L64.5,153.2 L65.0,155.9 L65.4,158.4 L65.9,160.9 L66.4,163.3 L66.9,165.6 L67.4,167.9 L67.8,170.0 L68.3,172.0 L68.8,173.9 L69.3,175.7 L69.8,177.4 L70.2,179.0 L70.7,180.5 L71.2,181.9 L71.7,183.1 L72.2,184.2 L72.6,185.2 L73.1,186.0 L73.6,186.8 L74.1,187.4 L74.6,187.8 L75.0,188.2 L75.5,188.4 L76.0,188.4 L76.5,188.4 L77.0,188.2 L77.4,187.8 L77.9,187.4 L78.4,186.8 L78.9,186.0 L79.4,185.2 L79.8,184.2 L80.3,183.1 L80.8,181.9 L81.3,180.5 L81.8,179.0 L82.2,177.4 L82.7,175.7 L83.2,173.9 L83.7,172.0 L84.2,170.0 L84.6,167.9 L85.1,165.6 L85.6,163.3 L86.1,160.9 L86.6,158.4 L87.0,155.9 L87.5,153.2 L88.0,150.5 L88.5,147.7 L89.0,144.9 L89.4,142.0 L89.9,139.0 L90.4,136.0 L90.9,133.0 L91.4,129.9 L91.8,126.8 L92.3,123.7 L92.8,120.5 L93.3,117.3 L93.8,114.2 L94.2,111.0 L94.7,107.8 L95.2,104.7 L95.7,101.5 L96.2,98.4 L96.6,95.3 L97.1,92.2 L97.6,89.1 L98.1,86.1 L98.6,83.2 L99.0,80.3 L99.5,77.5 L100.0,74.7 L100.5,71.9 L101.0,69.3 L101.4,66.7 L101.9,64.2 L102.4,61.8 L102.9,59.5 L103.4,57.3 L103.8,55.2 L104.3,53.2 L104.8,51.2 L105.3,49.4 L105.8,47.7 L106.2,46.1 L106.7,44.7 L107.2,43.3 L107.7,42.1 L108.2,41.0 L108.6,40.0 L109.1,39.1 L109.6,38.4 L110.1,37.8 L110.6,37.3 L111.0,37.0 L111.5,36.8 L112.0,36.7 L112.5,36.8 L113.0,37.0 L113.4,37.3 L113.9,37.8 L114.4,38.4 L114.9,39.1 L115.4,40.0 L115.8,41.0 L116.3,42.1 L116.8,43.3 L117.3,44.7 L117.8,46.1 L118.2,47.7 L118.7,49.4 L119.2,51.2 L119.7,53.2 L120.2,55.2 L120.6,57.3 L121.1,59.5 L121.6,61.8 L122.1,64.2 L122.6,66.7 L123.0,69.3 L123.5,71.9 L124.0,74.7 L124.5,77.5 L125.0,80.3 L125.4,83.2 L125.9,86.1 L126.4,89.1 L126.9,92.2 L127.4,95.3 L127.8,98.4 L128.3,101.5 L128.8,104.7 L129.3,107.8 L129.8,111.0 L130.2,114.2 L130.7,117.3 L131.2,120.5 L131.7,123.7 L132.2,126.8 L132.6,129.9 L133.1,133.0 L133.6,136.0 L134.1,139.0 L134.6,142.0 L135.0,144.9 L135.5,147.7 L136.0,150.5 L136.5,153.2 L137.0,155.9 L137.4,158.4 L137.9,160.9 L138.4,163.3 L138.9,165.6 L139.4,167.9 L139.8,170.0 L140.3,172.0 L140.8,173.9 L141.3,175.7 L141.8,177.4 L142.2,179.0 L142.7,180.5 L143.2,181.9 L143.7,183.1 L144.2,184.2 L144.6,185.2 L145.1,186.0 L145.6,186.8 L146.1,187.4 L146.6,187.8 L147.0,188.2 L147.5,188.4 L148.0,188.4 L148.5,188.4 L149.0,188.2 L149.4,187.8 L149.9,187.4 L150.4,186.8 L150.9,186.0 L151.4,185.2 L151.8,184.2 L152.3,183.1 L152.8,181.9 L153.3,180.5 L153.8,179.0 L154.2,177.4 L154.7,175.7 L155.2,173.9 L155.7,172.0 L156.2,170.0 L156.6,167.9 L157.1,165.6 L157.6,163.3 L158.1,160.9 L158.6,158.4 L159.0,155.9 L159.5,153.2 L160.0,150.5 L160.5,147.7 L161.0,144.9 L161.4,142.0 L161.9,139.0 L162.4,136.0 L162.9,133.0 L163.4,129.9 L163.8,126.8 L164.3,123.7 L164.8,120.5 L165.3,117.3 L165.8,114.2 L166.2,111.0 L166.7,107.8 L167.2,104.7 L167.7,101.5 L168.2,98.4 L168.6,95.3 L169.1,92.2 L169.6,89.1 L170.1,86.1 L170.6,83.2 L171.0,80.3 L171.5,77.5 L172.0,74.7 L172.5,71.9 L173.0,69.3 L173.4,66.7 L173.9,64.2 L174.4,61.8 L174.9,59.5 L175.4,57.3 L175.8,55.2 L176.3,53.2 L176.8,51.2 L177.3,49.4 L177.8,47.7 L178.2,46.1 L178.7,44.7 L179.2,43.3 L179.7,42.1 L180.2,41.0 L180.6,40.0 L181.1,39.1 L181.6,38.4 L182.1,37.8 L182.6,37.3 L183.0,37.0 L183.5,36.8 L184.0,36.7 L184.5,36.8 L185.0,37.0 L185.4,37.3 L185.9,37.8 L186.4,38.4 L186.9,39.1 L187.4,40.0 L187.8,41.0 L188.3,42.1 L188.8,43.3 L189.3,44.7 L189.8,46.1 L190.2,47.7 L190.7,49.4 L191.2,51.2 L191.7,53.2 L192.2,55.2 L192.6,57.3 L193.1,59.5 L193.6,61.8 L194.1,64.2 L194.6,66.7 L195.0,69.3 L195.5,71.9 L196.0,74.7 L196.5,77.5 L197.0,80.3 L197.4,83.2 L197.9,86.1 L198.4,89.1 L198.9,92.2 L199.4,95.3 L199.8,98.4 L200.3,101.5 L200.8,104.7 L201.3,107.8 L201.8,111.0 L202.2,114.2 L202.7,117.3 L203.2,120.5 L203.7,123.7 L204.2,126.8 L204.6,129.9 L205.1,133.0 L205.6,136.0 L206.1,139.0 L206.6,142.0 L207.0,144.9 L207.5,147.7 L208.0,150.5 L208.5,153.2 L209.0,155.9 L209.4,158.4 L209.9,160.9 L210.4,163.3 L210.9,165.6 L211.4,167.9 L211.8,170.0 L212.3,172.0 L212.8,173.9 L213.3,175.7 L213.8,177.4 L214.2,179.0 L214.7,180.5 L215.2,181.9 L215.7,183.1 L216.2,184.2 L216.6,185.2 L217.1,186.0 L217.6,186.8 L218.1,187.4 L218.6,187.8 L219.0,188.2 L219.5,188.4 L220.0,188.4 L220.5,188.4 L221.0,188.2 L221.4,187.8 L221.9,187.4 L222.4,186.8 L222.9,186.0 L223.4,185.2 L223.8,184.2 L224.3,183.1 L224.8,181.9 L225.3,180.5 L225.8,179.0 L226.2,177.4 L226.7,175.7 L227.2,173.9 L227.7,172.0 L228.2,170.0 L228.6,167.9 L229.1,165.6 L229.6,163.3 L230.1,160.9 L230.6,158.4 L231.0,155.9 L231.5,153.2 L232.0,150.5 L232.5,147.7 L233.0,144.9 L233.4,142.0 L233.9,139.0 L234.4,136.0 L234.9,133.0 L235.4,129.9 L235.8,126.8 L236.3,123.7 L236.8,120.5 L237.3,117.3 L237.8,114.2 L238.2,111.0 L238.7,107.8 L239.2,104.7 L239.7,101.5 L240.2,98.4 L240.6,95.3 L241.1,92.2 L241.6,89.1 L242.1,86.1 L242.6,83.2 L243.0,80.3 L243.5,77.5 L244.0,74.7 L244.5,71.9 L245.0,69.3 L245.4,66.7 L245.9,64.2 L246.4,61.8 L246.9,59.5 L247.4,57.3 L247.8,55.2 L248.3,53.2 L248.8,51.2 L249.3,49.4 L249.8,47.7 L250.2,46.1 L250.7,44.7 L251.2,43.3 L251.7,42.1 L252.2,41.0 L252.6,40.0 L253.1,39.1 L253.6,38.4 L254.1,37.8 L254.6,37.3 L255.0,37.0 L255.5,36.8 L256.0,36.7 L256.5,36.8 L257.0,37.0 L257.4,37.3 L257.9,37.8 L258.4,38.4 L258.9,39.1 L259.4,40.0 L259.8,41.0 L260.3,42.1 L260.8,43.3 L261.3,44.7 L261.8,46.1 L262.2,47.7 L262.7,49.4 L263.2,51.2 L263.7,53.2 L264.2,55.2 L264.6,57.3 L265.1,59.5 L265.6,61.8 L266.1,64.2 L266.6,66.7 L267.0,69.3 L267.5,71.9 L268.0,74.7 L268.5,77.5 L269.0,80.3 L269.4,83.2 L269.9,86.1 L270.4,89.1 L270.9,92.2 L271.4,95.3 L271.8,98.4 L272.3,101.5 L272.8,104.7 L273.3,107.8 L273.8,111.0 L274.2,114.2 L274.7,117.3 L275.2,120.5 L275.7,123.7 L276.2,126.8 L276.6,129.9 L277.1,133.0 L277.6,136.0 L278.1,139.0 L278.6,142.0 L279.0,144.9 L279.5,147.7 L280.0,150.5 L280.5,153.2 L281.0,155.9 L281.4,158.4 L281.9,160.9 L282.4,163.3 L282.9,165.6 L283.4,167.9 L283.8,170.0 L284.3,172.0 L284.8,173.9 L285.3,175.7 L285.8,177.4 L286.2,179.0 L286.7,180.5 L287.2,181.9 L287.7,183.1 L288.2,184.2 L288.6,185.2 L289.1,186.0 L289.6,186.8 L290.1,187.4 L290.6,187.8 L291.0,188.2 L291.5,188.4 L292.0,188.4 L292.5,188.4 L293.0,188.2 L293.4,187.8 L293.9,187.4 L294.4,186.8 L294.9,186.0 L295.4,185.2 L295.8,184.2 L296.3,183.1 L296.8,181.9 L297.3,180.5 L297.8,179.0 L298.2,177.4 L298.7,175.7 L299.2,173.9 L299.7,172.0 L300.2,170.0 L300.6,167.9 L301.1,165.6 L301.6,163.3 L302.1,160.9 L302.6,158.4 L303.0,155.9 L303.5,153.2 L304.0,150.5 L304.5,147.7 L305.0,144.9 L305.4,142.0 L305.9,139.0 L306.4,136.0 L306.9,133.0 L307.4,129.9 L307.8,126.8 L308.3,123.7 L308.8,120.5 L309.3,117.3 L309.8,114.2 L310.2,111.0 L310.7,107.8 L311.2,104.7 L311.7,101.5 L312.2,98.4 L312.6,95.3 L313.1,92.2 L313.6,89.1 L314.1,86.1 L314.6,83.2 L315.0,80.3 L315.5,77.5 L316.0,74.7 L316.5,71.9 L317.0,69.3 L317.4,66.7 L317.9,64.2 L318.4,61.8 L318.9,59.5 L319.4,57.3 L319.8,55.2 L320.3,53.2 L320.8,51.2 L321.3,49.4 L321.8,47.7 L322.2,46.1 L322.7,44.7 L323.2,43.3 L323.7,42.1 L324.2,41.0 L324.6,40.0 L325.1,39.1 L325.6,38.4 L326.1,37.8 L326.6,37.3 L327.0,37.0 L327.5,36.8 L328.0,36.7"/>
+<path class="c-em" d="M40.0,188.4 L40.5,188.4 L41.0,188.2 L41.4,187.8 L41.9,187.4 L42.4,186.8 L42.9,186.0 L43.4,185.2 L43.8,184.2 L44.3,183.1 L44.8,181.9 L45.3,180.5 L45.8,179.0 L46.2,177.4 L46.7,175.7 L47.2,173.9 L47.7,172.0 L48.2,170.0 L48.6,167.9 L49.1,165.6 L49.6,163.3 L50.1,160.9 L50.6,158.4 L51.0,155.9 L51.5,153.2 L52.0,150.5 L52.5,147.7 L53.0,144.9 L53.4,142.0 L53.9,139.0 L54.4,136.0 L54.9,133.0 L55.4,129.9 L55.8,126.8 L56.3,123.7 L56.8,120.5 L57.3,117.3 L57.8,114.2 L58.2,111.0 L58.7,107.8 L59.2,104.7 L59.7,101.5 L60.2,98.4 L60.6,95.3 L61.1,92.2 L61.6,89.1 L62.1,86.1 L62.6,83.2 L63.0,80.3 L63.5,77.5 L64.0,74.7 L64.5,71.9 L65.0,69.3 L65.4,66.7 L65.9,64.2 L66.4,61.8 L66.9,59.5 L67.4,57.3 L67.8,55.2 L68.3,53.2 L68.8,51.2 L69.3,49.4 L69.8,47.7 L70.2,46.1 L70.7,44.7 L71.2,43.3 L71.7,42.1 L72.2,41.0 L72.6,40.0 L73.1,39.1 L73.6,38.4 L74.1,37.8 L74.6,37.3 L75.0,37.0 L75.5,36.8 L76.0,36.7 L76.5,36.8 L77.0,37.0 L77.4,37.3 L77.9,37.8 L78.4,38.4 L78.9,39.1 L79.4,40.0 L79.8,41.0 L80.3,42.1 L80.8,43.3 L81.3,44.7 L81.8,46.1 L82.2,47.7 L82.7,49.4 L83.2,51.2 L83.7,53.2 L84.2,55.2 L84.6,57.3 L85.1,59.5 L85.6,61.8 L86.1,64.2 L86.6,66.7 L87.0,69.3 L87.5,71.9 L88.0,74.7 L88.5,77.5 L89.0,80.3 L89.4,83.2 L89.9,86.1 L90.4,89.1 L90.9,92.2 L91.4,95.3 L91.8,98.4 L92.3,101.5 L92.8,104.7 L93.3,107.8 L93.8,111.0 L94.2,114.2 L94.7,117.3 L95.2,120.5 L95.7,123.7 L96.2,126.8 L96.6,129.9 L97.1,133.0 L97.6,136.0 L98.1,139.0 L98.6,142.0 L99.0,144.9 L99.5,147.7 L100.0,150.5 L100.5,153.2 L101.0,155.9 L101.4,158.4 L101.9,160.9 L102.4,163.3 L102.9,165.6 L103.4,167.9 L103.8,170.0 L104.3,172.0 L104.8,173.9 L105.3,175.7 L105.8,177.4 L106.2,179.0 L106.7,180.5 L107.2,181.9 L107.7,183.1 L108.2,184.2 L108.6,185.2 L109.1,186.0 L109.6,186.8 L110.1,187.4 L110.6,187.8 L111.0,188.2 L111.5,188.4 L112.0,188.4 L112.5,188.4 L113.0,188.2 L113.4,187.8 L113.9,187.4 L114.4,186.8 L114.9,186.0 L115.4,185.2 L115.8,184.2 L116.3,183.1 L116.8,181.9 L117.3,180.5 L117.8,179.0 L118.2,177.4 L118.7,175.7 L119.2,173.9 L119.7,172.0 L120.2,170.0 L120.6,167.9 L121.1,165.6 L121.6,163.3 L122.1,160.9 L122.6,158.4 L123.0,155.9 L123.5,153.2 L124.0,150.5 L124.5,147.7 L125.0,144.9 L125.4,142.0 L125.9,139.0 L126.4,136.0 L126.9,133.0 L127.4,129.9 L127.8,126.8 L128.3,123.7 L128.8,120.5 L129.3,117.3 L129.8,114.2 L130.2,111.0 L130.7,107.8 L131.2,104.7 L131.7,101.5 L132.2,98.4 L132.6,95.3 L133.1,92.2 L133.6,89.1 L134.1,86.1 L134.6,83.2 L135.0,80.3 L135.5,77.5 L136.0,74.7 L136.5,71.9 L137.0,69.3 L137.4,66.7 L137.9,64.2 L138.4,61.8 L138.9,59.5 L139.4,57.3 L139.8,55.2 L140.3,53.2 L140.8,51.2 L141.3,49.4 L141.8,47.7 L142.2,46.1 L142.7,44.7 L143.2,43.3 L143.7,42.1 L144.2,41.0 L144.6,40.0 L145.1,39.1 L145.6,38.4 L146.1,37.8 L146.6,37.3 L147.0,37.0 L147.5,36.8 L148.0,36.7 L148.5,36.8 L149.0,37.0 L149.4,37.3 L149.9,37.8 L150.4,38.4 L150.9,39.1 L151.4,40.0 L151.8,41.0 L152.3,42.1 L152.8,43.3 L153.3,44.7 L153.8,46.1 L154.2,47.7 L154.7,49.4 L155.2,51.2 L155.7,53.2 L156.2,55.2 L156.6,57.3 L157.1,59.5 L157.6,61.8 L158.1,64.2 L158.6,66.7 L159.0,69.3 L159.5,71.9 L160.0,74.7 L160.5,77.5 L161.0,80.3 L161.4,83.2 L161.9,86.1 L162.4,89.1 L162.9,92.2 L163.4,95.3 L163.8,98.4 L164.3,101.5 L164.8,104.7 L165.3,107.8 L165.8,111.0 L166.2,114.2 L166.7,117.3 L167.2,120.5 L167.7,123.7 L168.2,126.8 L168.6,129.9 L169.1,133.0 L169.6,136.0 L170.1,139.0 L170.6,142.0 L171.0,144.9 L171.5,147.7 L172.0,150.5 L172.5,153.2 L173.0,155.9 L173.4,158.4 L173.9,160.9 L174.4,163.3 L174.9,165.6 L175.4,167.9 L175.8,170.0 L176.3,172.0 L176.8,173.9 L177.3,175.7 L177.8,177.4 L178.2,179.0 L178.7,180.5 L179.2,181.9 L179.7,183.1 L180.2,184.2 L180.6,185.2 L181.1,186.0 L181.6,186.8 L182.1,187.4 L182.6,187.8 L183.0,188.2 L183.5,188.4 L184.0,188.4 L184.5,188.4 L185.0,188.2 L185.4,187.8 L185.9,187.4 L186.4,186.8 L186.9,186.0 L187.4,185.2 L187.8,184.2 L188.3,183.1 L188.8,181.9 L189.3,180.5 L189.8,179.0 L190.2,177.4 L190.7,175.7 L191.2,173.9 L191.7,172.0 L192.2,170.0 L192.6,167.9 L193.1,165.6 L193.6,163.3 L194.1,160.9 L194.6,158.4 L195.0,155.9 L195.5,153.2 L196.0,150.5 L196.5,147.7 L197.0,144.9 L197.4,142.0 L197.9,139.0 L198.4,136.0 L198.9,133.0 L199.4,129.9 L199.8,126.8 L200.3,123.7 L200.8,120.5 L201.3,117.3 L201.8,114.2 L202.2,111.0 L202.7,107.8 L203.2,104.7 L203.7,101.5 L204.2,98.4 L204.6,95.3 L205.1,92.2 L205.6,89.1 L206.1,86.1 L206.6,83.2 L207.0,80.3 L207.5,77.5 L208.0,74.7 L208.5,71.9 L209.0,69.3 L209.4,66.7 L209.9,64.2 L210.4,61.8 L210.9,59.5 L211.4,57.3 L211.8,55.2 L212.3,53.2 L212.8,51.2 L213.3,49.4 L213.8,47.7 L214.2,46.1 L214.7,44.7 L215.2,43.3 L215.7,42.1 L216.2,41.0 L216.6,40.0 L217.1,39.1 L217.6,38.4 L218.1,37.8 L218.6,37.3 L219.0,37.0 L219.5,36.8 L220.0,36.7 L220.5,36.8 L221.0,37.0 L221.4,37.3 L221.9,37.8 L222.4,38.4 L222.9,39.1 L223.4,40.0 L223.8,41.0 L224.3,42.1 L224.8,43.3 L225.3,44.7 L225.8,46.1 L226.2,47.7 L226.7,49.4 L227.2,51.2 L227.7,53.2 L228.2,55.2 L228.6,57.3 L229.1,59.5 L229.6,61.8 L230.1,64.2 L230.6,66.7 L231.0,69.3 L231.5,71.9 L232.0,74.7 L232.5,77.5 L233.0,80.3 L233.4,83.2 L233.9,86.1 L234.4,89.1 L234.9,92.2 L235.4,95.3 L235.8,98.4 L236.3,101.5 L236.8,104.7 L237.3,107.8 L237.8,111.0 L238.2,114.2 L238.7,117.3 L239.2,120.5 L239.7,123.7 L240.2,126.8 L240.6,129.9 L241.1,133.0 L241.6,136.0 L242.1,139.0 L242.6,142.0 L243.0,144.9 L243.5,147.7 L244.0,150.5 L244.5,153.2 L245.0,155.9 L245.4,158.4 L245.9,160.9 L246.4,163.3 L246.9,165.6 L247.4,167.9 L247.8,170.0 L248.3,172.0 L248.8,173.9 L249.3,175.7 L249.8,177.4 L250.2,179.0 L250.7,180.5 L251.2,181.9 L251.7,183.1 L252.2,184.2 L252.6,185.2 L253.1,186.0 L253.6,186.8 L254.1,187.4 L254.6,187.8 L255.0,188.2 L255.5,188.4 L256.0,188.4 L256.5,188.4 L257.0,188.2 L257.4,187.8 L257.9,187.4 L258.4,186.8 L258.9,186.0 L259.4,185.2 L259.8,184.2 L260.3,183.1 L260.8,181.9 L261.3,180.5 L261.8,179.0 L262.2,177.4 L262.7,175.7 L263.2,173.9 L263.7,172.0 L264.2,170.0 L264.6,167.9 L265.1,165.6 L265.6,163.3 L266.1,160.9 L266.6,158.4 L267.0,155.9 L267.5,153.2 L268.0,150.5 L268.5,147.7 L269.0,144.9 L269.4,142.0 L269.9,139.0 L270.4,136.0 L270.9,133.0 L271.4,129.9 L271.8,126.8 L272.3,123.7 L272.8,120.5 L273.3,117.3 L273.8,114.2 L274.2,111.0 L274.7,107.8 L275.2,104.7 L275.7,101.5 L276.2,98.4 L276.6,95.3 L277.1,92.2 L277.6,89.1 L278.1,86.1 L278.6,83.2 L279.0,80.3 L279.5,77.5 L280.0,74.7 L280.5,71.9 L281.0,69.3 L281.4,66.7 L281.9,64.2 L282.4,61.8 L282.9,59.5 L283.4,57.3 L283.8,55.2 L284.3,53.2 L284.8,51.2 L285.3,49.4 L285.8,47.7 L286.2,46.1 L286.7,44.7 L287.2,43.3 L287.7,42.1 L288.2,41.0 L288.6,40.0 L289.1,39.1 L289.6,38.4 L290.1,37.8 L290.6,37.3 L291.0,37.0 L291.5,36.8 L292.0,36.7 L292.5,36.8 L293.0,37.0 L293.4,37.3 L293.9,37.8 L294.4,38.4 L294.9,39.1 L295.4,40.0 L295.8,41.0 L296.3,42.1 L296.8,43.3 L297.3,44.7 L297.8,46.1 L298.2,47.7 L298.7,49.4 L299.2,51.2 L299.7,53.2 L300.2,55.2 L300.6,57.3 L301.1,59.5 L301.6,61.8 L302.1,64.2 L302.6,66.7 L303.0,69.3 L303.5,71.9 L304.0,74.7 L304.5,77.5 L305.0,80.3 L305.4,83.2 L305.9,86.1 L306.4,89.1 L306.9,92.2 L307.4,95.3 L307.8,98.4 L308.3,101.5 L308.8,104.7 L309.3,107.8 L309.8,111.0 L310.2,114.2 L310.7,117.3 L311.2,120.5 L311.7,123.7 L312.2,126.8 L312.6,129.9 L313.1,133.0 L313.6,136.0 L314.1,139.0 L314.6,142.0 L315.0,144.9 L315.5,147.7 L316.0,150.5 L316.5,153.2 L317.0,155.9 L317.4,158.4 L317.9,160.9 L318.4,163.3 L318.9,165.6 L319.4,167.9 L319.8,170.0 L320.3,172.0 L320.8,173.9 L321.3,175.7 L321.8,177.4 L322.2,179.0 L322.7,180.5 L323.2,181.9 L323.7,183.1 L324.2,184.2 L324.6,185.2 L325.1,186.0 L325.6,186.8 L326.1,187.4 L326.6,187.8 L327.0,188.2 L327.5,188.4 L328.0,188.4"/>
+</svg>
+            <div class="curve-legend">
+              <span class="lg"><i class="ln c-ee"></i><span>E<sub>e</sub> = ½ C u<sub>C</sub>²</span></span>
+              <span class="lg"><i class="ln c-em"></i><span>E<sub>m</sub> = ½ L i²</span></span>
+              <span class="lg"><i class="ln c-et"></i><span>E<sub>tot</sub> = ½ C E² = E₀</span></span>
+            </div>
+            <div class="note">Les énergies E<sub>e</sub> et E<sub>m</sub> oscillent à la période T₀/2, en opposition l'une de l'autre. Leur somme reste constante : aucune énergie n'est dissipée.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="controls">
+
+      <div class="section-title">COMMUTATION DU CIRCUIT</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Position de K</span>
+          <span class="val speed-tone" id="kStateVal" style="cursor:pointer; font-weight:bold;">[ Pos. 1 : Charge ]</span>
+        </div>
+        <button id="toggleKBtn" style="width:100%; padding:8px; background:var(--panel-alt); color:var(--accent); border:1px solid var(--line); border-radius:4px; cursor:pointer; font-weight:bold;">Basculer K (1 ↔ 2)</button>
+      </div>
+      <p style="color:#5f9bd8; font-size:14px; font-style:italic;"> (pour une faible variation de l'un des paramètres, cliquez sur le bouton correspondant et utilisez les fléches haut et bas du clavier)</Br>
+
+      <div class="section-title">GÉNÉRATEUR</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Tension E</span><span class="val in-tone" id="eVal">5.0 V</span></div>
+        <input type="range" id="eSlider" min="1" max="10" step="0.5" value="5">
+      </div>
+
+      <div class="section-title">COMPOSANTS RLC</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Capacité C</span><span class="val" id="cVal">0.47 µF</span></div>
+        <input type="range" id="cSlider" min="0.05" max="2.0" step="0.05" value="0.47">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Inductance L</span><span class="val" id="lVal">100 mH</span></div>
+        <input type="range" id="lSlider" min="10" max="500" step="5" value="100">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Résistance R<sub>0</sub></span><span class="val" id="r0Val">50 Ω</span></div>
+        <input type="range" id="r0Slider" min="0" max="1000" step="10" value="50">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Résistance interne r</span><span class="val" id="rVal">15 Ω</span></div>
+        <input type="range" id="rSlider" min="0" max="200" step="5" value="15">
+      </div>
+
+      <div class="section-title">SIMULATION</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Vitesse simulation</span><span class="val speed-tone" id="speedVal">1.0×</span></div>
+        <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+      </div>
+
+      <div class="section-title">VALEURS CALCULÉES</div>
+      <div class="readout-grid">
+        <div class="item"><div class="k">Résistance R<sub>c</sub></div><div class="v" id="rcVal">922 Ω</div></div>
+        <div class="item"><div class="k">Régime</div><div class="v" id="regimeVal" style="color:var(--out-color)">Pseudo-pér.</div></div>
+        <div class="item"><div class="k">Période T₀</div><div class="v" id="t0Val">1.36 ms</div></div>
+        <div class="item"><div class="k">Pseudo-période T</div><div class="v" id="tVal">1.36 ms</div></div>
+        <div class="item"><div class="k">u<sub>C</sub> instantanée</div><div class="v" id="ucNowVal">5.00 V</div></div>
+        <div class="item"><div class="k">i instantané</div><div class="v" id="iNowVal">0.00 mA</div></div>
+      </div>
+      
+ <div class="note">
+               
+             <p class="remarque"> <b>Remarque:</b> La voie Math calcule la différence de potentiel Y<sub>1</sub> − Y<sub>2</sub> = u<sub>bobine</sub>(t) = u<sub>L</sub>(t) + r·i(t).<br>
+              En régime <b>non amorti</b> (R<sub>0</sub> = 0, r = 0), la loi des mailles impose u<sub>C</sub>(t) + u<sub>L</sub>(t) = 0 ⟺ u<sub>L</sub>(t) = −u<sub>C</sub>(t). Les deux tensions sont en <b>opposition de phase</b>. Vous pouvez activer le bouton <b>INV MATH</b> pour observer l'opposée −u<sub>bobine</sub>(t) = u<sub>C</sub>(t).</p>
+            </div> </Br>
+    </div>
+    <div class="signature">  TP Simulation Physique - Oscillations électriques libres d'un circuit RLC série - chrif.md@gmail.com - Octobre 2026</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const state = {
+    E: 5.0,
+    C: 0.47e-6, // 0.47 µF
+    L: 0.100,   // 100 mH
+    R0: 50,     // 50 Ohm
+    r: 15,      // 15 Ohm
+    speed: 1.0,
+    v1Sens: 2, v2Sens: 1, v3Sens: 2, hSens: 0.0005,
+    showChan1: true, showChan2: true, showChan3: false,
+    invY1: false, invY2: false, invY3: false,
+    posX: 0, posY1: 0, posY2: 0, posY3: 0,
+    showEe: true, showEm: true, showEtot: true,
+    eSens: "auto",
+    playing: true,
+    showTheory: false,
+    mouseInside: false, mouseX: 0, mouseY: 0,
+    mouseInsideEnergy: false, mouseXEnergy: 0, mouseYEnergy: 0,
+    posK: 1 // 1 = Charge (E), 2 = Décharge libre (RLC)
+  };
+
+  let tScope = 0;
+  let segments = [];
+  const SWEEP_SECONDS = 6;
+  let lastTs = null;
+
+  const el = {
+    eSlider: document.getElementById("eSlider"),
+    cSlider: document.getElementById("cSlider"),
+    lSlider: document.getElementById("lSlider"),
+    r0Slider: document.getElementById("r0Slider"),
+    rSlider: document.getElementById("rSlider"),
+    speedSlider: document.getElementById("speedSlider"),
+    eVal: document.getElementById("eVal"),
+    cVal: document.getElementById("cVal"),
+    lVal: document.getElementById("lVal"),
+    r0Val: document.getElementById("r0Val"),
+    rVal: document.getElementById("rVal"),
+    speedVal: document.getElementById("speedVal"),
+    tauHeaderValue: document.getElementById("tauHeaderValue"),
+    rcVal: document.getElementById("rcVal"),
+    regimeVal: document.getElementById("regimeVal"),
+    t0Val: document.getElementById("t0Val"),
+    tVal: document.getElementById("tVal"),
+    ucNowVal: document.getElementById("ucNowVal"),
+    iNowVal: document.getElementById("iNowVal"),
+    playPauseBtn: document.getElementById("playPauseBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    v1SensSelect: document.getElementById("v1SensSelect"),
+    v2SensSelect: document.getElementById("v2SensSelect"),
+    v3SensSelect: document.getElementById("v3SensSelect"),
+    showChan3Check: document.getElementById("showChan3Check"),
+    posY3Slider: document.getElementById("posY3Slider"),
+    posY3Val: document.getElementById("posY3Val"),
+    legendCh3: document.getElementById("legendCh3"),
+    showChan1Check: document.getElementById("showChan1Check"),
+    showChan2Check: document.getElementById("showChan2Check"),
+    invY1Btn: document.getElementById("invY1Btn"),
+    invY2Btn: document.getElementById("invY2Btn"),
+    invY3Btn: document.getElementById("invY3Btn"),
+    hSensSelect: document.getElementById("hSensSelect"),
+    posXSlider: document.getElementById("posXSlider"),
+    posY1Slider: document.getElementById("posY1Slider"),
+    posY2Slider: document.getElementById("posY2Slider"),
+    posXVal: document.getElementById("posXVal"),
+    posY1Val: document.getElementById("posY1Val"),
+    posY2Val: document.getElementById("posY2Val"),
+    toggleTheoryBtn: document.getElementById("toggleTheoryBtn"),
+    theoryContainer: document.getElementById("theoryContainer"),
+    thLiveT: document.getElementById("thLiveT"),
+    thLiveE: document.getElementById("thLiveE"),
+    legendCh1: document.getElementById("legendCh1"),
+    legendCh2: document.getElementById("legendCh2"),
+    scopeCanvas: document.getElementById("scopeCanvas"),
+    scopeTooltip: document.getElementById("scopeTooltip"),
+    energyCanvas: document.getElementById("energyCanvas"),
+    energyTooltip: document.getElementById("energyTooltip"),
+    showEeCheck: document.getElementById("showEeCheck"),
+    showEmCheck: document.getElementById("showEmCheck"),
+    showEtotCheck: document.getElementById("showEtotCheck"),
+    eSensSelect: document.getElementById("eSensSelect"),
+    legendEe: document.getElementById("legendEe"),
+    legendEm: document.getElementById("legendEm"),
+    legendEtot: document.getElementById("legendEtot"),
+    eeValNow: document.getElementById("eeValNow"),
+    emValNow: document.getElementById("emValNow"),
+    etotValNow: document.getElementById("etotValNow"),
+    switchContact: document.getElementById("switchContact"),
+    switchClickGroup: document.getElementById("switchClickGroup"),
+    kStateVal: document.getElementById("kStateVal"),
+    toggleKBtn: document.getElementById("toggleKBtn")
+  };
+
+  function fmtEng(value, unit){
+    if (value === 0) return "0 " + unit;
+    const abs = Math.abs(value);
+    const prefixes = [
+      {exp: 9, sym: "G"}, {exp: 6, sym: "M"}, {exp: 3, sym: "k"},
+      {exp: 0, sym: ""},
+      {exp: -3, sym: "m"}, {exp: -6, sym: "µ"}, {exp: -9, sym: "n"}, {exp: -12, sym: "p"}
+    ];
+    for (const p of prefixes){
+      if (abs >= Math.pow(10, p.exp) * 0.999){
+        const scaled = value / Math.pow(10, p.exp);
+        const digits = scaled >= 100 ? 0 : (scaled >= 10 ? 1 : 2);
+        return scaled.toFixed(digits) + " " + p.sym + unit;
+      }
+    }
+    return value.toExponential(2) + " " + unit;
+  }
+
+  function segAt(t){
+    for (let k = segments.length - 1; k >= 0; k--){
+      if (segments[k].t0 <= t) return segments[k];
+    }
+    return null;
+  }
+
+  // Calcul analytique exact du dipôle RLC
+  function calcRLC(t) {
+    const sg = segAt(t);
+    if (!sg) return { uc: state.E, i: 0 };
+    const dt = t - sg.t0;
+
+    if (sg.posK === 1) {
+      return { uc: sg.E, i: 0 };
+    }
+
+    const R = sg.R0 + sg.r;
+    const L = sg.L;
+    const C = sg.C;
+    const w0_sq = 1 / (L * C);
+    const lambda = R / (2 * L);
+    const disc = lambda * lambda - w0_sq;
+
+    const uc0 = sg.uc0;
+    const i0 = sg.i0;
+    const duc0 = i0 / C;
+
+    let uc = 0, i = 0;
+
+    if (Math.abs(disc) < 1e-7) { // Régime critique
+      const A = uc0;
+      const B = duc0 + lambda * uc0;
+      uc = (A + B * dt) * Math.exp(-lambda * dt);
+      const duc = (B - lambda * (A + B * dt)) * Math.exp(-lambda * dt);
+      i = C * duc;
+    } else if (disc < 0) { // Régime pseudo-périodique
+      const w = Math.sqrt(-disc);
+      const A = uc0;
+      const B = (duc0 + lambda * uc0) / w;
+      const expTerm = Math.exp(-lambda * dt);
+      const cosTerm = Math.cos(w * dt);
+      const sinTerm = Math.sin(w * dt);
+
+      uc = expTerm * (A * cosTerm + B * sinTerm);
+      const duc = expTerm * ((-lambda * A + w * B) * cosTerm + (-lambda * B - w * A) * sinTerm);
+      i = C * duc;
+    } else { // Régime apériodique
+      const r_disc = Math.sqrt(disc);
+      const p1 = -lambda + r_disc;
+      const p2 = -lambda - r_disc;
+
+      const A = (duc0 - p2 * uc0) / (p1 - p2);
+      const B = uc0 - A;
+
+      uc = A * Math.exp(p1 * dt) + B * Math.exp(p2 * dt);
+      const duc = A * p1 * Math.exp(p1 * dt) + B * p2 * Math.exp(p2 * dt);
+      i = C * duc;
+    }
+
+    return { uc, i };
+  }
+
+  function calcUC(t) { return calcRLC(t).uc; }
+  function calcUR0(t) { const sg = segAt(t); return sg ? sg.R0 * calcRLC(t).i : 0; }
+  function calcUL(t) { return calcUC(t) - calcUR0(t); }
+
+  function calcEnergies(t) {
+    const res = calcRLC(t);
+    const Ee = 0.5 * state.C * res.uc * res.uc;
+    const Em = 0.5 * state.L * res.i * res.i;
+    return { Ee, Em, Etot: Ee + Em };
+  }
+
+  function windowDur(){ return state.hSens * 10; }
+
+  function pushSegment(ucStart, iStart){
+    segments.push({
+      t0: tScope, posK: state.posK, uc0: ucStart, i0: iStart,
+      E: state.E, R0: state.R0, L: state.L, r: state.r, C: state.C
+    });
+  }
+
+  function toggleSwitch(){
+    const finished = segments.length > 0 && tScope >= windowDur();
+    const stateNow = segments.length ? calcRLC(tScope) : { uc: state.E, i: 0 };
+
+    if (!segments.length || finished) {
+      segments = [];
+      tScope = 0;
+    }
+
+    state.posK = (state.posK === 1) ? 2 : 1;
+    pushSegment(stateNow.uc, stateNow.i);
+
+    updateSwitchUI();
+    updateReadouts();
+  }
+
+  function onParamChange(){
+    if (segments.length && tScope < windowDur()) {
+      const stateNow = calcRLC(tScope);
+      pushSegment(stateNow.uc, stateNow.i);
+    }
+    updateReadouts();
+  }
+
+  function updateSwitchUI(){
+    if (state.posK === 1) {
+      if (el.switchContact) el.switchContact.setAttribute("d", "M 110,25 L 82,25");
+      if (el.kStateVal) {
+        el.kStateVal.textContent = "[ Pos. 1 : Charge ]";
+        el.kStateVal.style.color = "var(--in-color)";
+      }
+    } else {
+      if (el.switchContact) el.switchContact.setAttribute("d", "M 110,25 L 138,25");
+      if (el.kStateVal) {
+        el.kStateVal.textContent = "[ Pos. 2 : Décharge RLC ]";
+        el.kStateVal.style.color = "var(--out-color)";
+      }
+    }
+  }
+
+  function updateReadouts(){
+    const Rtot = state.R0 + state.r;
+    const Rc = 2 * Math.sqrt(state.L / state.C);
+    const w0 = 1 / Math.sqrt(state.L * state.C);
+    const T0 = 2 * Math.PI / w0;
+
+    let T = T0;
+    let regimeStr = "Apériodique";
+    let regimeColor = "var(--in-color)";
+
+    const lambda = Rtot / (2 * state.L);
+    const disc = lambda * lambda - w0 * w0;
+
+    if (Math.abs(Rtot - Rc) < 1) {
+      regimeStr = "Critique";
+      regimeColor = "var(--time-color)";
+    } else if (disc < 0) {
+      const w = Math.sqrt(w0 * w0 - lambda * lambda);
+      T = 2 * Math.PI / w;
+      regimeStr = "Pseudo-périodique";
+      regimeColor = "var(--out-color)";
+    }
+
+    if (el.eVal) el.eVal.textContent = state.E.toFixed(1) + " V";
+    if (el.cVal) el.cVal.textContent = fmtEng(state.C, "F");
+    if (el.lVal) el.lVal.textContent = fmtEng(state.L, "H");
+    if (el.r0Val) el.r0Val.textContent = fmtEng(state.R0, "Ω");
+    if (el.rVal) el.rVal.textContent = state.r.toFixed(0) + " Ω";
+    if (el.speedVal) el.speedVal.textContent = state.speed.toFixed(1) + "×";
+
+    if (el.tauHeaderValue) el.tauHeaderValue.textContent = fmtEng(T, "s");
+    if (el.rcVal) el.rcVal.textContent = fmtEng(Rc, "Ω");
+    if (el.regimeVal) {
+      el.regimeVal.textContent = regimeStr;
+      el.regimeVal.style.color = regimeColor;
+    }
+    if (el.t0Val) el.t0Val.textContent = fmtEng(T0, "s");
+    if (el.tVal) el.tVal.textContent = (disc < 0) ? fmtEng(T, "s") : "N/A";
+
+    const now = calcRLC(tScope);
+    if (el.ucNowVal) el.ucNowVal.textContent = now.uc.toFixed(2) + " V";
+    if (el.iNowVal) el.iNowVal.textContent = fmtEng(now.i, "A");
+
+    const enNow = calcEnergies(tScope);
+    if (el.eeValNow) el.eeValNow.textContent = fmtEng(enNow.Ee, "J");
+    if (el.emValNow) el.emValNow.textContent = fmtEng(enNow.Em, "J");
+    if (el.etotValNow) el.etotValNow.textContent = fmtEng(enNow.Etot, "J");
+
+    if (el.thLiveT) el.thLiveT.innerHTML =
+      "T₀ = 2π√(L·C) = <b>" + fmtEng(T0, "s") + "</b> | R<sub>c</sub> = <b>" + fmtEng(Rc, "Ω") + "</b>" +
+      "<br>R<sub>totale</sub> = <b>" + fmtEng(Rtot, "Ω") + "</b> → Régime <b>" + regimeStr + "</b>" +
+      ((disc < 0) ? "<br>Pseudo-période T = <b>" + fmtEng(T, "s") + "</b>" : "");
+
+    if (el.thLiveE) el.thLiveE.innerHTML =
+      "Énergie électrostatique E<sub>e</sub> = <b>" + fmtEng(enNow.Ee, "J") + "</b>" +
+      "<br>Énergie magnétique E<sub>m</sub> = <b>" + fmtEng(enNow.Em, "J") + "</b>" +
+      "<br>Énergie totale E<sub>tot</sub> = <b>" + fmtEng(enNow.Etot, "J") + "</b>";
+  }
+
+  // Listeners
+  if (el.switchClickGroup) el.switchClickGroup.addEventListener("click", toggleSwitch);
+  if (el.toggleKBtn) el.toggleKBtn.addEventListener("click", toggleSwitch);
+  if (el.kStateVal) el.kStateVal.addEventListener("click", toggleSwitch);
+
+  if (el.eSlider) el.eSlider.addEventListener("input", () => { state.E = +el.eSlider.value; onParamChange(); });
+  if (el.cSlider) el.cSlider.addEventListener("input", () => { state.C = +el.cSlider.value * 1e-6; onParamChange(); });
+  if (el.lSlider) el.lSlider.addEventListener("input", () => { state.L = +el.lSlider.value / 1000; onParamChange(); });
+  if (el.r0Slider) el.r0Slider.addEventListener("input", () => { state.R0 = +el.r0Slider.value; onParamChange(); });
+  if (el.rSlider) el.rSlider.addEventListener("input", () => { state.r = +el.rSlider.value; onParamChange(); });
+  if (el.speedSlider) el.speedSlider.addEventListener("input", () => { state.speed = parseFloat(el.speedSlider.value); });
+
+  if (el.v1SensSelect) el.v1SensSelect.addEventListener("change", e => { state.v1Sens = parseFloat(e.target.value); });
+  if (el.v2SensSelect) el.v2SensSelect.addEventListener("change", e => { state.v2Sens = parseFloat(e.target.value); });
+  if (el.v3SensSelect) el.v3SensSelect.addEventListener("change", e => { state.v3Sens = parseFloat(e.target.value); });
+
+  if (el.showChan3Check) {
+    el.showChan3Check.addEventListener("change", () => {
+      state.showChan3 = el.showChan3Check.checked;
+      if (el.legendCh3) el.legendCh3.classList.toggle("dim", !state.showChan3);
+    });
+  }
+  if (el.posY3Slider) el.posY3Slider.addEventListener("input", () => { state.posY3 = +el.posY3Slider.value; if (el.posY3Val) el.posY3Val.textContent = state.posY3.toFixed(1) + " div"; });
+
+  if (el.showChan1Check) {
+    el.showChan1Check.addEventListener("change", () => {
+      state.showChan1 = el.showChan1Check.checked;
+      if (el.legendCh1) el.legendCh1.classList.toggle("dim", !state.showChan1);
+    });
+  }
+
+  if (el.showChan2Check) {
+    el.showChan2Check.addEventListener("change", () => {
+      state.showChan2 = el.showChan2Check.checked;
+      if (el.legendCh2) el.legendCh2.classList.toggle("dim", !state.showChan2);
+    });
+  }
+
+  if (el.invY1Btn) {
+    el.invY1Btn.addEventListener("click", () => {
+      state.invY1 = !state.invY1;
+      el.invY1Btn.classList.toggle("active", state.invY1);
+    });
+  }
+
+  if (el.invY2Btn) {
+    el.invY2Btn.addEventListener("click", () => {
+      state.invY2 = !state.invY2;
+      el.invY2Btn.classList.toggle("active", state.invY2);
+    });
+  }
+
+  if (el.invY3Btn) {
+    el.invY3Btn.addEventListener("click", () => {
+      state.invY3 = !state.invY3;
+      el.invY3Btn.classList.toggle("active", state.invY3);
+    });
+  }
+
+  if (el.showEeCheck) {
+    el.showEeCheck.addEventListener("change", () => {
+      state.showEe = el.showEeCheck.checked;
+      if (el.legendEe) el.legendEe.classList.toggle("dim", !state.showEe);
+    });
+  }
+  if (el.showEmCheck) {
+    el.showEmCheck.addEventListener("change", () => {
+      state.showEm = el.showEmCheck.checked;
+      if (el.legendEm) el.legendEm.classList.toggle("dim", !state.showEm);
+    });
+  }
+  if (el.showEtotCheck) {
+    el.showEtotCheck.addEventListener("change", () => {
+      state.showEtot = el.showEtotCheck.checked;
+      if (el.legendEtot) el.legendEtot.classList.toggle("dim", !state.showEtot);
+    });
+  }
+  if (el.eSensSelect) el.eSensSelect.addEventListener("change", e => { state.eSens = e.target.value; });
+
+  if (el.hSensSelect) el.hSensSelect.addEventListener("change", e => { state.hSens = parseFloat(e.target.value); });
+
+  if (el.posXSlider) el.posXSlider.addEventListener("input", () => { state.posX = +el.posXSlider.value; if (el.posXVal) el.posXVal.textContent = state.posX.toFixed(1) + " div"; });
+  if (el.posY1Slider) el.posY1Slider.addEventListener("input", () => { state.posY1 = +el.posY1Slider.value; if (el.posY1Val) el.posY1Val.textContent = state.posY1.toFixed(1) + " div"; });
+  if (el.posY2Slider) el.posY2Slider.addEventListener("input", () => { state.posY2 = +el.posY2Slider.value; if (el.posY2Val) el.posY2Val.textContent = state.posY2.toFixed(1) + " div"; });
+
+  if (el.playPauseBtn) {
+    el.playPauseBtn.addEventListener("click", () => {
+      state.playing = !state.playing;
+      el.playPauseBtn.innerHTML = state.playing ? '<span class="pause-icon">||</span> Pause' : '▶ Lecture';
+    });
+  }
+
+  if (el.resetBtn) {
+    el.resetBtn.addEventListener("click", () => {
+      tScope = 0;
+      segments = [];
+      state.posK = 1;
+      updateSwitchUI();
+      updateReadouts();
+    });
+  }
+
+  const toggleEnergyBtn = document.getElementById("toggleEnergyBtn");
+  if (toggleEnergyBtn) {
+    toggleEnergyBtn.addEventListener("click", () => {
+      const panel = document.getElementById("energyPanel");
+      const collapsed = panel.classList.toggle("panel-collapsed");
+      toggleEnergyBtn.setAttribute("aria-expanded", String(!collapsed));
+      toggleEnergyBtn.textContent = collapsed
+        ? "AFFICHER LES COURBES DES ÉNERGIES"
+        : "MASQUER LES COURBES DES ÉNERGIES";
+    });
+  }
+
+  if (el.toggleTheoryBtn) {
+    el.toggleTheoryBtn.addEventListener("click", () => {
+      state.showTheory = !state.showTheory;
+      if (el.theoryContainer) el.theoryContainer.classList.toggle("hidden", !state.showTheory);
+    });
+  }
+
+  if (el.scopeCanvas) {
+    el.scopeCanvas.addEventListener("mouseenter", () => {
+      state.mouseInside = true;
+      if (el.scopeTooltip) el.scopeTooltip.style.display = "block";
+    });
+    el.scopeCanvas.addEventListener("mouseleave", () => {
+      state.mouseInside = false;
+      if (el.scopeTooltip) el.scopeTooltip.style.display = "none";
+    });
+    el.scopeCanvas.addEventListener("mousemove", (e) => {
+      const rect = el.scopeCanvas.getBoundingClientRect();
+      state.mouseX = e.clientX - rect.left;
+      state.mouseY = e.clientY - rect.top;
+    });
+  }
+
+  if (el.energyCanvas) {
+    el.energyCanvas.addEventListener("mouseenter", () => {
+      state.mouseInsideEnergy = true;
+      if (el.energyTooltip) el.energyTooltip.style.display = "block";
+    });
+    el.energyCanvas.addEventListener("mouseleave", () => {
+      state.mouseInsideEnergy = false;
+      if (el.energyTooltip) el.energyTooltip.style.display = "none";
+    });
+    el.energyCanvas.addEventListener("mousemove", (e) => {
+      const rect = el.energyCanvas.getBoundingClientRect();
+      state.mouseXEnergy = e.clientX - rect.left;
+      state.mouseYEnergy = e.clientY - rect.top;
+    });
+  }
+
+  function fitCanvas(canvas){
+    const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
+    const cssH = +canvas.getAttribute("height");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    canvas.style.height = cssH + "px";
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w: cssW, h: cssH };
+  }
+
+  function sampleTimes(tEnd, windowDuration, N){
+    const times = [];
+    const n = Math.max(1, Math.ceil(N * tEnd / windowDuration));
+    for (let i = 0; i <= n; i++) times.push((i / n) * tEnd);
+    for (let k = 1; k < segments.length; k++){
+      const t0 = segments[k].t0;
+      if (t0 > 0 && t0 <= tEnd){ times.push(t0 - 1e-12); times.push(t0); }
+    }
+    return times.sort((a, b) => a - b);
+  }
+
+  function drawScope(dtReal){
+    if (!el.scopeCanvas) return;
+    const { ctx, w, h } = fitCanvas(el.scopeCanvas);
+    ctx.clearRect(0, 0, w, h);
+
+    const numHDivs = 10, numVDivs = 8;
+    const windowDuration = state.hSens * numHDivs;
+
+    if (state.playing) {
+      tScope = Math.min(tScope + dtReal * state.speed * windowDuration / SWEEP_SECONDS, windowDuration);
+    }
+
+    const padL = 44, padR = 10, padT = 10, padB = 10;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+
+    // Grille de l'oscilloscope
+    ctx.strokeStyle = "#1a242a";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= numHDivs; i++){
+      const x = padL + i * (plotW / numHDivs);
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h - padB); ctx.stroke();
+    }
+    for (let i = 0; i <= numVDivs; i++){
+      const y = padT + i * (plotH / numVDivs);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    }
+
+    const yZero = padT + plotH / 2;
+    ctx.strokeStyle = "#2e3c46";
+    ctx.beginPath(); ctx.moveTo(padL, yZero); ctx.lineTo(w - padR, yZero); ctx.stroke();
+
+    const divPixV = plotH / numVDivs, divPixH = plotW / numHDivs;
+    function vToY(v, sens, posDiv){ return yZero - (v / sens) * divPixV - posDiv * divPixV; }
+
+    const xOffset = state.posX * divPixH;
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(padL, padT, plotW, plotH); ctx.clip();
+
+    const N = Math.min(plotW, 1000);
+    const tEnd = Math.min(tScope, windowDuration);
+    const stTimes = sampleTimes(tEnd, windowDuration, N);
+
+    function traceChannel(sampleFn, sens, posDiv, color, invert = false){
+      ctx.lineWidth = 2; ctx.strokeStyle = color; ctx.beginPath();
+      if (!segments.length) {
+        const y0 = vToY(sampleFn(0), sens, posDiv);
+        ctx.moveTo(padL + xOffset, y0); ctx.lineTo(padL + plotW + xOffset, y0);
+      } else {
+        stTimes.forEach((tVal, idx) => {
+          const x = padL + (tVal / windowDuration) * plotW + xOffset;
+          let val = sampleFn(tVal);
+          if (invert) val = -val;
+          const y = vToY(val, sens, posDiv);
+          if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+      }
+      ctx.stroke();
+    }
+
+    if (state.showChan1) traceChannel(calcUC, state.v1Sens, state.posY1, "#c792ea", state.invY1);
+    if (state.showChan2) traceChannel(calcUR0, state.v2Sens, state.posY2, "#2bbd8e", state.invY2);
+    if (state.showChan3) traceChannel(calcUL, state.v3Sens, state.posY3, "#e5a93b", state.invY3);
+
+    // Balayage lumineux
+    const currentX = padL + (Math.min(tScope, windowDuration) / windowDuration) * plotW + xOffset;
+    if (currentX >= padL && currentX <= w - padR) {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(currentX, padT); ctx.lineTo(currentX, h - padB); ctx.stroke();
+    }
+
+    // Curseur survol (Tooltip)
+    if (state.mouseInside && state.mouseX >= padL && state.mouseX <= w - padR && state.mouseY >= padT && state.mouseY <= h - padB) {
+      const mx = state.mouseX;
+      const my = state.mouseY;
+
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+
+      ctx.beginPath(); ctx.moveTo(mx, padT); ctx.lineTo(mx, h - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, my); ctx.lineTo(w - padR, my); ctx.stroke();
+      ctx.setLineDash([]);
+
+      const tHover = ((mx - padL - xOffset) / plotW) * windowDuration;
+
+      const hasData = segments.length > 0 && tHover >= 0 && tHover <= tEnd;
+      const res = hasData ? calcRLC(tHover) : { uc: state.E, i: 0 };
+      const ucHover = res.uc;
+      const iHover = res.i;
+      const urHover = hasData ? calcUR0(tHover) : 0;
+      const ulHover = hasData ? calcUL(tHover) : 0;
+
+      if (hasData && state.showChan1) {
+        const yUc = vToY(state.invY1 ? -ucHover : ucHover, state.v1Sens, state.posY1);
+        ctx.fillStyle = "#c792ea";
+        ctx.beginPath(); ctx.arc(mx, yUc, 4, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (hasData && state.showChan2) {
+        const yUr = vToY(state.invY2 ? -urHover : urHover, state.v2Sens, state.posY2);
+        ctx.fillStyle = "#2bbd8e";
+        ctx.beginPath(); ctx.arc(mx, yUr, 4, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (hasData && state.showChan3) {
+        const yUl = vToY(state.invY3 ? -ulHover : ulHover, state.v3Sens, state.posY3);
+        ctx.fillStyle = "#e5a93b";
+        ctx.beginPath(); ctx.arc(mx, yUl, 4, 0, 2 * Math.PI); ctx.fill();
+      }
+
+      if (el.scopeTooltip) {
+        let tooltipHTML = `<div style="color:var(--time-color); font-weight:bold; margin-bottom:2px;">t = ${fmtEng(tHover, "s")}</div>`;
+        if (hasData && state.showChan1) {
+          tooltipHTML += `<div style="color:var(--ur-color);">u<sub>C</sub> = ${ucHover.toFixed(2)} V</div>`;
+        }
+        if (hasData && state.showChan2) {
+          tooltipHTML += `<div style="color:var(--out-color);">u<sub>R0</sub> = ${urHover.toFixed(2)} V</div>`;
+          tooltipHTML += `<div style="color:var(--text-dim); font-size:10px;">i = ${fmtEng(iHover, "A")}</div>`;
+        }
+        if (hasData && state.showChan3) {
+          tooltipHTML += `<div style="color:var(--in-color);">u<sub>bobine</sub> = ${(state.invY3 ? -ulHover : ulHover).toFixed(2)} V</div>`;
+        }
+
+        el.scopeTooltip.innerHTML = tooltipHTML;
+
+        const tooltipW = el.scopeTooltip.offsetWidth || 120;
+        let tipX = mx + 15;
+        if (tipX + tooltipW > w - padR) tipX = mx - tooltipW - 15;
+
+        el.scopeTooltip.style.left = tipX + "px";
+        el.scopeTooltip.style.top = Math.max(padT, Math.min(my - 20, h - padB - 60)) + "px";
+      }
+    }
+
+    ctx.restore();
+
+    ctx.font = "10px monospace";
+    ctx.fillStyle = "#7c8a92";
+    ctx.textAlign = "left";
+    ctx.fillText(state.v1Sens + "/" + state.v2Sens + (state.showChan3 ? "/" + state.v3Sens : "") + " V/div · " + fmtEng(state.hSens, "s") + "/div", padL + 2, h - padB - 4);
+  }
+
+  function drawEnergyScope(){
+    if (!el.energyCanvas) return;
+    const ePanel = document.getElementById("energyPanel");
+    if (ePanel && ePanel.classList.contains("panel-collapsed")) return;
+    const { ctx, w, h } = fitCanvas(el.energyCanvas);
+    ctx.clearRect(0, 0, w, h);
+
+    const numHDivs = 10, numVDivs = 6;
+    const windowDuration = state.hSens * numHDivs;
+
+    const padL = 44, padR = 10, padT = 10, padB = 20;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+
+    // Détermination de l'échelle V (max de l'énergie totale)
+    const maxE_tot = 0.5 * state.C * state.E * state.E;
+    let sensV = 0;
+
+    if (state.eSens === "auto") {
+      sensV = (maxE_tot * 1.1) / numVDivs;
+      if (sensV <= 0) sensV = 1e-6;
+    } else {
+      sensV = parseFloat(state.eSens);
+    }
+
+    // Grille Énergie
+    ctx.strokeStyle = "#1a242a";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= numHDivs; i++){
+      const x = padL + i * (plotW / numHDivs);
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h - padB); ctx.stroke();
+    }
+    for (let i = 0; i <= numVDivs; i++){
+      const y = padT + i * (plotH / numVDivs);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    }
+
+    const yZero = h - padB; // 0 Joules en bas de l'écran
+    ctx.strokeStyle = "#2e3c46";
+    ctx.beginPath(); ctx.moveTo(padL, yZero); ctx.lineTo(w - padR, yZero); ctx.stroke();
+
+    const divPixH = plotW / numHDivs;
+    const xOffset = state.posX * divPixH;
+
+    function eToY(eVal){ return yZero - (eVal / sensV) * (plotH / numVDivs); }
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(padL, padT, plotW, plotH); ctx.clip();
+
+    const N = Math.min(plotW, 1000);
+    const tEnd = Math.min(tScope, windowDuration);
+    const stTimes = sampleTimes(tEnd, windowDuration, N);
+
+    function traceEnergy(getEValFn, color){
+      ctx.lineWidth = 2; ctx.strokeStyle = color; ctx.beginPath();
+      if (!segments.length) {
+        const y0 = eToY(getEValFn(0));
+        ctx.moveTo(padL + xOffset, y0); ctx.lineTo(padL + plotW + xOffset, y0);
+      } else {
+        stTimes.forEach((tVal, idx) => {
+          const x = padL + (tVal / windowDuration) * plotW + xOffset;
+          const y = eToY(getEValFn(tVal));
+          if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+      }
+      ctx.stroke();
+    }
+
+    if (state.showEe) traceEnergy(t => calcEnergies(t).Ee, "#38bdf8");
+    if (state.showEm) traceEnergy(t => calcEnergies(t).Em, "#f59e0b");
+    if (state.showEtot) traceEnergy(t => calcEnergies(t).Etot, "#ef4444");
+
+    // Balayage lumineux
+    const currentX = padL + (Math.min(tScope, windowDuration) / windowDuration) * plotW + xOffset;
+    if (currentX >= padL && currentX <= w - padR) {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(currentX, padT); ctx.lineTo(currentX, h - padB); ctx.stroke();
+    }
+
+    // Tooltip Énergie
+    if (state.mouseInsideEnergy && state.mouseXEnergy >= padL && state.mouseXEnergy <= w - padR && state.mouseYEnergy >= padT && state.mouseYEnergy <= h - padB) {
+      const mx = state.mouseXEnergy;
+      const my = state.mouseYEnergy;
+
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+
+      ctx.beginPath(); ctx.moveTo(mx, padT); ctx.lineTo(mx, h - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, my); ctx.lineTo(w - padR, my); ctx.stroke();
+      ctx.setLineDash([]);
+
+      const tHover = ((mx - padL - xOffset) / plotW) * windowDuration;
+      const hasData = segments.length > 0 && tHover >= 0 && tHover <= tEnd;
+      const en = hasData ? calcEnergies(tHover) : { Ee: maxE_tot, Em: 0, Etot: maxE_tot };
+
+      if (hasData && state.showEe) {
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath(); ctx.arc(mx, eToY(en.Ee), 4, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (hasData && state.showEm) {
+        ctx.fillStyle = "#f59e0b";
+        ctx.beginPath(); ctx.arc(mx, eToY(en.Em), 4, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (hasData && state.showEtot) {
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath(); ctx.arc(mx, eToY(en.Etot), 4, 0, 2 * Math.PI); ctx.fill();
+      }
+
+      if (el.energyTooltip) {
+        let tooltipHTML = `<div style="color:var(--time-color); font-weight:bold; margin-bottom:2px;">t = ${fmtEng(tHover, "s")}</div>`;
+        if (hasData && state.showEe) tooltipHTML += `<div style="color:var(--energy-e);">E<sub>e</sub> = ${fmtEng(en.Ee, "J")}</div>`;
+        if (hasData && state.showEm) tooltipHTML += `<div style="color:var(--energy-m);">E<sub>m</sub> = ${fmtEng(en.Em, "J")}</div>`;
+        if (hasData && state.showEtot) tooltipHTML += `<div style="color:var(--energy-tot);">E<sub>tot</sub> = ${fmtEng(en.Etot, "J")}</div>`;
+
+        el.energyTooltip.innerHTML = tooltipHTML;
+
+        const tooltipW = el.energyTooltip.offsetWidth || 120;
+        let tipX = mx + 15;
+        if (tipX + tooltipW > w - padR) tipX = mx - tooltipW - 15;
+
+        el.energyTooltip.style.left = tipX + "px";
+        el.energyTooltip.style.top = Math.max(padT, Math.min(my - 20, h - padB - 60)) + "px";
+      }
+    }
+
+    ctx.restore();
+
+    ctx.font = "10px monospace";
+    ctx.fillStyle = "#7c8a92";
+    ctx.textAlign = "left";
+    ctx.fillText(fmtEng(sensV, "J") + "/div · " + fmtEng(state.hSens, "s") + "/div", padL + 2, h - 4);
+  }
+
+  function loop(ts){
+    if (lastTs === null) lastTs = ts;
+    const dt = state.playing ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
+    lastTs = ts;
+    drawScope(dt);
+    drawEnergyScope();
+    if (dt > 0) updateReadouts();
+    requestAnimationFrame(loop);
+  }
+
+  updateSwitchUI();
+  updateReadouts();
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>

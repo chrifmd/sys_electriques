@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Établissement et Rupture du courant - Dipôle RL</title>
+<style>
+  :root{
+    --bg: #11161a;
+    --panel: #161d22;
+    --panel-alt: #1c242a;
+    --line: #2a353c;
+    --line-soft: #202a30;
+    --text: #dbe4e8;
+    --text-dim: #7c8a92;
+    --text-faint: #52616a;
+    --in-color: #e5a93b;
+    --out-color: #2bbd8e;
+    --ur-color: #c792ea;
+    --time-color: #38bdf8;
+    --accent: #4fc3e8;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius: 4px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+  body { padding: 18px; }
+  .rig {
+    max-width: 1180px;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--panel), var(--bg) 140%);
+    overflow: hidden;
+  }
+
+  .site-header {
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+    text-align: center;
+  }
+  .site-header .site-title {
+    margin: 0 0 10px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .page-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-switcher label {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .page-switcher select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 12.5px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .topbar a { color: var(--text-dim); text-decoration: none; font-size: 13px; }
+  .topbar a:hover { color: var(--accent); }
+  .topbar .regime-picker { display: flex; align-items: center; gap: 8px; }
+  .topbar .regime-picker label { color: var(--text-faint); font-size: 11.5px; }
+
+  .plate {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .plate h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  .plate .sub { color: var(--text-dim); font-size: 12.5px; margin-top: 3px; }
+  .fc-readout { text-align: right; line-height: 1.15; }
+  .fc-readout .label { color: var(--text-dim); font-size: 11px; }
+  .fc-readout .value { font-family: var(--font-mono); font-size: 22px; color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 1fr 270px; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+    .controls { border-left: none; border-top: 1px solid var(--line); order: 2; }
+    .scopes { order: 1; }
+  }
+
+  .controls { border-left: 1px solid var(--line); padding: 18px 18px 22px; background: var(--panel); }
+  .section-title {
+    font-size: 11px; color: var(--text-faint); letter-spacing: 0.4px;
+    margin: 20px 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--line-soft);
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .ctrl { margin-bottom: 14px; }
+  .ctrl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .ctrl-row .name { font-size: 12.5px; color: var(--text); }
+  .ctrl-row .val { font-family: var(--font-mono); font-size: 12.5px; color: var(--out-color); }
+  .ctrl-row .val.in-tone { color: var(--in-color); }
+  .ctrl-row .val.speed-tone { color: var(--time-color); }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 3px;
+    background: var(--line); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer;
+  }
+
+  .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
+  .readout-grid .item .k { font-size: 10px; color: var(--text-faint); }
+  .readout-grid .item .v { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
+
+  .scopes { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .oscillo-panel { background-color: transparent; width: 100%; position: relative; }
+  .oscillo-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+  .oscillo-title { text-transform: uppercase; color: var(--text-dim); }
+  .oscillo-legend { display: flex; gap: 16px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0b0c0; transition: opacity 0.2s; }
+  .color-dot { width: 12px; height: 2px; display: inline-block; }
+  .color-dot.purple { background-color: var(--ur-color); }
+  .color-dot.green { background-color: var(--out-color); }
+  .color-dot.orange { background-color: var(--in-color); }
+  .legend-item.dim { opacity: 0.35; }
+
+  .oscillo-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px;
+  }
+  .position-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .control-group { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+  .pos-group { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+  .pos-group input[type=range] { width: 90px; }
+  .pos-group .pv { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); min-width: 34px; }
+
+  .label-ch1 { color: var(--ur-color); }
+  .label-ch2 { color: var(--out-color); }
+  .label-ch3 { color: var(--in-color); }
+  .label-time { color: var(--time-color); }
+  .toolbar-check.ch3 { color: var(--in-color); }
+  .toolbar-check.ch3 input { accent-color: var(--in-color); }
+
+  .toolbar-check { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; }
+  .toolbar-check input { width: 14px; height: 14px; cursor: pointer; }
+  .toolbar-check.ch1 { color: var(--ur-color); }
+  .toolbar-check.ch1 input { accent-color: var(--ur-color); }
+  .toolbar-check.ch2 { color: var(--out-color); }
+  .toolbar-check.ch2 input { accent-color: var(--out-color); }
+
+  .oscillo-toolbar select {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer;
+  }
+
+  .btn-inv {
+    background-color: #0e1318; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 3px 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-inv.ch1-btn { color: var(--ur-color); }
+  .btn-inv.ch1-btn.active { background-color: var(--ur-color); color: #0b1114; border-color: var(--ur-color); }
+  .btn-inv.ch2-btn { color: var(--out-color); }
+  .btn-inv.ch2-btn.active { background-color: var(--out-color); color: #0b1114; border-color: var(--out-color); }
+
+  .btn-pause, .btn-reset {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: background-color 0.2s;
+  }
+  .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
+
+  .top-screen-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; gap: 10px; flex-wrap: wrap;
+  }
+  .top-buttons { display: flex; align-items: center; gap: 8px; }
+
+  .canvas-wrapper { position: relative; width: 100%; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; }
+
+  .scope-tooltip {
+    position: absolute; pointer-events: none; background: rgba(14, 20, 26, 0.92);
+    border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; z-index: 10; line-height: 1.4; white-space: nowrap;
+  }
+
+  .montage-row { display: flex; gap: 12px; align-items: stretch; }
+  @media (max-width: 700px) { .montage-row { flex-direction: column; } }
+  
+  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
+  .schematic-wrap svg { display: block; width: 100%; max-height: 260px; height: auto; margin: 0 auto; }
+  
+  /* Interrupteur interactif */
+  .switch-clickable { cursor: pointer; }
+  .switch-clickable:hover .sch-switch-line { stroke: #38bdf8; stroke-width: 2.5; }
+
+  .sch-wire   { stroke: var(--text-dim); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .sch-comp   { stroke: #4fc3e8; stroke-width: 1.6; fill: rgba(79,195,232,0.12); }
+  .sch-node   { fill: var(--text); }
+  .sch-label  { fill: var(--text); font-size: 13px; font-weight: 600; }
+  .sch-label.r  { fill: var(--ur-color); font-size: 14px; font-weight: bold; }
+  .sch-label.l  { fill: var(--out-color); font-size: 14px; font-weight: bold; }
+
+  .btn-theory-toggle {
+    width: 100%; padding: 8px 12px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--accent); background: var(--panel-alt); border: 1px solid var(--line);
+    border-radius: var(--radius); cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-theory-toggle:hover { background: var(--line); border-color: var(--accent); }
+  .theory-container.hidden { display: none; }
+  .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .theory-grid { grid-template-columns: 1fr; } }
+  .theory-card {
+    border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316;
+    padding: 12px 14px; font-size: 12px; line-height: 1.4; color: var(--text-dim);
+  }
+  .theory-card h3 { margin: 0 0 6px; font-size: 12.5px; color: var(--accent); }
+  .theory-card p { margin: 3px 0; }
+  .formula {
+    font-family: var(--font-mono); color: var(--text); background: var(--panel-alt);
+    padding: 3px 6px; border-radius: 3px; display: inline-block; margin: 3px 0;
+  }
+  .theory-wide { grid-column: 1 / -1; }
+  .theory-card ul { margin: 4px 0 6px; padding-left: 18px; }
+  .theory-card li { margin: 2px 0; }
+  .theory-card ol { margin: 4px 0 6px; padding-left: 20px; }
+  .theory-card ol li { margin: 3px 0; }
+  .theory-card b { color: var(--text); }
+  .theory-card .note {
+    margin-top: 6px; padding: 5px 8px; border-left: 2px solid #e0b040;
+    background: var(--panel-alt); color: var(--text); font-size: 11.5px;
+  }
+  .theory-card .live {
+    margin-top: 8px; padding: 6px 8px; border-left: 2px solid var(--accent);
+    background: var(--panel-alt); font-family: var(--font-mono); font-size: 11.5px; color: var(--text);
+  }
+  .theory-card table { border-collapse: collapse; margin: 6px 0; font-size: 11.5px; }
+  .theory-card th, .theory-card td { border: 1px solid var(--line); padding: 3px 8px; text-align: center; color: var(--text); }
+  .theory-card th { background: var(--panel-alt); color: var(--accent); }
+  .theory-card svg { display: block; width: 100%; height: auto; max-height: 240px; }
+  .signature{
+    text-align: center; font-family: "Arial"; font-size: 12px; font-weight: bold;
+    color: rgb(170, 221, 241); margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<div class="rig">
+  <div class="site-header">
+    <h1 class="site-title">LA BOBINE - LE DIPÔLE RL</h1>
+    <div class="page-switcher">
+      <label for="pageSwitch">Choisir le TP :</label>
+      <select id="pageSwitch" onchange="if(this.value) window.location.href=this.value;">   
+       
+  
+        <option value="inductance.html">Inductance d'une bobine</option>
+        <option value="dipole_RL.html"selected>Réponse d'un dipôle RL à un échelon de tension</option>
+       
+      </select>
+    </div>
+  </div>
+
+  <div class="topbar">
+  <a href="index.html">← Retour à l'accueil</a>
+    <div class="regime-picker">
+      <label>TP :</label>
+      <span style="color:var(--text-dim); font-size:12.5px;">Réponse d'un dipôle RL à un échelon de tension</span>
+    </div>
+  </div>
+
+  <div class="plate">
+    <div>
+      <h1>Établissement et Rupture du courant dans une bobine</h1>
+      <div class="sub">Cliquez sur K pour le fermer (établissement), puis recliquez pour l'ouvrir (rupture) : les deux courbes s'affichent à la suite sur le même écran</div>
+    </div>
+    <div class="fc-readout">
+      <div class="label">CONSTANTE DE TEMPS τ</div>
+      <div class="value" id="tauHeaderValue">0.10 ms</div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="scopes">
+
+      <div class="scope-block">
+        <div class="oscillo-header"><span class="oscillo-title">SCHÉMA DU MONTAGE (CLIQUEZ SUR K)</span></div>
+        <div class="montage-row">
+          <div class="schematic-wrap" style="flex:1;">
+            <svg viewBox="0 0 240 250" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrow-blue" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 6 3 L 0 6 z" fill="#38bdf8" />
+                </marker>
+                <marker id="arrow-orange" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 6 3 L 0 6 z" fill="var(--in-color)" />
+                </marker>
+                <marker id="arrow-black" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 6 3 L 0 6 z" fill="var(--text)" />
+                </marker>
+              </defs>
+
+              <!-- Générateur E (DC) -->
+              <circle cx="40" cy="125" r="16" stroke="var(--in-color)" stroke-width="1.6" fill="NONE"/>
+              <text x="35" y="105" text-anchor="middle" font-size="14" font-weight="700" fill="var(--in-color)">+</text>
+              <text x="8" y="129" font-size="12" font-weight="700" fill="var(--in-color)">E</text>
+              <path d="M 20,145 L 20,105" stroke="var(--in-color)" stroke-width="1.5" marker-end="url(#arrow-orange)"/>
+
+              <!-- Interrupteur K (Interactif au Clic) -->
+              <g id="switchClickGroup" class="switch-clickable">
+                <rect x="60" y="8" width="50" height="40" fill="transparent"/>
+                <path d="M 40,30 L 70,30" class="sch-wire"/>
+                <circle cx="70" cy="30" r="2.8" class="sch-node"/>
+                <path id="switchContact" class="sch-switch-line" d="M 70,30 L 95,30" stroke="var(--accent)" stroke-width="2" style="transition: transform 0.15s ease, stroke 0.15s ease; transform-origin: 70px 30px; transform: rotate(-25deg);"/>
+                <circle cx="95" cy="30" r="2.8" class="sch-node"/>
+                <text x="80" y="14" class="sch-label" fill="var(--accent)">K</text>
+              </g>
+
+              <path d="M 95,30 L 130,30" class="sch-wire"/>
+
+              <!-- Point A -->
+              <circle cx="130" cy="30" r="2.8" class="sch-node"/>
+              <text x="130" y="20" text-anchor="middle" class="sch-label">A</text>
+
+              <!-- Voie Y2 (Point A) -->
+              <path d="M 130,30 L 190,30" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <path d="M 185,26 L 195,30 L 185,34" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <text x="200" y="34" font-size="13" font-weight="bold" fill="var(--out-color)">Y<tspan baseline-shift="sub" font-size="9">2</tspan></text>
+
+              <!-- Flèche courant i -->
+              <path d="M 105,30 L 118,30" stroke="var(--text)" stroke-width="1.5" marker-end="url(#arrow-black)"/>
+              <text x="110" y="22" font-size="11" font-weight="bold" fill="var(--text)">i</text>
+
+              <!-- Bobine (L, r) -->
+              <path d="M 130,30 L 130,50" class="sch-wire"/>
+              <path d="M 130,50 C 143,50 143,60 130,60 C 143,60 143,70 130,70 C 143,70 143,80 130,80 C 143,80 143,90 130,90" stroke="var(--out-color)" stroke-width="2" fill="none"/>
+              <path d="M 130,90 L 130,120" class="sch-wire"/>
+              <text x="148" y="72" class="sch-label l">(L, r)</text>
+
+              <!-- Point B -->
+              <circle cx="130" cy="120" r="2.8" class="sch-node"/>
+              <text x="114" y="124" class="sch-label">B</text>
+
+              <!-- Voie Y1 (Point B) -->
+              <path d="M 130,120 L 190,120" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <path d="M 185,116 L 195,120 L 185,124" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <text x="200" y="124" font-size="13" font-weight="bold" fill="var(--ur-color)">Y<tspan baseline-shift="sub" font-size="9">1</tspan></text>
+
+              <!-- Résistance R0 -->
+              <rect x="120" y="140" width="20" height="45" class="sch-comp"/>
+              <text x="148" y="167" class="sch-label r">R<tspan baseline-shift="sub" font-size="10">0</tspan></text>
+              <path d="M 130,120 L 130,140" class="sch-wire"/>
+              <path d="M 130,185 L 130,220" class="sch-wire"/>
+
+              <!-- Point M & Masse -->
+              <circle cx="130" cy="220" r="2.8" class="sch-node"/>
+              <text x="130" y="238" text-anchor="middle" class="sch-label">M</text>
+
+              <path d="M 130,220 L 170,220" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <path d="M 170,212 L 170,228" stroke="var(--text-dim)" stroke-width="1.5"/>
+              <path d="M 173,215 L 173,225" stroke="var(--text-dim)" stroke-width="1.2"/>
+              <path d="M 176,218 L 176,222" stroke="var(--text-dim)" stroke-width="1"/>
+
+              <!-- Connexion retour au générateur -->
+              <path d="M 40,220 L 130,220" class="sch-wire"/>
+              <path d="M 40,30 L 40,109" class="sch-wire"/>
+              <path d="M 40,110 L 40,220" class="sch-wire"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="oscillo-panel">
+        <div class="oscillo-header">
+          <span class="oscillo-title">OSCILLOSCOPE — RÉPONSE TEMPORELLE</span>
+          <div class="oscillo-legend">
+            <span class="legend-item" id="legendCh1"><span class="color-dot purple"></span>Voie 1 (Y1) : u<sub>BM</sub>(t) = u<sub>R0</sub>(t) = R<sub>0</sub>·i(t)</span>
+            <span class="legend-item" id="legendCh2"><span class="color-dot green"></span>Voie 2 (Y2) : u<sub>AM</sub>(t)</span>
+            <span class="legend-item dim" id="legendCh3"><span class="color-dot orange"></span>Math (Y2 − Y1) : u<sub>AB</sub>(t) = u<sub>AM</sub> − u<sub>BM</sub></span>
+          </div>
+        </div>
+
+        <div class="top-screen-bar">
+          <div class="ctrl-hint" style="margin-bottom:0;">Y1 mesure u<sub>R0</sub>(t) (reflet du courant i) | Y2 mesure la tension totale u<sub>AM</sub>(t)</div>
+          <div class="top-buttons">
+            <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
+            <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
+          </div>
+        </div>
+
+        <!-- Barre d'outils réglages de l'oscilloscope -->
+        <div class="oscillo-toolbar">
+          <div class="control-group">
+            <label class="label-ch1">CH1 (Y1):</label>
+            <select id="v1SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1">1 V/div</option>
+              <option value="2" selected>2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch1"><input type="checkbox" id="showChan1Check" checked> u<sub>R0</sub>(t)</label>
+          <button id="invY1Btn" class="btn-inv ch1-btn" title="Inverser Y1">INV Y1</button>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-ch2">CH2 (Y2):</label>
+            <select id="v2SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1">1 V/div</option>
+              <option value="2" selected>2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch2"><input type="checkbox" id="showChan2Check" checked> u<sub>AM</sub>(t)</label>
+          <button id="invY2Btn" class="btn-inv ch2-btn" title="Inverser Y2">INV Y2</button>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-ch3">MATH (Y2−Y1):</label>
+            <select id="v3SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1">1 V/div</option>
+              <option value="2" selected>2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch3"><input type="checkbox" id="showChan3Check"> u<sub>AB</sub>(t)</label>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-time">Base de temps:</label>
+            <select id="hSensSelect">
+              <option value="0.0001">0.1 ms/div</option>
+              <option value="0.0002" selected>0.2 ms/div</option>
+              <option value="0.0005">0.5 ms/div</option>
+              <option value="0.001">1 ms/div</option>
+              <option value="0.002">2 ms/div</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Deuxième barre (Positions) -->
+        <div class="position-toolbar">
+          <div class="pos-group">↔ Position X<input type="range" id="posXSlider" min="-5" max="5" step="0.5" value="0"><span class="pv" id="posXVal">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--ur-color)">↕ Position Y1<input type="range" id="posY1Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY1Val">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--out-color)">↕ Position Y2<input type="range" id="posY2Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY2Val">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--in-color)">↕ Position u<sub>AB</sub><input type="range" id="posY3Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY3Val">0.0 div</span></div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="scopeCanvas" height="340"></canvas>
+          <div id="scopeTooltip" class="scope-tooltip"></div>
+        </div>
+      </div>
+
+      <button id="toggleTheoryBtn" class="btn-theory-toggle">APERÇU THÉORIQUE — ÉQUATIONS DIFFÉRENTIELLES & CONSTANTE DE TEMPS τ</button>
+
+      <div id="theoryContainer" class="theory-container hidden">
+        <div class="theory-grid">
+
+          <div class="theory-card theory-wide">
+            <h3>Vue d'ensemble : un régime transitoire du 1<sup>er</sup> ordre</h3>
+            <svg viewBox="0 0 600 205" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif" font-size="11">
+              <text x="40" y="16" fill="var(--ur-color)" font-weight="bold">Fermeture de K : u_R0(t) ∝ i(t)</text>
+              <line x1="40" y1="150" x2="190" y2="150" stroke="var(--text-dim)"/>
+              <line x1="40" y1="30" x2="40" y2="155" stroke="var(--text-dim)"/>
+              <line x1="40" y1="50" x2="190" y2="50" stroke="var(--text-dim)" stroke-dasharray="3 3" stroke-width="0.8"/>
+              <text x="36" y="54" text-anchor="end" fill="var(--text-dim)">Imax</text>
+              <polyline points="40.0,150.0 42.2,142.0 44.3,134.6 46.5,127.9 48.7,121.7 50.8,115.9 53.0,110.7 55.2,105.8 57.3,101.3 59.5,97.2 61.7,93.5 63.8,90.0 66.0,86.8 68.2,83.8 70.3,81.1 72.5,78.7 74.7,76.4 76.8,74.3 79.0,72.3 81.2,70.5 83.3,68.9 85.5,67.4 87.7,66.0 89.8,64.7 92.0,63.5 94.2,62.5 96.3,61.5 98.5,60.5 100.7,59.7 102.8,58.9 105.0,58.2 107.2,57.6 109.3,56.9 111.5,56.4 113.7,55.9 115.8,55.4 118.0,55.0 120.2,54.6 122.3,54.2 124.5,53.9 126.7,53.6 128.8,53.3 131.0,53.0 133.2,52.8 135.3,52.6 137.5,52.4 139.7,52.2 141.8,52.0 144.0,51.8 146.2,51.7 148.3,51.6 150.5,51.4 152.7,51.3 154.8,51.2 157.0,51.1 159.2,51.0 161.3,50.9 163.5,50.9 165.7,50.8 167.8,50.7 170.0,50.7" fill="none" stroke="var(--ur-color)" stroke-width="2"/>
+              <line x1="40" y1="150" x2="66.0" y2="50" stroke="var(--time-color)" stroke-dasharray="4 3" stroke-width="1"/>
+              <line x1="66.0" y1="86.8" x2="66.0" y2="150" stroke="var(--text-dim)" stroke-dasharray="2 3" stroke-width="0.8"/>
+              <line x1="40" y1="86.8" x2="66.0" y2="86.8" stroke="var(--text-dim)" stroke-dasharray="2 3" stroke-width="0.8"/>
+              <circle cx="66.0" cy="86.8" r="3" fill="var(--ur-color)"/>
+              <text x="70.0" y="100.8" fill="var(--text)">0,63·Imax</text>
+              <text x="66.0" y="166" text-anchor="middle" fill="var(--time-color)">τ</text>
+              <text x="170.0" y="166" text-anchor="middle" fill="var(--time-color)">5τ</text>
+              <text x="105.0" y="184" text-anchor="middle" fill="var(--time-color)" font-size="10">tangente à l'origine</text>
+              <text x="345" y="16" fill="var(--out-color)" font-weight="bold">Ouverture de K : i décroît</text>
+              <line x1="345" y1="150" x2="495" y2="150" stroke="var(--text-dim)"/>
+              <line x1="345" y1="30" x2="345" y2="155" stroke="var(--text-dim)"/>
+              <line x1="345" y1="50" x2="495" y2="50" stroke="var(--text-dim)" stroke-dasharray="3 3" stroke-width="0.8"/>
+              <text x="341" y="54" text-anchor="end" fill="var(--text-dim)">I0</text>
+              <polyline points="345.0,50.0 347.2,58.0 349.3,65.4 351.5,72.1 353.7,78.3 355.8,84.1 358.0,89.3 360.2,94.2 362.3,98.7 364.5,102.8 366.7,106.5 368.8,110.0 371.0,113.2 373.2,116.2 375.3,118.9 377.5,121.3 379.7,123.6 381.8,125.7 384.0,127.7 386.2,129.5 388.3,131.1 390.5,132.6 392.7,134.0 394.8,135.3 397.0,136.5 399.2,137.5 401.3,138.5 403.5,139.5 405.7,140.3 407.8,141.1 410.0,141.8 412.2,142.4 414.3,143.1 416.5,143.6 418.7,144.1 420.8,144.6 423.0,145.0 425.2,145.4 427.3,145.8 429.5,146.1 431.7,146.4 433.8,146.7 436.0,147.0 438.2,147.2 440.3,147.4 442.5,147.6 444.7,147.8 446.8,148.0 449.0,148.2 451.2,148.3 453.3,148.4 455.5,148.6 457.7,148.7 459.8,148.8 462.0,148.9 464.2,149.0 466.3,149.1 468.5,149.1 470.7,149.2 472.8,149.3 475.0,149.3" fill="none" stroke="var(--out-color)" stroke-width="2"/>
+              <line x1="345" y1="50" x2="371.0" y2="150" stroke="var(--time-color)" stroke-dasharray="4 3" stroke-width="1"/>
+              <line x1="371.0" y1="113.2" x2="371.0" y2="150" stroke="var(--text-dim)" stroke-dasharray="2 3" stroke-width="0.8"/>
+              <line x1="345" y1="113.2" x2="371.0" y2="113.2" stroke="var(--text-dim)" stroke-dasharray="2 3" stroke-width="0.8"/>
+              <circle cx="371.0" cy="113.2" r="3" fill="var(--out-color)"/>
+              <text x="375.0" y="107.2" fill="var(--text)">0,37·I0</text>
+              <text x="371.0" y="166" text-anchor="middle" fill="var(--time-color)">τ</text>
+              <text x="475.0" y="166" text-anchor="middle" fill="var(--time-color)">5τ</text>
+              <text x="410.0" y="184" text-anchor="middle" fill="var(--time-color)" font-size="10">tangente à l'origine</text>
+            </svg>
+            <p>Une bobine s'oppose aux variations brusques du courant : i(t) est <b>continu</b> et évolue de façon exponentielle vers sa valeur finale, en un temps de l'ordre de τ. Les deux courbes ont la même constante de temps ; seule la valeur vers laquelle tend le courant change (I<sub>max</sub> à la fermeture, 0 à l'ouverture).</p>
+          </div>
+
+          <div class="theory-card">
+            <h3>Montage et voies de l'oscilloscope</h3>
+            <ul>
+              <li><b>Y1</b> (point B) : u<sub>BM</sub> = u<sub>R0</sub> = R<sub>0</sub>·i(t), image du courant.</li>
+              <li><b>Y2</b> (point A) : u<sub>AM</sub>, tension aux bornes de l'ensemble bobine + R<sub>0</sub>. Elle vaut E quand K est fermé et 0 quand K est ouvert.</li>
+              <li><b>Voie MATH</b> (Y2 − Y1) : u<sub>AB</sub> = u<sub>AM</sub> − u<sub>BM</sub>, tension aux bornes de la bobine.</li>
+            </ul>
+            <div class="note">La masse commune est en M : on ne peut pas visualiser directement u<sub>AB</sub> avec une seule voie, d'où la soustraction des deux voies.</div>
+          </div>
+
+          <div class="theory-card">
+            <h3>La bobine réelle (L, r)</h3>
+            <p>En convention récepteur, la tension aux bornes de la bobine est :</p>
+            <div class="formula">u<sub>AB</sub>(t) = L · di/dt + r · i(t)</div>
+            <p>Le terme L·di/dt est l'effet d'auto-induction (loi de Faraday : e = −L·di/dt), qui s'oppose à la cause qui lui donne naissance (loi de Lenz). Le terme r·i est la chute ohmique dans le fil.</p>
+            <p>Énergie magnétique emmagasinée : <span class="formula">E<sub>m</sub> = ½ · L · i²</span>. Elle ne peut pas varier instantanément, d'où la continuité de i.</p>
+          </div>
+
+          <div class="theory-card">
+            <h3>1. Établissement du courant (fermeture de K)</h3>
+            <p>Loi des mailles : E = u<sub>AB</sub> + u<sub>R0</sub> = L·di/dt + (R<sub>0</sub> + r)·i</p>
+            <p>En posant τ = L/(R<sub>0</sub>+r) et I<sub>max</sub> = E/(R<sub>0</sub>+r) :</p>
+            <div class="formula">τ · di/dt + i = I<sub>max</sub></div>
+            <p>Solution générale : i(t) = A·e<sup>−t/τ</sup> + I<sub>max</sub>. La condition initiale i(0) = 0 donne A = −I<sub>max</sub> :</p>
+            <div class="formula">i(t) = I<sub>max</sub> · (1 − e<sup>−t/τ</sup>)</div>
+            <div class="formula">u<sub>R0</sub>(t) = U<sub>max</sub> · (1 − e<sup>−t/τ</sup>), U<sub>max</sub> = R<sub>0</sub>·E/(R<sub>0</sub>+r)</div>
+            <div class="live" id="thLiveA"></div>
+          </div>
+
+          <div class="theory-card">
+            <h3>2. Rupture du courant (ouverture de K)</h3>
+            <p>Lorsque K s'ouvre, la source ne fournit plus rien (E = 0 dans la maille, u<sub>AM</sub> = 0) : la bobine restitue son énergie, qui est dissipée par effet Joule dans R<sub>0</sub> et r.</p>
+            <div class="formula">τ · di/dt + i = 0</div>
+            <div class="formula">i(t) = I<sub>0</sub> · e<sup>−t/τ</sup> &nbsp; (I<sub>0</sub> = courant à l'instant d'ouverture)</div>
+            <p>Le courant reste continu : i(0<sup>+</sup>) = I<sub>0</sub>. Si K est ouvert avant la fin de l'établissement, I<sub>0</sub> &lt; I<sub>max</sub>.</p>
+            <div class="live" id="thLiveB"></div>
+          </div>
+
+          <div class="theory-card">
+            <h3>3. Tension aux bornes de la bobine u<sub>AB</sub>(t)</h3>
+            <p><b>Établissement :</b> u<sub>AB</sub> = E − R<sub>0</sub>·i, soit</p>
+            <div class="formula">u<sub>AB</sub>(t) = r·I<sub>max</sub> + (E − r·I<sub>max</sub>) · e<sup>−t/τ</sup></div>
+            <p>Elle est discontinue à la fermeture : u<sub>AB</sub>(0<sup>+</sup>) = E (tout E est aux bornes de la bobine car i = 0), puis elle décroît vers r·I<sub>max</sub>. La partie purement inductive vaut L·di/dt = E·e<sup>−t/τ</sup> et tend vers 0.</p>
+            <p><b>Rupture :</b> u<sub>AB</sub> = u<sub>AM</sub> − u<sub>BM</sub> = −R<sub>0</sub>·i(t) : la tension change de signe, car la bobine joue le rôle de générateur (i garde son sens mais la tension se retourne).</p>
+          </div>
+
+          <div class="theory-card">
+            <h3>4. Constante de temps τ</h3>
+            <div class="formula">τ = L / (R<sub>0</sub> + r)</div>
+            <p>Dimension : H/Ω = (V·s/A)/(V/A) = s. Plus L est grand ou plus la résistance totale est petite, plus le régime transitoire est lent. La tension E n'influence pas τ, seulement l'amplitude.</p>
+            <table>
+              <tr><th>t</th><th>τ</th><th>2τ</th><th>3τ</th><th>4τ</th><th>5τ</th></tr>
+              <tr><td>établissement (i / I<sub>max</sub>)</td><td>63,2 %</td><td>86,5 %</td><td>95,0 %</td><td>98,2 %</td><td>99,3 %</td></tr>
+              <tr><td>rupture (i / I<sub>0</sub>)</td><td>36,8 %</td><td>13,5 %</td><td>5,0 %</td><td>1,8 %</td><td>0,7 %</td></tr>
+            </table>
+            <p>Le régime permanent est donc considéré comme atteint à t ≈ 5τ.</p>
+            <div class="live" id="thLiveT"></div>
+          </div>
+
+          <div class="theory-card">
+            <h3>5. Comment mesurer τ sur l'oscillogramme</h3>
+            <ol>
+              <li><b>Méthode des 63 %</b> (établissement) : lire l'instant où u<sub>R0</sub> = 0,63·U<sub>max</sub>.</li>
+              <li><b>Méthode des 37 %</b> (rupture) : lire l'instant où u<sub>R0</sub> = 0,37·u<sub>R0</sub>(0).</li>
+              <li><b>Tangente à l'origine</b> : elle coupe l'asymptote horizontale à t = τ.</li>
+              <li><b>Temps de demi-montée</b> : t<sub>½</sub> = τ·ln 2 ≈ 0,69·τ, donc τ = t<sub>½</sub> / 0,69.</li>
+            </ol>
+            <div class="note">Le curseur de l'écran donne t en ms : pointez sur la courbe au niveau 63 % ou 37 % pour lire τ. Choisissez une base de temps telle que la trace occupe l'écran (10 divisions ≥ 5τ).</div>
+          </div>
+
+          <div class="theory-card theory-wide">
+            <h3>6. Déterminer r et L à partir des mesures</h3>
+            <ol>
+              <li>En régime permanent, relever U<sub>max</sub> (plateau de u<sub>R0</sub>) : I<sub>max</sub> = U<sub>max</sub> / R<sub>0</sub>.</li>
+              <li>Comme I<sub>max</sub> = E/(R<sub>0</sub>+r) : <span class="formula">r = R<sub>0</sub> · (E − U<sub>max</sub>) / U<sub>max</sub></span></li>
+              <li>Mesurer τ (méthode des 63 % par exemple).</li>
+              <li>En déduire l'inductance : <span class="formula">L = τ · (R<sub>0</sub> + r)</span></li>
+            </ol>
+            <div class="note">Si l'on néglige r, on surestime le courant et on commet une erreur sur L égale à r/(R<sub>0</sub>+r) en valeur relative : elle est importante quand r n'est pas petite devant R<sub>0</sub>.</div>
+            <div class="live" id="thLiveM"></div>
+          </div>
+
+          <div class="theory-card">
+            <h3>7. Bilan énergétique</h3>
+            <p>En multipliant la loi des mailles par i :</p>
+            <div class="formula">E·i = (R<sub>0</sub>+r)·i² + d(½·L·i²)/dt</div>
+            <p>La puissance fournie par le générateur sert à l'effet Joule et à charger la bobine. En régime permanent, tout part en chaleur ; l'énergie stockée vaut alors ½·L·I<sub>max</sub>². À la rupture, cette énergie est intégralement dissipée par effet Joule.</p>
+            <div class="live" id="thLiveE"></div>
+          </div>
+
+          <div class="theory-card">
+            <h3>8. Influence des paramètres et erreurs fréquentes</h3>
+            <ul>
+              <li><b>L ↑</b> : τ ↑, transitoire plus lent ; I<sub>max</sub> inchangé.</li>
+              <li><b>R<sub>0</sub> ↑ ou r ↑</b> : τ ↓, transitoire plus rapide ; I<sub>max</sub> diminue.</li>
+              <li><b>E ↑</b> : amplitudes proportionnelles, τ inchangé.</li>
+              <li><b>r ≠ 0</b> : u<sub>AB</sub> ne tend pas vers 0 mais vers r·I<sub>max</sub>, et U<sub>max</sub> &lt; E.</li>
+            </ul>
+            <div class="note">Erreurs fréquentes : lire τ à 50 % au lieu de 63 % ; oublier r dans τ ; confondre u<sub>R0</sub> (image de i) et u<sub>AM</sub> ; penser que u<sub>AB</sub> s'annule en régime permanent.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="controls">
+
+      <div class="section-title">COMMUTATION DU CIRCUIT</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">État de K</span>
+          <span class="val speed-tone" id="kStateVal" style="cursor:pointer; font-weight:bold;">[ Ouvert ]</span>
+        </div>
+        <button id="toggleKBtn" style="width:100%; padding:8px; background:var(--panel-alt); color:var(--accent); border:1px solid var(--line); border-radius:4px; cursor:pointer; font-weight:bold;">Basculer K (Ouvert / Fermé)</button>
+      </div>
+
+      <div class="section-title">GÉNÉRATEUR</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Tension E</span><span class="val in-tone" id="eVal">5.0 V</span></div>
+        <input type="range" id="eSlider" min="1" max="10" step="0.5" value="5">
+      </div>
+
+      <div class="section-title">COMPOSANTS RL</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Résistance R<sub>0</sub></span><span class="val" id="r0Val">900 Ω</span></div>
+        <input type="range" id="r0Slider" min="100" max="2000" step="50" value="900">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Inductance L</span><span class="val" id="lVal">100 mH</span></div>
+        <input type="range" id="lSlider" min="10" max="500" step="5" value="100">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Résistance interne r</span><span class="val" id="rVal">100 Ω</span></div>
+        <input type="range" id="rSlider" min="0" max="200" step="5" value="100">
+      </div>
+
+      <div class="section-title">SIMULATION</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Vitesse simulation</span><span class="val speed-tone" id="speedVal">1.0×</span></div>
+        <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+      </div>
+
+      <div class="section-title">VALEURS CALCULÉES</div>
+      <div class="readout-grid">
+        <div class="item"><div class="k">Constante τ</div><div class="v" id="tauVal">0.10 ms</div></div>
+        <div class="item"><div class="k">R<sub>totale</sub> (R<sub>0</sub>+r)</div><div class="v" id="rtotVal">1000 Ω</div></div>
+        <div class="item"><div class="k">I<sub>max</sub></div><div class="v" id="imaxVal">5.00 mA</div></div>
+        <div class="item"><div class="k">u<sub>R0</sub> max</div><div class="v" id="urMaxVal">4.50 V</div></div>
+        <div class="item"><div class="k">u<sub>R0</sub> instantanée</div><div class="v" id="urNowVal">0.00 V</div></div>
+        <div class="item"><div class="k">i instantané</div><div class="v" id="iNowVal">0.00 mA</div></div>
+      </div>
+
+    </div>
+    <div class="signature"> TP Simulation Physique - Réponse d'un dipôle RL à un échelon de tension -   chrif.md@gmail.com - Octobre 2026 </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const state = {
+    E: 5.0,
+    R0: 900,
+    L: 0.100, // 100 mH
+    r: 100,   // 100 Ohm
+    speed: 1.0,
+    v1Sens: 2, v2Sens: 2, v3Sens: 2, hSens: 0.0002,
+    showChan1: true, showChan2: true, showChan3: false,
+    invY1: false, invY2: false,
+    posX: 0, posY1: 0, posY2: 0, posY3: 0,
+    playing: true,
+    showTheory: false,
+    mouseInside: false,
+    mouseX: 0, mouseY: 0,
+    isClosed: false
+  };
+
+  // Gestion du temps et des conditions initiales à l'origine (t = 0 au clic)
+  let tScope = 0;      // Temps affiché à l'écran (0 à T_max)
+  // Historique des commutations : chaque segment = un intervalle de temps
+  // pendant lequel K garde le même état (et les mêmes paramètres).
+  // t0 = instant de début (temps oscillo), i0 = courant à cet instant (continuité de i).
+  let segments = [];
+  const SWEEP_SECONDS = 6;   // durée réelle d'un balayage complet à la vitesse 1×
+  let lastTs = null;
+
+  const el = {
+    eSlider: document.getElementById("eSlider"),
+    r0Slider: document.getElementById("r0Slider"),
+    lSlider: document.getElementById("lSlider"),
+    rSlider: document.getElementById("rSlider"),
+    speedSlider: document.getElementById("speedSlider"),
+    eVal: document.getElementById("eVal"),
+    r0Val: document.getElementById("r0Val"),
+    lVal: document.getElementById("lVal"),
+    rVal: document.getElementById("rVal"),
+    speedVal: document.getElementById("speedVal"),
+    tauHeaderValue: document.getElementById("tauHeaderValue"),
+    tauVal: document.getElementById("tauVal"),
+    rtotVal: document.getElementById("rtotVal"),
+    imaxVal: document.getElementById("imaxVal"),
+    urMaxVal: document.getElementById("urMaxVal"),
+    urNowVal: document.getElementById("urNowVal"),
+    iNowVal: document.getElementById("iNowVal"),
+    playPauseBtn: document.getElementById("playPauseBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    v1SensSelect: document.getElementById("v1SensSelect"),
+    v2SensSelect: document.getElementById("v2SensSelect"),
+    v3SensSelect: document.getElementById("v3SensSelect"),
+    showChan3Check: document.getElementById("showChan3Check"),
+    posY3Slider: document.getElementById("posY3Slider"),
+    posY3Val: document.getElementById("posY3Val"),
+    legendCh3: document.getElementById("legendCh3"),
+    showChan1Check: document.getElementById("showChan1Check"),
+    showChan2Check: document.getElementById("showChan2Check"),
+    invY1Btn: document.getElementById("invY1Btn"),
+    invY2Btn: document.getElementById("invY2Btn"),
+    hSensSelect: document.getElementById("hSensSelect"),
+    posXSlider: document.getElementById("posXSlider"),
+    posY1Slider: document.getElementById("posY1Slider"),
+    posY2Slider: document.getElementById("posY2Slider"),
+    posXVal: document.getElementById("posXVal"),
+    posY1Val: document.getElementById("posY1Val"),
+    posY2Val: document.getElementById("posY2Val"),
+    toggleTheoryBtn: document.getElementById("toggleTheoryBtn"),
+    theoryContainer: document.getElementById("theoryContainer"),
+    thLiveA: document.getElementById("thLiveA"),
+    thLiveB: document.getElementById("thLiveB"),
+    thLiveT: document.getElementById("thLiveT"),
+    thLiveM: document.getElementById("thLiveM"),
+    thLiveE: document.getElementById("thLiveE"),
+    legendCh1: document.getElementById("legendCh1"),
+    legendCh2: document.getElementById("legendCh2"),
+    scopeCanvas: document.getElementById("scopeCanvas"),
+    scopeTooltip: document.getElementById("scopeTooltip"),
+    switchContact: document.getElementById("switchContact"),
+    switchClickGroup: document.getElementById("switchClickGroup"),
+    kStateVal: document.getElementById("kStateVal"),
+    toggleKBtn: document.getElementById("toggleKBtn")
+  };
+
+  function fmtEng(value, unit){
+    if (value === 0) return "0 " + unit;
+    const abs = Math.abs(value);
+    const prefixes = [
+      {exp: 9, sym: "G"}, {exp: 6, sym: "M"}, {exp: 3, sym: "k"},
+      {exp: 0, sym: ""},
+      {exp: -3, sym: "m"}, {exp: -6, sym: "µ"}, {exp: -9, sym: "n"}, {exp: -12, sym: "p"}
+    ];
+    for (const p of prefixes){
+      if (abs >= Math.pow(10, p.exp) * 0.999){
+        const scaled = value / Math.pow(10, p.exp);
+        const digits = scaled >= 100 ? 0 : (scaled >= 10 ? 1 : 2);
+        return scaled.toFixed(digits) + " " + p.sym + unit;
+      }
+    }
+    return value.toExponential(2) + " " + unit;
+  }
+
+  function segAt(t){
+    for (let k = segments.length - 1; k >= 0; k--){
+      if (segments[k].t0 <= t) return segments[k];
+    }
+    return null;
+  }
+
+  // Courant i(t) : solution exacte par morceaux (i est continu aux commutations)
+  function calcI(t) {
+    const sg = segAt(t);
+    if (!sg) return 0;
+    const Rtot = sg.R0 + sg.r;
+    if (Rtot === 0) return 0;
+    const tau = sg.L / Rtot;
+    const dt = t - sg.t0;
+    if (sg.closed) {
+      const Imax = sg.E / Rtot;                    // établissement
+      return Imax + (sg.i0 - Imax) * Math.exp(-dt / tau);
+    }
+    return sg.i0 * Math.exp(-dt / tau);            // rupture
+  }
+
+  function calcUR0(t) {
+    const sg = segAt(t);
+    return sg ? sg.R0 * calcI(t) : 0;
+  }
+
+  function calcUAM(t) {
+    const sg = segAt(t);
+    return (sg && sg.closed) ? sg.E : 0;
+  }
+
+  // Tension aux bornes de la bobine (voie math Y2 - Y1) : u_AB = u_AM - u_BM = L·di/dt + r·i
+  function calcUAB(t) {
+    return calcUAM(t) - calcUR0(t);
+  }
+
+  function windowDur(){ return state.hSens * 10; }
+
+  function pushSegment(iStart){
+    segments.push({
+      t0: tScope, closed: state.isClosed, i0: iStart,
+      E: state.E, R0: state.R0, L: state.L, r: state.r
+    });
+  }
+
+  // Action sur l'interrupteur K : la trace continue, on ne remet PAS le temps à zéro
+  function toggleSwitch(){
+    const finished = segments.length > 0 && tScope >= windowDur();
+    const iNow = segments.length ? calcI(tScope) : 0;
+
+    // Nouveau balayage seulement si aucun n'est en cours (1er clic) ou si l'écran est plein
+    if (!segments.length || finished) {
+      segments = [];
+      tScope = 0;
+    }
+
+    state.isClosed = !state.isClosed;
+    pushSegment(iNow);
+
+    updateSwitchUI();
+    updateReadouts();
+  }
+
+  // Changement d'un paramètre en cours de balayage : nouveau segment, courant continu
+  function onParamChange(){
+    if (segments.length && tScope < windowDur()) pushSegment(calcI(tScope));
+    updateReadouts();
+  }
+
+  function updateSwitchUI(){
+    if (state.isClosed) {
+      if (el.switchContact) {
+        el.switchContact.style.transform = "rotate(0deg)";
+        el.switchContact.setAttribute("stroke", "var(--out-color)");
+      }
+      if (el.kStateVal) {
+        el.kStateVal.textContent = "[ Fermé ]";
+        el.kStateVal.style.color = "var(--out-color)";
+      }
+    } else {
+      if (el.switchContact) {
+        el.switchContact.style.transform = "rotate(-25deg)";
+        el.switchContact.setAttribute("stroke", "var(--accent)");
+      }
+      if (el.kStateVal) {
+        el.kStateVal.textContent = "[ Ouvert ]";
+        el.kStateVal.style.color = "var(--accent)";
+      }
+    }
+  }
+
+  function updateReadouts(){
+    const Rtot = state.R0 + state.r;
+    const tau = state.L / Rtot;
+    const Imax = state.E / Rtot;
+    const uR0Max = state.R0 * Imax;
+
+    if (el.eVal) el.eVal.textContent = state.E.toFixed(1) + " V";
+    if (el.r0Val) el.r0Val.textContent = fmtEng(state.R0, "Ω");
+    if (el.lVal) el.lVal.textContent = fmtEng(state.L, "H");
+    if (el.rVal) el.rVal.textContent = state.r.toFixed(0) + " Ω";
+    if (el.speedVal) el.speedVal.textContent = state.speed.toFixed(1) + "×";
+
+    if (el.tauHeaderValue) el.tauHeaderValue.textContent = fmtEng(tau, "s");
+    if (el.tauVal) el.tauVal.textContent = fmtEng(tau, "s");
+    if (el.rtotVal) el.rtotVal.textContent = fmtEng(Rtot, "Ω");
+    if (el.imaxVal) el.imaxVal.textContent = fmtEng(Imax, "A");
+    if (el.urMaxVal) el.urMaxVal.textContent = uR0Max.toFixed(2) + " V";
+
+    const urNow = calcUR0(tScope);
+    const iNow = calcI(tScope);
+    if (el.urNowVal) el.urNowVal.textContent = urNow.toFixed(2) + " V";
+    if (el.iNowVal) el.iNowVal.textContent = fmtEng(iNow, "A");
+
+    // --- Aperçu théorique : valeurs en direct ---
+    const t63 = tau;                       // 63 % à t = τ
+    const rEst = state.R0 * (state.E - uR0Max) / uR0Max;
+    const LEst = tau * (state.R0 + rEst);
+    const Em = 0.5 * state.L * Imax * Imax;
+    if (el.thLiveA) el.thLiveA.innerHTML =
+      "I<sub>max</sub> = <b>" + fmtEng(Imax, "A") + "</b> ; U<sub>max</sub> = <b>" + uR0Max.toFixed(2) + " V</b>" +
+      "<br>u<sub>AB</sub>(0<sup>+</sup>) = <b>" + state.E.toFixed(2) + " V</b> → u<sub>AB</sub>(∞) = r·I<sub>max</sub> = <b>" + (state.r * Imax).toFixed(2) + " V</b>";
+    if (el.thLiveB) el.thLiveB.innerHTML =
+      "Si K s'ouvre en régime permanent : u<sub>AB</sub>(0<sup>+</sup>) = −R<sub>0</sub>·I<sub>max</sub> = <b>" + (-uR0Max).toFixed(2) + " V</b>" +
+      "<br>Durée de retour à 1 % de I<sub>0</sub> : τ·ln 100 = <b>" + fmtEng(tau * Math.log(100), "s") + "</b>";
+    if (el.thLiveT) el.thLiveT.innerHTML =
+      "τ = " + fmtEng(state.L, "H") + " / " + fmtEng(Rtot, "Ω") + " = <b>" + fmtEng(tau, "s") + "</b>" +
+      "<br>t à 63 % = <b>" + fmtEng(t63, "s") + "</b> ; t<sub>½</sub> = τ·ln 2 = <b>" + fmtEng(tau * Math.LN2, "s") + "</b> ; 5τ = <b>" + fmtEng(5 * tau, "s") + "</b>" +
+      "<br>Balayage actuel : 10 div × " + fmtEng(state.hSens, "s") + " = <b>" + fmtEng(windowDur(), "s") + "</b> (= " + (windowDur() / tau).toFixed(1) + " τ)";
+    if (el.thLiveM) el.thLiveM.innerHTML =
+      "r = R<sub>0</sub>·(E − U<sub>max</sub>)/U<sub>max</sub> = <b>" + fmtEng(rEst, "Ω") + "</b>" +
+      " ; L = τ·(R<sub>0</sub>+r) = <b>" + fmtEng(LEst, "H") + "</b>";
+    if (el.thLiveE) el.thLiveE.innerHTML =
+      "E<sub>m</sub> max = ½·L·I<sub>max</sub>² = <b>" + fmtEng(Em, "J") + "</b>" +
+      "<br>Puissance en régime permanent E·I<sub>max</sub> = <b>" + fmtEng(state.E * Imax, "W") + "</b>";
+  }
+
+  // Configuration des listeners
+  if (el.switchClickGroup) el.switchClickGroup.addEventListener("click", toggleSwitch);
+  if (el.toggleKBtn) el.toggleKBtn.addEventListener("click", toggleSwitch);
+  if (el.kStateVal) el.kStateVal.addEventListener("click", toggleSwitch);
+
+  if (el.eSlider) el.eSlider.addEventListener("input", () => { state.E = +el.eSlider.value; onParamChange(); });
+  if (el.r0Slider) el.r0Slider.addEventListener("input", () => { state.R0 = +el.r0Slider.value; onParamChange(); });
+  if (el.lSlider) el.lSlider.addEventListener("input", () => { state.L = +el.lSlider.value / 1000; onParamChange(); });
+  if (el.rSlider) el.rSlider.addEventListener("input", () => { state.r = +el.rSlider.value; onParamChange(); });
+  if (el.speedSlider) el.speedSlider.addEventListener("input", () => { state.speed = parseFloat(el.speedSlider.value); });
+
+  if (el.v1SensSelect) el.v1SensSelect.addEventListener("change", e => { state.v1Sens = parseFloat(e.target.value); });
+  if (el.v2SensSelect) el.v2SensSelect.addEventListener("change", e => { state.v2Sens = parseFloat(e.target.value); });
+  if (el.v3SensSelect) el.v3SensSelect.addEventListener("change", e => { state.v3Sens = parseFloat(e.target.value); });
+
+  if (el.showChan3Check) {
+    el.showChan3Check.addEventListener("change", () => {
+      state.showChan3 = el.showChan3Check.checked;
+      if (el.legendCh3) el.legendCh3.classList.toggle("dim", !state.showChan3);
+    });
+  }
+  if (el.posY3Slider) el.posY3Slider.addEventListener("input", () => { state.posY3 = +el.posY3Slider.value; if (el.posY3Val) el.posY3Val.textContent = state.posY3.toFixed(1) + " div"; });
+
+  if (el.showChan1Check) {
+    el.showChan1Check.addEventListener("change", () => {
+      state.showChan1 = el.showChan1Check.checked;
+      if (el.legendCh1) el.legendCh1.classList.toggle("dim", !state.showChan1);
+    });
+  }
+
+  if (el.showChan2Check) {
+    el.showChan2Check.addEventListener("change", () => {
+      state.showChan2 = el.showChan2Check.checked;
+      if (el.legendCh2) el.legendCh2.classList.toggle("dim", !state.showChan2);
+    });
+  }
+
+  if (el.invY1Btn) {
+    el.invY1Btn.addEventListener("click", () => {
+      state.invY1 = !state.invY1;
+      el.invY1Btn.classList.toggle("active", state.invY1);
+    });
+  }
+
+  if (el.invY2Btn) {
+    el.invY2Btn.addEventListener("click", () => {
+      state.invY2 = !state.invY2;
+      el.invY2Btn.classList.toggle("active", state.invY2);
+    });
+  }
+
+  if (el.hSensSelect) el.hSensSelect.addEventListener("change", e => { state.hSens = parseFloat(e.target.value); });
+
+  if (el.posXSlider) el.posXSlider.addEventListener("input", () => { state.posX = +el.posXSlider.value; if (el.posXVal) el.posXVal.textContent = state.posX.toFixed(1) + " div"; });
+  if (el.posY1Slider) el.posY1Slider.addEventListener("input", () => { state.posY1 = +el.posY1Slider.value; if (el.posY1Val) el.posY1Val.textContent = state.posY1.toFixed(1) + " div"; });
+  if (el.posY2Slider) el.posY2Slider.addEventListener("input", () => { state.posY2 = +el.posY2Slider.value; if (el.posY2Val) el.posY2Val.textContent = state.posY2.toFixed(1) + " div"; });
+
+  if (el.playPauseBtn) {
+    el.playPauseBtn.addEventListener("click", () => {
+      state.playing = !state.playing;
+      el.playPauseBtn.innerHTML = state.playing ? '<span class="pause-icon">||</span> Pause' : '▶ Lecture';
+    });
+  }
+
+  if (el.resetBtn) {
+    el.resetBtn.addEventListener("click", () => {
+      tScope = 0;
+      segments = [];
+      state.isClosed = false;
+      updateSwitchUI();
+      updateReadouts();
+    });
+  }
+
+  if (el.toggleTheoryBtn) {
+    el.toggleTheoryBtn.addEventListener("click", () => {
+      state.showTheory = !state.showTheory;
+      if (el.theoryContainer) el.theoryContainer.classList.toggle("hidden", !state.showTheory);
+    });
+  }
+
+  if (el.scopeCanvas) {
+    el.scopeCanvas.addEventListener("mouseenter", () => {
+      state.mouseInside = true;
+      if (el.scopeTooltip) el.scopeTooltip.style.display = "block";
+    });
+
+    el.scopeCanvas.addEventListener("mouseleave", () => {
+      state.mouseInside = false;
+      if (el.scopeTooltip) el.scopeTooltip.style.display = "none";
+    });
+
+    el.scopeCanvas.addEventListener("mousemove", (e) => {
+      const rect = el.scopeCanvas.getBoundingClientRect();
+      state.mouseX = e.clientX - rect.left;
+      state.mouseY = e.clientY - rect.top;
+    });
+  }
+
+  function fitCanvas(canvas){
+    const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
+    const cssH = +canvas.getAttribute("height");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    canvas.style.height = cssH + "px";
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w: cssW, h: cssH };
+  }
+
+  function drawScope(dtReal){
+    if (!el.scopeCanvas) return;
+    const { ctx, w, h } = fitCanvas(el.scopeCanvas);
+    ctx.clearRect(0, 0, w, h);
+
+    const numHDivs = 10, numVDivs = 8;
+    const windowDuration = state.hSens * numHDivs;
+
+    if (state.playing) {
+      // Balayage : la fenêtre entière est parcourue en SWEEP_SECONDS / vitesse secondes
+      tScope = Math.min(tScope + dtReal * state.speed * windowDuration / SWEEP_SECONDS, windowDuration);
+    }
+
+    const padL = 44, padR = 10, padT = 10, padB = 10;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+
+    // Grille de l'oscilloscope
+    ctx.strokeStyle = "#1a242a";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= numHDivs; i++){
+      const x = padL + i * (plotW / numHDivs);
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h - padB); ctx.stroke();
+    }
+    for (let i = 0; i <= numVDivs; i++){
+      const y = padT + i * (plotH / numVDivs);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    }
+
+    const yZero = padT + plotH / 2;
+    ctx.strokeStyle = "#2e3c46";
+    ctx.beginPath(); ctx.moveTo(padL, yZero); ctx.lineTo(w - padR, yZero); ctx.stroke();
+
+    const divPixV = plotH / numVDivs, divPixH = plotW / numHDivs;
+    function vToY(v, sens, posDiv){ return yZero - (v / sens) * divPixV - posDiv * divPixV; }
+
+    const xOffset = state.posX * divPixH;
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(padL, padT, plotW, plotH); ctx.clip();
+
+    const N = Math.min(plotW, 1000);
+    const tEnd = Math.min(tScope, windowDuration);
+
+    // Instants d'échantillonnage : grille régulière + doublons aux commutations (fronts verticaux nets)
+    function sampleTimes(){
+      const times = [];
+      const n = Math.max(1, Math.ceil(N * tEnd / windowDuration));
+      for (let i = 0; i <= n; i++) times.push((i / n) * tEnd);
+      for (let k = 1; k < segments.length; k++){
+        const t0 = segments[k].t0;
+        if (t0 > 0 && t0 <= tEnd){ times.push(t0 - 1e-12); times.push(t0); }
+      }
+      return times.sort((a, b) => a - b);
+    }
+
+    // La trace est dessinée de t = 0 jusqu'à l'instant de balayage courant :
+    // établissement PUIS rupture restent affichés ensemble sur l'écran.
+    function traceChannel(sampleFn, sens, posDiv, color, invert = false){
+      ctx.lineWidth = 2; ctx.strokeStyle = color; ctx.beginPath();
+      if (!segments.length) {
+        // En attente du premier clic : ligne de base à 0
+        const y0 = vToY(0, sens, posDiv);
+        ctx.moveTo(padL + xOffset, y0); ctx.lineTo(padL + plotW + xOffset, y0);
+      } else {
+        sampleTimes().forEach((tVal, idx) => {
+          const x = padL + (tVal / windowDuration) * plotW + xOffset;
+          let val = sampleFn(tVal);
+          if (invert) val = -val;
+          const y = vToY(val, sens, posDiv);
+          if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+      }
+      ctx.stroke();
+    }
+
+    // Affichage des voies
+    if (state.showChan1) traceChannel(calcUR0, state.v1Sens, state.posY1, "#c792ea", state.invY1);
+    if (state.showChan2) traceChannel(calcUAM, state.v2Sens, state.posY2, "#2bbd8e", state.invY2);
+    if (state.showChan3) traceChannel(calcUAB, state.v3Sens, state.posY3, "#e5a93b", false);
+
+    // Ligne verticale lumineuse représentant le balayage en temps réel
+    const currentX = padL + (Math.min(tScope, windowDuration) / windowDuration) * plotW + xOffset;
+    if (currentX >= padL && currentX <= w - padR) {
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(currentX, padT); ctx.lineTo(currentX, h - padB); ctx.stroke();
+    }
+
+    // Curseur de survol interactif (Tooltip)
+    if (state.mouseInside && state.mouseX >= padL && state.mouseX <= w - padR && state.mouseY >= padT && state.mouseY <= h - padB) {
+      const mx = state.mouseX;
+      const my = state.mouseY;
+
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+
+      ctx.beginPath(); ctx.moveTo(mx, padT); ctx.lineTo(mx, h - padB); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, my); ctx.lineTo(w - padR, my); ctx.stroke();
+      ctx.setLineDash([]);
+
+      const tHover = ((mx - padL - xOffset) / plotW) * windowDuration;
+
+      const hasData = segments.length > 0 && tHover >= 0 && tHover <= tEnd;
+      const urHover = hasData ? calcUR0(tHover) : 0;
+      const uamHover = hasData ? calcUAM(tHover) : 0;
+      const iHover = hasData ? calcI(tHover) : 0;
+      const uabHover = hasData ? calcUAB(tHover) : 0;
+
+      if (hasData && state.showChan2) {
+        const yUam = vToY(state.invY2 ? -uamHover : uamHover, state.v2Sens, state.posY2);
+        ctx.fillStyle = "#2bbd8e";
+        ctx.beginPath(); ctx.arc(mx, yUam, 4, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (hasData && state.showChan1) {
+        const yUr = vToY(state.invY1 ? -urHover : urHover, state.v1Sens, state.posY1);
+        ctx.fillStyle = "#c792ea";
+        ctx.beginPath(); ctx.arc(mx, yUr, 4, 0, 2 * Math.PI); ctx.fill();
+      }
+
+      if (hasData && state.showChan3) {
+        const yUab = vToY(uabHover, state.v3Sens, state.posY3);
+        ctx.fillStyle = "#e5a93b";
+        ctx.beginPath(); ctx.arc(mx, yUab, 4, 0, 2 * Math.PI); ctx.fill();
+      }
+
+      if (el.scopeTooltip) {
+        let tooltipHTML = `<div style="color:var(--time-color); font-weight:bold; margin-bottom:2px;">t = ${fmtEng(tHover, "s")}</div>`;
+        if (hasData && state.showChan1) {
+          tooltipHTML += `<div style="color:var(--ur-color);">u<sub>R0</sub> = ${urHover.toFixed(2)} V</div>`;
+          tooltipHTML += `<div style="color:var(--text-dim); font-size:10px;">i = ${fmtEng(iHover, "A")}</div>`;
+        }
+        if (hasData && state.showChan2) {
+          tooltipHTML += `<div style="color:var(--out-color);">u<sub>AM</sub> = ${uamHover.toFixed(2)} V</div>`;
+        }
+        if (hasData && state.showChan3) {
+          tooltipHTML += `<div style="color:var(--in-color);">u<sub>AB</sub> = ${uabHover.toFixed(2)} V</div>`;
+        }
+
+        el.scopeTooltip.innerHTML = tooltipHTML;
+
+        const tooltipW = el.scopeTooltip.offsetWidth || 120;
+        let tipX = mx + 15;
+        if (tipX + tooltipW > w - padR) tipX = mx - tooltipW - 15;
+
+        el.scopeTooltip.style.left = tipX + "px";
+        el.scopeTooltip.style.top = Math.max(padT, Math.min(my - 20, h - padB - 60)) + "px";
+      }
+    }
+
+    ctx.restore();
+
+    ctx.font = "10px monospace";
+    ctx.fillStyle = "#7c8a92";
+    ctx.textAlign = "left";
+    ctx.fillText(state.v1Sens + "/" + state.v2Sens + (state.showChan3 ? "/" + state.v3Sens : "") + " V/div · " + fmtEng(state.hSens, "s") + "/div", padL + 2, h - padB - 4);
+  }
+
+  function loop(ts){
+    if (lastTs === null) lastTs = ts;
+    const dt = state.playing ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
+    lastTs = ts;
+    drawScope(dt);
+    if (dt > 0) updateReadouts();
+    requestAnimationFrame(loop);
+  }
+
+  updateSwitchUI();
+  updateReadouts();
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>
