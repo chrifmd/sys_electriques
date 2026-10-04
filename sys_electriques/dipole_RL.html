@@ -671,6 +671,7 @@
           <span class="val speed-tone" id="kStateVal" style="cursor:pointer; font-weight:bold;">[ Ouvert ]</span>
         </div>
         <button id="toggleKBtn" style="width:100%; padding:8px; background:var(--panel-alt); color:var(--accent); border:1px solid var(--line); border-radius:4px; cursor:pointer; font-weight:bold;">Basculer K (Ouvert / Fermé)</button>
+        <div class="ctrl-hint" style="margin-top:6px;">Raccourcis clavier : <b>F</b> fermer · <b>O</b> ouvrir · <b>K</b> basculer</div>
       </div>
 
       <div class="section-title">GÉNÉRATEUR</div>
@@ -990,6 +991,22 @@
   if (el.switchClickGroup) el.switchClickGroup.addEventListener("click", toggleSwitch);
   if (el.toggleKBtn) el.toggleKBtn.addEventListener("click", toggleSwitch);
   if (el.kStateVal) el.kStateVal.addEventListener("click", toggleSwitch);
+
+  // Raccourcis clavier : F = fermer K, O = ouvrir K, K = basculer
+  function setSwitch(wantClosed){
+    if (state.isClosed !== wantClosed) toggleSwitch();
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+    const tag = e.target && e.target.tagName;
+    const typing = tag === "TEXTAREA" || tag === "SELECT" ||
+                   (tag === "INPUT" && e.target.type !== "range" && e.target.type !== "checkbox");
+    if (typing) return;
+    const k = e.key.toLowerCase();
+    if (k === "f") { setSwitch(true);  e.preventDefault(); }
+    else if (k === "o") { setSwitch(false); e.preventDefault(); }
+    else if (k === "k") { toggleSwitch();   e.preventDefault(); }
+  });
 
   if (el.eSlider) el.eSlider.addEventListener("input", () => { state.E = +el.eSlider.value; onParamChange(); });
   if (el.r0Slider) el.r0Slider.addEventListener("input", () => { state.R0 = +el.r0Slider.value; onParamChange(); });
