@@ -230,7 +230,17 @@
   .top-buttons { display: flex; align-items: center; gap: 8px; }
 
   .canvas-wrapper { position: relative; width: 100%; }
-  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; touch-action: pan-y; cursor: crosshair; }
+  .btn-reset.on { border-color: var(--accent); color: var(--accent); }
+  .cursor-info {
+    position: absolute; top: 8px; right: 8px; display: none; z-index: 9; pointer-events: none;
+    background: rgba(14, 20, 26, 0.92); border: 1px solid var(--line); border-radius: 4px;
+    padding: 5px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text);
+  }
+  .cursor-info table { border-collapse: collapse; }
+  .cursor-info th, .cursor-info td { padding: 1px 7px; text-align: right; font-weight: 600; }
+  .cursor-info td:first-child { text-align: left; color: var(--text-dim); }
+  .cursor-info .ci-foot { margin-top: 3px; color: var(--text-dim); text-align: right; }
 
   /* Info-bulle pour le reticule */
   .scope-tooltip {
@@ -456,6 +466,7 @@ margin-top: 30px;
           <div class="section-title" style="margin-top:0;">COMMUTATEUR K</div>
           <div class="toggle-group">
             <button id="btnCharge" class="active charge-active">1 · Charge</button>
+            <button id="btnOpen">0 · Ouvert</button>
             <button id="btnDecharge">2 · Décharge</button>
           </div>
           <div class="checkbox-row" style="margin-top:12px;">
@@ -463,6 +474,7 @@ margin-top: 30px;
             <label for="autoCycleCheck">Basculement auto.</label>
           </div>
           <div class="ctrl-hint" style="margin-top:2px;">Chaque phase dure 5τ, puis K bascule seul.</div>
+          <div class="ctrl-hint" style="margin-top:6px;">Raccourcis clavier : <b>1</b> ou <b>C</b> charge · <b>2</b> ou <b>D</b> décharge · <b>0</b> ou <b>O</b> ouvrir (K au milieu) · <b>K</b> basculer</div>
         </div>
         </div>
       </div>
@@ -471,16 +483,18 @@ margin-top: 30px;
         <div class="oscillo-header">
           <span class="oscillo-title">OSCILLOSCOPE — DOMAINE TEMPOREL</span>
           <div class="oscillo-legend">
-            <span class="legend-item" id="legendCh1"><span class="color-dot purple"></span>Voie 1 (Y1) : u<sub>R</sub>(t) ∝ i(t) (Violet clair)</span>
+            <span class="legend-item dim" id="legendCh1"><span class="color-dot purple"></span>Voie 1 (Y1) : u<sub>R</sub>(t) ∝ i(t) (Violet clair)</span>
             <span class="legend-item" id="legendCh2"><span class="color-dot green"></span>Voie 2 (Y2) : u<sub>C</sub>(t) (Vert)</span>
           </div>
         </div>
 
         <!-- En-tête supérieur -->
         <div class="top-screen-bar">
-          <div class="ctrl-hint" style="margin-bottom:0;">Masse en A : u<sub>2</sub> = u<sub>BA</sub> = −u<sub>C</sub> (INV Y2 requis pour uC)</div>
+          <div class="ctrl-hint" style="margin-bottom:0;">Masse en A : u<sub>2</sub> = u<sub>BA</sub> = −u<sub>C</sub> (INV Y2 requis pour uC) | Clic : curseurs C1/C2 (accrochage sur K et sur t<sub>0</sub>+τ).</div>
           <div class="top-buttons">
             <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
+            <button id="tauAidBtn" class="btn-reset" title="Afficher asymptote, tangente à l'origine et niveau 63 % (touche T)">τ : Tangente</button>
+            <button id="clearCursorsBtn" class="btn-reset" title="Effacer les curseurs de mesure">✕ Curseurs</button>
             <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
           </div>
         </div>
@@ -497,7 +511,7 @@ margin-top: 30px;
               <option value="5">5 V/div</option>
             </select>
           </div>
-          <label class="toolbar-check ch1"><input type="checkbox" id="showChan1Check" checked> u<sub>R</sub>(t) / i(t)</label>
+          <label class="toolbar-check ch1"><input type="checkbox" id="showChan1Check"> u<sub>R</sub>(t) / i(t)</label>
           <button id="invY1Btn" class="btn-inv ch1-btn" title="Inverser le signal Y1">INV Y1</button>
 
           <!-- CH2 -->
@@ -538,6 +552,7 @@ margin-top: 30px;
         <div class="canvas-wrapper">
           <canvas id="scopeCanvas" height="340"></canvas>
           <div id="scopeTooltip" class="scope-tooltip"></div>
+          <div id="cursorInfo" class="cursor-info"></div>
         </div>
       </div>
 
@@ -623,8 +638,8 @@ margin-top: 30px;
       <div class="section-title">SIMULATION &amp; ANIMATION</div>
 
       <div class="ctrl">
-        <div class="ctrl-row"><span class="name">Vitesse simulation</span><span class="val speed-tone" id="speedVal">1.0×</span></div>
-        <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+        <div class="ctrl-row"><span class="name">Vitesse simulation</span><span class="val speed-tone" id="speedVal">0.3×</span></div>
+        <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="0.3">
       </div>
 
       <div class="section-title">MESURES</div>
@@ -652,12 +667,12 @@ margin-top: 30px;
 
   const state = {
     E: 6, R: 1000, C: 100e-6,
-    speed: 1.0,
-    switchPos: "charge",
+    speed: 0.3,
+    switchPos: "neutral",   // "neutral" = K au milieu, les 2 branches sont ouvertes
     autoCycle: false,
     lastSwitchAt: 0,
     v1Sens: 2, v2Sens: 2, hSens: 0.2,
-    showChan1: true,
+    showChan1: false,   // au départ, seule la courbe de charge u_C (voie 2) est affichée
     showChan2: true,
     invY1: false,
     invY2: true,
@@ -668,7 +683,10 @@ margin-top: 30px;
     // Gestion du reticule
     mouseInside: false,
     mouseX: 0,
-    mouseY: 0
+    mouseY: 0,
+    cursors: [],        // curseurs de mesure posés par clic : {t} (temps absolu)
+    showTauAids: false, // asymptote, tangente à l'origine, niveau 63 %
+    started: false      // l'animation démarre à la première action sur K
   };
 
   const el = {
@@ -691,6 +709,7 @@ margin-top: 30px;
     regimeVal: document.getElementById("regimeVal"),
     btnCharge: document.getElementById("btnCharge"),
     btnDecharge: document.getElementById("btnDecharge"),
+    btnOpen: document.getElementById("btnOpen"),
     autoCycleCheck: document.getElementById("autoCycleCheck"),
     playPauseBtn: document.getElementById("playPauseBtn"),
     resetBtn: document.getElementById("resetBtn"),
@@ -718,7 +737,10 @@ margin-top: 30px;
     switchArm: document.getElementById("switchArm"),
     contact1Label: document.getElementById("contact1Label"),
     contact2Label: document.getElementById("contact2Label"),
-    scopeTooltip: document.getElementById("scopeTooltip")
+    scopeTooltip: document.getElementById("scopeTooltip"),
+    cursorInfo: document.getElementById("cursorInfo"),
+    clearCursorsBtn: document.getElementById("clearCursorsBtn"),
+    tauAidBtn: document.getElementById("tauAidBtn")
   };
 
   function sliderToR(v){ return Math.pow(10, 2 + (v/1000)*3); }   
@@ -756,6 +778,7 @@ margin-top: 30px;
   function ucAt(t){
     const tt = Math.max(t, state.history[0].t);
     const seg = findSegment(tt);
+    if (seg.pos === "neutral") return seg.v0;       // K ouvert : C isolé, il garde sa tension
     const tau = Math.max(seg.R * seg.C, 1e-9);
     const target = seg.pos === "charge" ? seg.E : 0;
     return target + (seg.v0 - target) * Math.exp(-(tt - seg.t) / tau);
@@ -767,7 +790,11 @@ margin-top: 30px;
     return seg.pos === "charge" ? seg.E : 0;
   }
 
-  function urAt(t){ return ueAt(t) - ucAt(t); }
+  function urAt(t){
+    const seg = findSegment(Math.max(t, state.history[0].t));
+    if (seg.pos === "neutral") return 0;              // aucun courant : pas de chute de tension dans R
+    return ueAt(t) - ucAt(t);
+  }
   function iAt(t){ return urAt(t) / state.R; }
 
   function resegment(t){
@@ -776,7 +803,14 @@ margin-top: 30px;
     if (state.history.length > 400) state.history.splice(0, state.history.length - 400);
   }
 
+  // L'animation se déclenche (ou reprend si elle est en pause) à chaque action sur K
+  function triggerAnimation(){
+    state.started = true;
+    if (!state.playing) el.playPauseBtn.click();
+  }
+
   function setSwitch(pos, t){
+    if (pos !== "neutral") triggerAnimation();
     if (pos === state.switchPos) return;
     state.switchPos = pos;
     resegment(t);
@@ -785,17 +819,20 @@ margin-top: 30px;
   }
 
   function updateSwitchVisual(){
-    const charging = state.switchPos === "charge";
+    const pos = state.switchPos;
+    const charging = pos === "charge", discharging = pos === "decharge", open = pos === "neutral";
     el.btnCharge.classList.toggle("active", charging);
     el.btnCharge.classList.toggle("charge-active", charging);
-    el.btnDecharge.classList.toggle("active", !charging);
-    el.btnDecharge.classList.toggle("decharge-active", !charging);
+    el.btnDecharge.classList.toggle("active", discharging);
+    el.btnDecharge.classList.toggle("decharge-active", discharging);
+    el.btnOpen.classList.toggle("active", open);
 
-    el.switchArm.setAttribute("x2", charging ? "90" : "140");
-    el.switchArm.setAttribute("y2", "30");
+    // Bras de K : contact 1, contact 2, ou au milieu (aucun contact)
+    el.switchArm.setAttribute("x2", charging ? "90" : (discharging ? "140" : "115"));
+    el.switchArm.setAttribute("y2", open ? "28" : "30");
 
     el.contact1Label.classList.toggle("active", charging);
-    el.contact2Label.classList.toggle("active", !charging);
+    el.contact2Label.classList.toggle("active", discharging);
   }
 
   function updateReadouts(){
@@ -809,21 +846,21 @@ margin-top: 30px;
     el.fiveTauVal.textContent = fmtEng(5 * tau, "s");
 
     const ue = ueAt(tCursor), uc = ucAt(tCursor), ur = urAt(tCursor), i = iAt(tCursor);
-    el.ueNowVal.textContent = ue.toFixed(2) + " V";
+    el.ueNowVal.textContent = state.switchPos === "neutral" ? "— (K ouvert)" : ue.toFixed(2) + " V";
     el.ucNowVal.textContent = uc.toFixed(2) + " V";
     el.urNowVal.textContent = ur.toFixed(2) + " V";
     el.iNowVal.textContent = fmtEng(i, "A");
     el.pctVal.textContent = (state.E > 0 ? (100 * uc / state.E) : 0).toFixed(0) + " %";
-    el.regimeVal.textContent = state.switchPos === "charge" ? "charge → E" : "décharge → 0";
+    el.regimeVal.textContent = state.switchPos === "charge" ? "charge → E" : (state.switchPos === "decharge" ? "décharge → 0" : "K ouvert (C isolé)");
     el.regimeVal.classList.toggle("regime-charge", state.switchPos === "charge");
-    el.regimeVal.classList.toggle("regime-decharge", state.switchPos !== "charge");
+    el.regimeVal.classList.toggle("regime-decharge", state.switchPos === "decharge");
 
     el.thTauLive.innerHTML = "τ = RC = " + fmtEng(state.R, "Ω") + " × " + fmtEng(state.C, "F") + " = <b>" + fmtEng(tau, "s") + "</b>" +
       "<br>u<sub>C</sub> actuelle = " + uc.toFixed(2) + " V, soit " + (state.E > 0 ? (100*uc/state.E) : 0).toFixed(0) + " % de E";
 
     const iMax = state.E / state.R;
     el.thCurrentLive.innerHTML = "I<sub>max</sub> = E/R = " + fmtEng(iMax, "A") +
-      "<br>i(t) actuel = u<sub>R</sub>/R = " + fmtEng(i, "A") + " (" + (state.switchPos === "charge" ? "charge le condensateur" : "sens inversé, décharge") + ")";
+      "<br>i(t) actuel = u<sub>R</sub>/R = " + fmtEng(i, "A") + " (" + (state.switchPos === "charge" ? "charge le condensateur" : (state.switchPos === "decharge" ? "sens inversé, décharge" : "K ouvert : aucun courant")) + ")";
   }
 
   el.eSlider.addEventListener("input", () => { state.E = +el.eSlider.value; resegment(tCursor); updateReadouts(); });
@@ -833,11 +870,39 @@ margin-top: 30px;
 
   el.btnCharge.addEventListener("click", () => setSwitch("charge", tCursor));
   el.btnDecharge.addEventListener("click", () => setSwitch("decharge", tCursor));
+  el.btnOpen.addEventListener("click", () => setSwitch("neutral", tCursor));
+
+  // Raccourcis clavier : 1 ou C = charge, 2 ou D = décharge, K = basculer, T = aides τ
+  // (codes physiques pour les chiffres : fonctionne aussi sur clavier AZERTY sans Maj)
+  function setTauAids(on){
+    state.showTauAids = on;
+    el.tauAidBtn.classList.toggle("on", on);
+  }
+  el.tauAidBtn.addEventListener("click", () => setTauAids(!state.showTauAids));
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+    const tag = e.target && e.target.tagName;
+    const typing = tag === "TEXTAREA" || tag === "SELECT" ||
+                   (tag === "INPUT" && e.target.type !== "range" && e.target.type !== "checkbox");
+    if (typing) return;
+    const k = e.key.toLowerCase();
+    if (k === "t") { setTauAids(!state.showTauAids); e.preventDefault(); return; }
+    if (state.autoCycle) return;                       // K piloté automatiquement
+    if (e.code === "Digit1" || e.code === "Numpad1" || k === "c") { setSwitch("charge", tCursor); e.preventDefault(); }
+    else if (e.code === "Digit2" || e.code === "Numpad2" || k === "d") { setSwitch("decharge", tCursor); e.preventDefault(); }
+    else if (e.code === "Digit0" || e.code === "Numpad0" || k === "o") { setSwitch("neutral", tCursor); e.preventDefault(); }
+    else if (k === "k") { setSwitch(state.switchPos === "charge" ? "decharge" : "charge", tCursor); e.preventDefault(); }
+  });
 
   el.autoCycleCheck.addEventListener("change", () => {
     state.autoCycle = el.autoCycleCheck.checked;
+    if (state.autoCycle){
+      if (state.switchPos === "neutral") setSwitch("charge", tCursor);
+      triggerAnimation();
+    }
     el.btnCharge.disabled = state.autoCycle;
     el.btnDecharge.disabled = state.autoCycle;
+    el.btnOpen.disabled = state.autoCycle;
     state.lastSwitchAt = tCursor;
   });
 
@@ -877,7 +942,9 @@ margin-top: 30px;
 
   el.resetBtn.addEventListener("click", () => {
     tCursor = 0;
-    state.switchPos = "charge";
+    state.started = false;
+    state.cursors = [];
+    state.switchPos = "neutral";
     state.lastSwitchAt = 0;
     initHistory();
     updateSwitchVisual();
@@ -890,22 +957,101 @@ margin-top: 30px;
     drawTheoryCurve();
   });
 
-  // Événements de la souris sur le Canvas pour le réticule
-  el.scopeCanvas.addEventListener("mouseenter", () => {
-    state.mouseInside = true;
-    el.scopeTooltip.style.display = "block";
-  });
+  // ---- Géométrie de l'écran (partagée entre dessin, survol et clics) ----
+  function scopeGeom(){
+    const w = el.scopeCanvas.clientWidth;
+    const padL = 44, padR = 10;
+    const plotW = w - padL - padR;
+    const windowDuration = state.hSens * 10;
+    return { w, padL, padR, plotW, windowDuration,
+             windowStart: tCursor - windowDuration,
+             xOffset: state.posX * (plotW / 10) };
+  }
+  const xOfT = (t, g) => g.padL + ((t - g.windowStart) / g.windowDuration) * g.plotW + g.xOffset;
+  const tOfX = (x, g) => g.windowStart + ((x - g.padL - g.xOffset) / g.plotW) * g.windowDuration;
 
-  el.scopeCanvas.addEventListener("mouseleave", () => {
-    state.mouseInside = false;
-    el.scopeTooltip.style.display = "none";
-  });
+  // Accrochage : instant de commutation de K (t0) et, si les aides sont actives, t0 + τ
+  function snapTime(mx){
+    const g = scopeGeom(), h = state.history;
+    let best = null, bd = 8;
+    h.forEach((seg, i) => {
+      const end = (i + 1 < h.length) ? h[i + 1].t : Infinity;
+      const cands = [{ t: seg.t, kind: "K" }];
+      if (state.showTauAids && seg.pos !== "neutral" && seg.t + seg.R * seg.C < end) cands.push({ t: seg.t + seg.R * seg.C, kind: "τ" });
+      cands.forEach(c => {
+        if (c.t > tCursor || c.t < h[0].t) return;
+        const d = Math.abs(xOfT(c.t, g) - mx);
+        if (d < bd) { bd = d; best = c; }
+      });
+    });
+    return best;
+  }
 
-  el.scopeCanvas.addEventListener("mousemove", (e) => {
-    const rect = el.scopeCanvas.getBoundingClientRect();
+  const cv = el.scopeCanvas;
+  const setPos = (e) => {
+    const rect = cv.getBoundingClientRect();
     state.mouseX = e.clientX - rect.left;
     state.mouseY = e.clientY - rect.top;
+  };
+  const showTip = () => { state.mouseInside = true; if (state.started) el.scopeTooltip.style.display = "block"; };
+  const hideTip = () => { state.mouseInside = false; el.scopeTooltip.style.display = "none"; };
+
+  // Pointer Events : souris, tactile et stylet, avec ou sans pause
+  cv.addEventListener("pointerenter", (e) => { setPos(e); showTip(); });
+  cv.addEventListener("pointerdown",  (e) => { setPos(e); showTip(); });
+  cv.addEventListener("pointermove",  (e) => { setPos(e); showTip(); });
+  cv.addEventListener("pointerleave", (e) => { if (e.pointerType !== "touch") hideTip(); });
+  document.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "touch" && e.target !== cv && state.mouseInside) hideTip();
   });
+
+  // Clic : pose un curseur (2 maximum ; un 3e clic recommence). Le premier clic fige l'écran.
+  cv.addEventListener("click", (e) => {
+    setPos(e);
+    if (!state.started) return;
+    const g = scopeGeom();
+    if (state.mouseX < g.padL || state.mouseX > g.w - g.padR) return;
+    const snap = snapTime(state.mouseX);
+    const t = snap ? snap.t : tOfX(state.mouseX, g);
+    if (t < state.history[0].t || t > tCursor) return;
+    if (state.cursors.length >= 2) state.cursors = [];
+    state.cursors.push({ t });
+    if (state.playing) el.playPauseBtn.click();
+  });
+  el.clearCursorsBtn.addEventListener("click", () => { state.cursors = []; });
+
+  // Tableau des curseurs (C1, C2, Δ) et comparaison avec τ = RC
+  let lastCursorHTML = "";
+  function updateCursorInfo(){
+    let html = "";
+    const cs = state.cursors;
+    if (cs.length){
+      const cols = ["#ffd166", "#ff8fab"];
+      const vals = cs.map(c => ({ t: c.t, uc: ucAt(c.t), ur: urAt(c.t) }));
+      const rows = [["t", v => v.t, x => fmtEng(x, "s")],
+                    ["u<sub>C</sub>", v => v.uc, x => x.toFixed(2) + " V"]];
+      if (state.showChan1) rows.push(["u<sub>R</sub>", v => v.ur, x => x.toFixed(2) + " V"]);
+      html = "<table><tr><th></th>" + vals.map((v, k) => `<th style="color:${cols[k]}">C${k + 1}</th>`).join("") + (vals.length === 2 ? "<th>Δ</th>" : "") + "</tr>";
+      rows.forEach(([lab, get, fmt]) => {
+        html += `<tr><td>${lab}</td>` + vals.map(v => `<td>${fmt(get(v))}</td>`).join("");
+        if (vals.length === 2) html += `<td style="color:var(--accent)">${fmt(get(vals[1]) - get(vals[0]))}</td>`;
+        html += "</tr>";
+      });
+      html += "</table>";
+      if (vals.length === 2){
+        const seg = findSegment(Math.min(vals[0].t, vals[1].t));
+        const tauTh = seg.R * seg.C;
+        const dt = Math.abs(vals[1].t - vals[0].t);
+        html += `<div class="ci-foot">${seg.pos === "neutral" ? "|Δt|" : "τ mesuré = |Δt|"} = <b>${fmtEng(dt, "s")}</b></div>`;
+        if (seg.pos !== "neutral") html += `<div class="ci-foot">τ = RC = ${fmtEng(tauTh, "s")} · écart ${(100 * (dt - tauTh) / tauTh).toFixed(1)} %</div>`;
+      }
+    }
+    if (html !== lastCursorHTML){
+      el.cursorInfo.innerHTML = html;
+      el.cursorInfo.style.display = html ? "block" : "none";
+      lastCursorHTML = html;
+    }
+  }
 
   function fitCanvas(canvas){
     const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
@@ -972,7 +1118,7 @@ margin-top: 30px;
     ctx.strokeStyle = "#e8574f";
     ctx.lineWidth = 1;
     for (const seg of state.history){
-      if (seg.t >= windowStart && seg.t <= tCursor){
+      if (state.started && seg.t >= windowStart && seg.t <= tCursor){
         const x = padL + ((seg.t - windowStart) / windowDuration) * plotW + xOffset;
         ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h - padB); ctx.stroke();
       }
@@ -1000,13 +1146,75 @@ margin-top: 30px;
       ctx.stroke();
     }
 
-    if (state.showChan1) traceChannel(urAt, state.v1Sens, state.posY1, "#c792ea", state.invY1);
-    if (state.showChan2) traceChannel(ucAt, state.v2Sens, state.posY2, "#2bbd8e", !state.invY2);
+    if (state.started && state.showChan1) traceChannel(urAt, state.v1Sens, state.posY1, "#c792ea", state.invY1);
+    if (state.started && state.showChan2) traceChannel(ucAt, state.v2Sens, state.posY2, "#2bbd8e", !state.invY2);
+
+    // --- AIDES τ : asymptote, tangente à l'origine, niveau 63 % et repère t0 + τ ---
+    const yU = v => vToY(state.invY2 ? v : -v, state.v2Sens, state.posY2);   // échelle de la voie uC
+    const xT = t => padL + ((t - windowStart) / windowDuration) * plotW + xOffset;
+    if (state.started && state.showTauAids && state.showChan2){ aids: {
+      const inPlotNow = state.mouseInside && state.mouseX >= padL && state.mouseX <= w - padR;
+      const aSeg = inPlotNow ? findSegment(tOfX(state.mouseX, scopeGeom())) : state.history[state.history.length - 1];
+      if (aSeg.pos === "neutral") break aids;       // pas d'exponentielle quand K est ouvert
+      const tauS = aSeg.R * aSeg.C;
+      const target = aSeg.pos === "charge" ? aSeg.E : 0;
+      const lvl = target + (aSeg.v0 - target) * Math.exp(-1);
+      const x0 = xT(aSeg.t), x1 = xT(aSeg.t + tauS);
+      ctx.font = "10px monospace";
+
+      // Asymptote
+      ctx.setLineDash([6, 4]); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(43,189,142,0.6)";
+      ctx.beginPath(); ctx.moveTo(padL, yU(target)); ctx.lineTo(w - padR, yU(target)); ctx.stroke();
+      ctx.fillStyle = "rgba(43,189,142,0.9)"; ctx.textAlign = "right";
+      ctx.fillText(aSeg.pos === "charge" ? "asymptote : E" : "asymptote : 0", w - padR - 4, yU(target) - 4);
+
+      // Niveau 63 % (charge) ou 37 % (décharge)
+      ctx.strokeStyle = "rgba(255,209,102,0.8)";
+      ctx.beginPath(); ctx.moveTo(padL, yU(lvl)); ctx.lineTo(w - padR, yU(lvl)); ctx.stroke();
+      ctx.fillStyle = "#ffd166"; ctx.textAlign = "left";
+      ctx.fillText(aSeg.pos === "charge" ? "63 %" : "37 %", padL + 4, yU(lvl) - 4);
+
+      // Repère vertical t0 + τ
+      ctx.beginPath(); ctx.moveTo(x1, padT); ctx.lineTo(x1, h - padB); ctx.stroke();
+      ctx.fillText("t\u2080+\u03C4", x1 + 4, padT + 24);
+      ctx.setLineDash([]);
+
+      // Tangente à l'origine de la phase (coupe l'asymptote en t0 + τ)
+      ctx.strokeStyle = "#ff8fab"; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(x0, yU(aSeg.v0)); ctx.lineTo(x1, yU(target)); ctx.stroke();
+      ctx.fillStyle = "#ff8fab";
+      ctx.beginPath(); ctx.arc(x0, yU(aSeg.v0), 3.5, 0, 2 * Math.PI); ctx.fill();
+      ctx.beginPath(); ctx.arc(x1, yU(target), 3.5, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = "#ffd166";
+      ctx.beginPath(); ctx.arc(x1, yU(lvl), 3.5, 0, 2 * Math.PI); ctx.fill();
+      ctx.textAlign = "left";
+    } }
+
+    // --- CURSEURS DE MESURE posés par clic (restent visibles en pause) ---
+    const curColors = ["#ffd166", "#ff8fab"];
+    state.cursors.forEach((cur, idx) => {
+      const cx = xT(cur.t);
+      if (cx < padL || cx > w - padR) return;
+      ctx.strokeStyle = curColors[idx]; ctx.lineWidth = 1.2; ctx.setLineDash([6, 3]);
+      ctx.beginPath(); ctx.moveTo(cx, padT); ctx.lineTo(cx, h - padB); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = curColors[idx]; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+      ctx.fillText("C" + (idx + 1), cx, padT + 12);
+      if (state.showChan2){
+        ctx.beginPath(); ctx.arc(cx, yU(ucAt(cur.t)), 4, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (state.showChan1){
+        ctx.fillStyle = "#c792ea";
+        ctx.beginPath(); ctx.arc(cx, vToY(state.invY1 ? -urAt(cur.t) : urAt(cur.t), state.v1Sens, state.posY1), 4, 0, 2 * Math.PI); ctx.fill();
+      }
+    });
+    ctx.textAlign = "left";
 
     // --- DESSIN DU RÉTICULE ET SURVOL MOURIS ---
-    if (state.mouseInside && state.mouseX >= padL && state.mouseX <= w - padR && state.mouseY >= padT && state.mouseY <= h - padB) {
+    if (state.started && state.mouseInside && state.mouseX >= padL && state.mouseX <= w - padR && state.mouseY >= padT && state.mouseY <= h - padB) {
       const mx = state.mouseX;
       const my = state.mouseY;
+      el.scopeTooltip.style.display = "block";
 
       // Dessin des lignes du réticule
       ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
@@ -1039,6 +1247,16 @@ margin-top: 30px;
         ctx.beginPath(); ctx.arc(mx, yUr, 4, 0, 2 * Math.PI); ctx.fill();
       }
 
+      // Anneau d'accrochage (t0 ou t0 + τ) : un clic y pose le curseur exactement
+      const snap = snapTime(mx);
+      if (snap && state.showChan2){
+        const sx = xT(snap.t), sy = yU(ucAt(snap.t));
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.arc(sx, sy, 7, 0, 2 * Math.PI); ctx.stroke();
+        ctx.fillStyle = "#ffffff"; ctx.font = "10px monospace"; ctx.textAlign = "left";
+        ctx.fillText(snap.kind === "K" ? "t\u2080 (K)" : "t\u2080+\u03C4", sx + 10, sy - 8);
+      }
+
       // Mise à jour de l'infobulle (Tooltip)
       let tooltipHTML = `<div style="color:var(--time-color); font-weight:bold; margin-bottom:2px;">t = ${fmtEng(tHover, "s")}</div>`;
       if (state.showChan2) {
@@ -1061,6 +1279,17 @@ margin-top: 30px;
     }
 
     ctx.restore();
+    updateCursorInfo();
+
+    // Message d'attente tant que K n'a pas été actionné
+    if (!state.started){
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#9fb0b9"; ctx.font = "14px sans-serif";
+      ctx.fillText("Actionnez K pour lancer l'animation", padL + plotW / 2, padT + plotH / 2 - 6);
+      ctx.fillStyle = "#7c8a92"; ctx.font = "11px monospace";
+      ctx.fillText("1 / C : charge   ·   2 / D : décharge   ·   K : basculer", padL + plotW / 2, padT + plotH / 2 + 16);
+      ctx.textAlign = "left";
+    }
 
     ctx.font = "10px monospace";
     ctx.fillStyle = "#7c8a92";
@@ -1122,7 +1351,7 @@ margin-top: 30px;
 
   function loop(ts){
     if (lastTs === null) lastTs = ts;
-    const dt = state.playing ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
+    const dt = (state.playing && state.started) ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
     lastTs = ts;
     drawScope(dt);
     if (dt > 0) updateReadouts();
