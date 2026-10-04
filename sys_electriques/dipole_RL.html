@@ -211,7 +211,16 @@
   .top-buttons { display: flex; align-items: center; gap: 8px; }
 
   .canvas-wrapper { position: relative; width: 100%; }
-  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; touch-action: pan-y; cursor: crosshair; }
+  .cursor-info {
+    position: absolute; top: 8px; right: 8px; display: none; z-index: 9; pointer-events: none;
+    background: rgba(14, 20, 26, 0.92); border: 1px solid var(--line); border-radius: 4px;
+    padding: 5px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text);
+  }
+  .cursor-info table { border-collapse: collapse; }
+  .cursor-info th, .cursor-info td { padding: 1px 7px; text-align: right; font-weight: 600; }
+  .cursor-info td:first-child { text-align: left; color: var(--text-dim); }
+  .cursor-info .ci-foot { margin-top: 3px; color: var(--text-dim); text-align: right; }
 
   .scope-tooltip {
     position: absolute; pointer-events: none; background: rgba(14, 20, 26, 0.92);
@@ -324,7 +333,7 @@
         <div class="oscillo-header"><span class="oscillo-title">SCHÉMA DU MONTAGE (CLIQUEZ SUR K)</span></div>
         <div class="montage-row">
           <div class="schematic-wrap" style="flex:1;">
-            <svg viewBox="0 0 240 250" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <marker id="arrow-blue" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                   <path d="M 0 0 L 6 3 L 0 6 z" fill="#38bdf8" />
@@ -360,9 +369,10 @@
               <text x="130" y="20" text-anchor="middle" class="sch-label">A</text>
 
               <!-- Voie Y2 (Point A) -->
-              <path d="M 130,30 L 190,30" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
-              <path d="M 185,26 L 195,30 L 185,34" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
-              <text x="200" y="34" font-size="13" font-weight="bold" fill="var(--out-color)">Y<tspan baseline-shift="sub" font-size="9">2</tspan></text>
+              <path d="M 160,30 L 160,10" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <path d="M 156,15 L 160,5 L 164,15" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <circle cx="160" cy="30" r="2.8" class="sch-node"/>
+              <text x="168" y="14" font-size="13" font-weight="bold" fill="var(--out-color)">Y<tspan baseline-shift="sub" font-size="9">2</tspan></text>
 
               <!-- Flèche courant i -->
               <path d="M 105,30 L 118,30" stroke="var(--text)" stroke-width="1.5" marker-end="url(#arrow-black)"/>
@@ -372,16 +382,25 @@
               <path d="M 130,30 L 130,50" class="sch-wire"/>
               <path d="M 130,50 C 143,50 143,60 130,60 C 143,60 143,70 130,70 C 143,70 143,80 130,80 C 143,80 143,90 130,90" stroke="var(--out-color)" stroke-width="2" fill="none"/>
               <path d="M 130,90 L 130,120" class="sch-wire"/>
-              <text x="148" y="72" class="sch-label l">(L, r)</text>
+              <text x="118" y="75" text-anchor="end" class="sch-label l">(L, r)</text>
+
+              <!-- Diode D en parallèle avec tout le dipôle RL (bobine + R0), entre A et M : anode côté M, cathode côté A -->
+              <path d="M 130,30 L 215,30" class="sch-wire"/>
+              <path d="M 215,30 L 215,105" class="sch-wire"/>
+              <path d="M 205,125 L 225,125 L 215,105 Z" class="sch-comp"/>
+              <path d="M 205,105 L 225,105" stroke="#4fc3e8" stroke-width="2.2" fill="none"/>
+              <path d="M 215,125 L 215,220" class="sch-wire"/>
+              <path d="M 130,220 L 215,220" class="sch-wire"/>
+              <text x="231" y="119" class="sch-label" fill="var(--accent)">D</text>
 
               <!-- Point B -->
               <circle cx="130" cy="120" r="2.8" class="sch-node"/>
               <text x="114" y="124" class="sch-label">B</text>
 
               <!-- Voie Y1 (Point B) -->
-              <path d="M 130,120 L 190,120" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
-              <path d="M 185,116 L 195,120 L 185,124" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
-              <text x="200" y="124" font-size="13" font-weight="bold" fill="var(--ur-color)">Y<tspan baseline-shift="sub" font-size="9">1</tspan></text>
+              <path d="M 130,120 L 178,120" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <path d="M 173,116 L 183,120 L 173,124" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <text x="188" y="124" font-size="13" font-weight="bold" fill="var(--ur-color)">Y<tspan baseline-shift="sub" font-size="9">1</tspan></text>
 
               <!-- Résistance R0 -->
               <rect x="120" y="140" width="20" height="45" class="sch-comp"/>
@@ -393,10 +412,11 @@
               <circle cx="130" cy="220" r="2.8" class="sch-node"/>
               <text x="130" y="238" text-anchor="middle" class="sch-label">M</text>
 
-              <path d="M 130,220 L 170,220" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
-              <path d="M 170,212 L 170,228" stroke="var(--text-dim)" stroke-width="1.5"/>
-              <path d="M 173,215 L 173,225" stroke="var(--text-dim)" stroke-width="1.2"/>
-              <path d="M 176,218 L 176,222" stroke="var(--text-dim)" stroke-width="1"/>
+              <circle cx="85" cy="220" r="2.8" class="sch-node"/>
+              <path d="M 85,220 L 85,230" stroke="var(--text-dim)" stroke-width="1.2" fill="none"/>
+              <path d="M 76,230 L 94,230" stroke="var(--text-dim)" stroke-width="1.5"/>
+              <path d="M 79,235 L 91,235" stroke="var(--text-dim)" stroke-width="1.2"/>
+              <path d="M 82,240 L 88,240" stroke="var(--text-dim)" stroke-width="1"/>
 
               <!-- Connexion retour au générateur -->
               <path d="M 40,220 L 130,220" class="sch-wire"/>
@@ -418,9 +438,10 @@
         </div>
 
         <div class="top-screen-bar">
-          <div class="ctrl-hint" style="margin-bottom:0;">Y1 mesure u<sub>R0</sub>(t) (reflet du courant i) | Y2 mesure la tension totale u<sub>AM</sub>(t)</div>
+          <div class="ctrl-hint" style="margin-bottom:0;">Y1 mesure u<sub>R0</sub>(t) (reflet du courant i) | Y2 mesure la tension totale u<sub>AM</sub>(t) | Survolez la courbe pour lire les valeurs ; cliquez pour placer jusqu'à 2 curseurs (Δt, Δu) — fonctionne aussi en pause.</div>
           <div class="top-buttons">
             <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
+            <button id="clearCursorsBtn" class="btn-reset" title="Effacer les curseurs de mesure">✕ Curseurs</button>
             <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
           </div>
         </div>
@@ -485,6 +506,7 @@
         <div class="canvas-wrapper">
           <canvas id="scopeCanvas" height="340"></canvas>
           <div id="scopeTooltip" class="scope-tooltip"></div>
+          <div id="cursorInfo" class="cursor-info"></div>
         </div>
       </div>
 
@@ -525,15 +547,16 @@
               <text x="475.0" y="166" text-anchor="middle" fill="var(--time-color)">5τ</text>
               <text x="410.0" y="184" text-anchor="middle" fill="var(--time-color)" font-size="10">tangente à l'origine</text>
             </svg>
-            <p>Une bobine s'oppose aux variations brusques du courant : i(t) est <b>continu</b> et évolue de façon exponentielle vers sa valeur finale, en un temps de l'ordre de τ. Les deux courbes ont la même constante de temps ; seule la valeur vers laquelle tend le courant change (I<sub>max</sub> à la fermeture, 0 à l'ouverture).</p>
+            <p>Une bobine s'oppose aux variations brusques du courant : i(t) est <b>continu</b> et évolue de façon exponentielle vers sa valeur finale, en un temps de l'ordre de τ. Les deux courbes ont la même constante de temps ; seule la valeur vers laquelle tend le courant change (I<sub>max</sub> à la fermeture, 0 à l'ouverture). Les courbes ci-dessus correspondent à une diode idéale (V<sub>D</sub> = 0).</p>
           </div>
 
           <div class="theory-card">
             <h3>Montage et voies de l'oscilloscope</h3>
             <ul>
               <li><b>Y1</b> (point B) : u<sub>BM</sub> = u<sub>R0</sub> = R<sub>0</sub>·i(t), image du courant.</li>
-              <li><b>Y2</b> (point A) : u<sub>AM</sub>, tension aux bornes de l'ensemble bobine + R<sub>0</sub>. Elle vaut E quand K est fermé et 0 quand K est ouvert.</li>
+              <li><b>Y2</b> (point A) : u<sub>AM</sub>, tension aux bornes de l'ensemble bobine + R<sub>0</sub>. Elle vaut E quand K est fermé ; K ouvert, elle vaut −V<sub>D</sub> (≈ −0,7 V) tant que la diode conduit, puis 0.</li>
               <li><b>Voie MATH</b> (Y2 − Y1) : u<sub>AB</sub> = u<sub>AM</sub> − u<sub>BM</sub>, tension aux bornes de la bobine.</li>
+              <li><b>Diode D</b>, en parallèle avec bobine + R<sub>0</sub> (cathode côté A) : bloquée quand K est fermé (u<sub>AM</sub> = E &gt; 0), elle conduit à l'ouverture et offre au courant de la bobine un chemin de « roue libre » : bobine → R<sub>0</sub> → D.</li>
             </ul>
             <div class="note">La masse commune est en M : on ne peut pas visualiser directement u<sub>AB</sub> avec une seule voie, d'où la soustraction des deux voies.</div>
           </div>
@@ -559,10 +582,12 @@
 
           <div class="theory-card">
             <h3>2. Rupture du courant (ouverture de K)</h3>
-            <p>Lorsque K s'ouvre, la source ne fournit plus rien (E = 0 dans la maille, u<sub>AM</sub> = 0) : la bobine restitue son énergie, qui est dissipée par effet Joule dans R<sub>0</sub> et r.</p>
-            <div class="formula">τ · di/dt + i = 0</div>
-            <div class="formula">i(t) = I<sub>0</sub> · e<sup>−t/τ</sup> &nbsp; (I<sub>0</sub> = courant à l'instant d'ouverture)</div>
-            <p>Le courant reste continu : i(0<sup>+</sup>) = I<sub>0</sub>. Si K est ouvert avant la fin de l'établissement, I<sub>0</sub> &lt; I<sub>max</sub>.</p>
+            <p>Lorsque K s'ouvre, la source ne fournit plus rien. La bobine s'oppose à la coupure du courant et se comporte en générateur : i continue de circuler dans la boucle bobine → R<sub>0</sub> → diode D, car D devient passante (u<sub>AM</sub> = −V<sub>D</sub>).</p>
+            <div class="formula">0 = L·di/dt + (R<sub>0</sub>+r)·i + V<sub>D</sub></div>
+            <div class="formula">i(t) = (I<sub>0</sub> + V<sub>D</sub>/(R<sub>0</sub>+r)) · e<sup>−t/τ</sup> − V<sub>D</sub>/(R<sub>0</sub>+r)</div>
+            <p>valable jusqu'à l'instant t<sub>f</sub> où i s'annule, puis D se bloque : <span class="formula">t<sub>f</sub> = τ · ln(1 + (R<sub>0</sub>+r)·I<sub>0</sub>/V<sub>D</sub>)</span></p>
+            <p>Diode idéale (V<sub>D</sub> = 0) : <span class="formula">i(t) = I<sub>0</sub> · e<sup>−t/τ</sup></span>, avec la <b>même</b> constante τ = L/(R<sub>0</sub>+r), puisque R<sub>0</sub> reste dans la boucle. Le courant reste continu : i(0<sup>+</sup>) = I<sub>0</sub>.</p>
+            <div class="note">Sans diode, l'ouverture de K couperait brutalement le courant : L·di/dt deviendrait énorme (surtension, étincelle). La diode de roue libre limite cette tension à −V<sub>D</sub>.</div>
             <div class="live" id="thLiveB"></div>
           </div>
 
@@ -571,7 +596,7 @@
             <p><b>Établissement :</b> u<sub>AB</sub> = E − R<sub>0</sub>·i, soit</p>
             <div class="formula">u<sub>AB</sub>(t) = r·I<sub>max</sub> + (E − r·I<sub>max</sub>) · e<sup>−t/τ</sup></div>
             <p>Elle est discontinue à la fermeture : u<sub>AB</sub>(0<sup>+</sup>) = E (tout E est aux bornes de la bobine car i = 0), puis elle décroît vers r·I<sub>max</sub>. La partie purement inductive vaut L·di/dt = E·e<sup>−t/τ</sup> et tend vers 0.</p>
-            <p><b>Rupture :</b> u<sub>AB</sub> = u<sub>AM</sub> − u<sub>BM</sub> = −R<sub>0</sub>·i(t) : la tension change de signe, car la bobine joue le rôle de générateur (i garde son sens mais la tension se retourne).</p>
+            <p><b>Rupture :</b> u<sub>AB</sub> = u<sub>AM</sub> − u<sub>BM</sub> = −V<sub>D</sub> − R<sub>0</sub>·i(t) (soit −R<sub>0</sub>·i(t) pour une diode idéale) : la tension change de signe, car la bobine joue le rôle de générateur (i garde son sens mais la tension se retourne).</p>
           </div>
 
           <div class="theory-card">
@@ -584,6 +609,7 @@
               <tr><td>rupture (i / I<sub>0</sub>)</td><td>36,8 %</td><td>13,5 %</td><td>5,0 %</td><td>1,8 %</td><td>0,7 %</td></tr>
             </table>
             <p>Le régime permanent est donc considéré comme atteint à t ≈ 5τ.</p>
+            <p>La ligne « rupture » suppose une diode idéale (V<sub>D</sub> = 0). Avec V<sub>D</sub> &gt; 0, le courant s'annule en un temps fini t<sub>f</sub> &lt; 5τ.</p>
             <div class="live" id="thLiveT"></div>
           </div>
 
@@ -591,7 +617,7 @@
             <h3>5. Comment mesurer τ sur l'oscillogramme</h3>
             <ol>
               <li><b>Méthode des 63 %</b> (établissement) : lire l'instant où u<sub>R0</sub> = 0,63·U<sub>max</sub>.</li>
-              <li><b>Méthode des 37 %</b> (rupture) : lire l'instant où u<sub>R0</sub> = 0,37·u<sub>R0</sub>(0).</li>
+              <li><b>Méthode des 37 %</b> (rupture) : lire l'instant où u<sub>R0</sub> = 0,37·u<sub>R0</sub>(0) (valable pour V<sub>D</sub> ≈ 0 ; sinon préférer l'établissement).</li>
               <li><b>Tangente à l'origine</b> : elle coupe l'asymptote horizontale à t = τ.</li>
               <li><b>Temps de demi-montée</b> : t<sub>½</sub> = τ·ln 2 ≈ 0,69·τ, donc τ = t<sub>½</sub> / 0,69.</li>
             </ol>
@@ -614,7 +640,7 @@
             <h3>7. Bilan énergétique</h3>
             <p>En multipliant la loi des mailles par i :</p>
             <div class="formula">E·i = (R<sub>0</sub>+r)·i² + d(½·L·i²)/dt</div>
-            <p>La puissance fournie par le générateur sert à l'effet Joule et à charger la bobine. En régime permanent, tout part en chaleur ; l'énergie stockée vaut alors ½·L·I<sub>max</sub>². À la rupture, cette énergie est intégralement dissipée par effet Joule.</p>
+            <p>La puissance fournie par le générateur sert à l'effet Joule et à charger la bobine. En régime permanent, tout part en chaleur ; l'énergie stockée vaut alors ½·L·I<sub>max</sub>². À la rupture, cette énergie est dissipée par effet Joule dans R<sub>0</sub> et r, et dans la diode (puissance V<sub>D</sub>·i).</p>
             <div class="live" id="thLiveE"></div>
           </div>
 
@@ -624,6 +650,7 @@
               <li><b>L ↑</b> : τ ↑, transitoire plus lent ; I<sub>max</sub> inchangé.</li>
               <li><b>R<sub>0</sub> ↑ ou r ↑</b> : τ ↓, transitoire plus rapide ; I<sub>max</sub> diminue.</li>
               <li><b>E ↑</b> : amplitudes proportionnelles, τ inchangé.</li>
+              <li><b>V<sub>D</sub> ↑</b> : à la rupture, u<sub>AM</sub> = −V<sub>D</sub> et le courant s'annule plus tôt (à t<sub>f</sub>) ; V<sub>D</sub> = 0 redonne l'exponentielle pure.</li>
               <li><b>r ≠ 0</b> : u<sub>AB</sub> ne tend pas vers 0 mais vers r·I<sub>max</sub>, et U<sub>max</sub> &lt; E.</li>
             </ul>
             <div class="note">Erreurs fréquentes : lire τ à 50 % au lieu de 63 % ; oublier r dans τ ; confondre u<sub>R0</sub> (image de i) et u<sub>AM</sub> ; penser que u<sub>AB</sub> s'annule en régime permanent.</div>
@@ -670,6 +697,13 @@
         <input type="range" id="rSlider" min="0" max="200" step="5" value="100">
       </div>
 
+      <div class="section-title">DIODE D (ROUE LIBRE)</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="name">Tension de seuil V<sub>D</sub></span><span class="val" id="vdVal">0.0 V</span></div>
+        <input type="range" id="vdSlider" min="0" max="1" step="0.1" value="0">
+      </div>
+
       <div class="section-title">SIMULATION</div>
 
       <div class="ctrl">
@@ -701,6 +735,7 @@
     R0: 900,
     L: 0.100, // 100 mH
     r: 100,   // 100 Ohm
+    Vd: 0,    // tension de seuil de la diode (V) : 0 = diode idéale
     speed: 1.0,
     v1Sens: 2, v2Sens: 2, v3Sens: 2, hSens: 0.0002,
     showChan1: true, showChan2: true, showChan3: false,
@@ -710,6 +745,8 @@
     showTheory: false,
     mouseInside: false,
     mouseX: 0, mouseY: 0,
+    hoverT: null,      // instant pointé sur l'écran (null si hors trace)
+    cursors: [],       // curseurs de mesure posés par clic : {t}
     isClosed: false
   };
 
@@ -732,6 +769,8 @@
     r0Val: document.getElementById("r0Val"),
     lVal: document.getElementById("lVal"),
     rVal: document.getElementById("rVal"),
+    vdSlider: document.getElementById("vdSlider"),
+    vdVal: document.getElementById("vdVal"),
     speedVal: document.getElementById("speedVal"),
     tauHeaderValue: document.getElementById("tauHeaderValue"),
     tauVal: document.getElementById("tauVal"),
@@ -771,6 +810,8 @@
     legendCh2: document.getElementById("legendCh2"),
     scopeCanvas: document.getElementById("scopeCanvas"),
     scopeTooltip: document.getElementById("scopeTooltip"),
+    cursorInfo: document.getElementById("cursorInfo"),
+    clearCursorsBtn: document.getElementById("clearCursorsBtn"),
     switchContact: document.getElementById("switchContact"),
     switchClickGroup: document.getElementById("switchClickGroup"),
     kStateVal: document.getElementById("kStateVal"),
@@ -814,7 +855,10 @@
       const Imax = sg.E / Rtot;                    // établissement
       return Imax + (sg.i0 - Imax) * Math.exp(-dt / tau);
     }
-    return sg.i0 * Math.exp(-dt / tau);            // rupture
+    // Rupture : roue libre par la diode (u_AM = -Vd tant que i > 0)
+    // L di/dt + (R0+r) i = -Vd  =>  i = (i0 + Vd/Rtot)·e^(-t/τ) - Vd/Rtot, bloquée à 0 par la diode
+    const Ifree = sg.Vd / Rtot;
+    return Math.max(0, (sg.i0 + Ifree) * Math.exp(-dt / tau) - Ifree);
   }
 
   function calcUR0(t) {
@@ -824,7 +868,9 @@
 
   function calcUAM(t) {
     const sg = segAt(t);
-    return (sg && sg.closed) ? sg.E : 0;
+    if (!sg) return 0;
+    if (sg.closed) return sg.E;                    // K fermé : diode bloquée
+    return calcI(t) > 0 ? -sg.Vd : 0;              // K ouvert : diode passante tant que i > 0
   }
 
   // Tension aux bornes de la bobine (voie math Y2 - Y1) : u_AB = u_AM - u_BM = L·di/dt + r·i
@@ -837,7 +883,7 @@
   function pushSegment(iStart){
     segments.push({
       t0: tScope, closed: state.isClosed, i0: iStart,
-      E: state.E, R0: state.R0, L: state.L, r: state.r
+      E: state.E, R0: state.R0, L: state.L, r: state.r, Vd: state.Vd
     });
   }
 
@@ -850,6 +896,7 @@
     if (!segments.length || finished) {
       segments = [];
       tScope = 0;
+      state.cursors = [];
     }
 
     state.isClosed = !state.isClosed;
@@ -897,6 +944,7 @@
     if (el.r0Val) el.r0Val.textContent = fmtEng(state.R0, "Ω");
     if (el.lVal) el.lVal.textContent = fmtEng(state.L, "H");
     if (el.rVal) el.rVal.textContent = state.r.toFixed(0) + " Ω";
+    if (el.vdVal) el.vdVal.textContent = state.Vd.toFixed(1) + " V";
     if (el.speedVal) el.speedVal.textContent = state.speed.toFixed(1) + "×";
 
     if (el.tauHeaderValue) el.tauHeaderValue.textContent = fmtEng(tau, "s");
@@ -905,8 +953,10 @@
     if (el.imaxVal) el.imaxVal.textContent = fmtEng(Imax, "A");
     if (el.urMaxVal) el.urMaxVal.textContent = uR0Max.toFixed(2) + " V";
 
-    const urNow = calcUR0(tScope);
-    const iNow = calcI(tScope);
+    // En pause, les valeurs instantanées suivent le point survolé sur la courbe
+    const tRead = (!state.playing && state.mouseInside && state.hoverT !== null) ? state.hoverT : tScope;
+    const urNow = calcUR0(tRead);
+    const iNow = calcI(tRead);
     if (el.urNowVal) el.urNowVal.textContent = urNow.toFixed(2) + " V";
     if (el.iNowVal) el.iNowVal.textContent = fmtEng(iNow, "A");
 
@@ -919,8 +969,11 @@
       "I<sub>max</sub> = <b>" + fmtEng(Imax, "A") + "</b> ; U<sub>max</sub> = <b>" + uR0Max.toFixed(2) + " V</b>" +
       "<br>u<sub>AB</sub>(0<sup>+</sup>) = <b>" + state.E.toFixed(2) + " V</b> → u<sub>AB</sub>(∞) = r·I<sub>max</sub> = <b>" + (state.r * Imax).toFixed(2) + " V</b>";
     if (el.thLiveB) el.thLiveB.innerHTML =
-      "Si K s'ouvre en régime permanent : u<sub>AB</sub>(0<sup>+</sup>) = −R<sub>0</sub>·I<sub>max</sub> = <b>" + (-uR0Max).toFixed(2) + " V</b>" +
-      "<br>Durée de retour à 1 % de I<sub>0</sub> : τ·ln 100 = <b>" + fmtEng(tau * Math.log(100), "s") + "</b>";
+      "Si K s'ouvre en régime permanent : u<sub>AM</sub> = −V<sub>D</sub> = <b>" + (-state.Vd).toFixed(2) + " V</b>" +
+      " ; u<sub>AB</sub>(0<sup>+</sup>) = −V<sub>D</sub> − R<sub>0</sub>·I<sub>max</sub> = <b>" + (-state.Vd - uR0Max).toFixed(2) + " V</b>" +
+      (state.Vd > 0
+        ? "<br>Le courant s'annule à t<sub>f</sub> = τ·ln(1 + (R<sub>0</sub>+r)·I<sub>0</sub>/V<sub>D</sub>) = <b>" + fmtEng(tau * Math.log(1 + Rtot * Imax / state.Vd), "s") + "</b>"
+        : "<br>V<sub>D</sub> = 0 : décroissance exponentielle pure ; retour à 1 % de I<sub>0</sub> : τ·ln 100 = <b>" + fmtEng(tau * Math.log(100), "s") + "</b>");
     if (el.thLiveT) el.thLiveT.innerHTML =
       "τ = " + fmtEng(state.L, "H") + " / " + fmtEng(Rtot, "Ω") + " = <b>" + fmtEng(tau, "s") + "</b>" +
       "<br>t à 63 % = <b>" + fmtEng(t63, "s") + "</b> ; t<sub>½</sub> = τ·ln 2 = <b>" + fmtEng(tau * Math.LN2, "s") + "</b> ; 5τ = <b>" + fmtEng(5 * tau, "s") + "</b>" +
@@ -942,6 +995,7 @@
   if (el.r0Slider) el.r0Slider.addEventListener("input", () => { state.R0 = +el.r0Slider.value; onParamChange(); });
   if (el.lSlider) el.lSlider.addEventListener("input", () => { state.L = +el.lSlider.value / 1000; onParamChange(); });
   if (el.rSlider) el.rSlider.addEventListener("input", () => { state.r = +el.rSlider.value; onParamChange(); });
+  if (el.vdSlider) el.vdSlider.addEventListener("input", () => { state.Vd = +el.vdSlider.value; onParamChange(); });
   if (el.speedSlider) el.speedSlider.addEventListener("input", () => { state.speed = parseFloat(el.speedSlider.value); });
 
   if (el.v1SensSelect) el.v1SensSelect.addEventListener("change", e => { state.v1Sens = parseFloat(e.target.value); });
@@ -1001,6 +1055,7 @@
     el.resetBtn.addEventListener("click", () => {
       tScope = 0;
       segments = [];
+      state.cursors = [];
       state.isClosed = false;
       updateSwitchUI();
       updateReadouts();
@@ -1015,21 +1070,79 @@
   }
 
   if (el.scopeCanvas) {
-    el.scopeCanvas.addEventListener("mouseenter", () => {
-      state.mouseInside = true;
-      if (el.scopeTooltip) el.scopeTooltip.style.display = "block";
-    });
-
-    el.scopeCanvas.addEventListener("mouseleave", () => {
-      state.mouseInside = false;
-      if (el.scopeTooltip) el.scopeTooltip.style.display = "none";
-    });
-
-    el.scopeCanvas.addEventListener("mousemove", (e) => {
-      const rect = el.scopeCanvas.getBoundingClientRect();
+    const cv = el.scopeCanvas;
+    const setPos = (e) => {
+      const rect = cv.getBoundingClientRect();
       state.mouseX = e.clientX - rect.left;
       state.mouseY = e.clientY - rect.top;
+    };
+    const showTip = () => {
+      state.mouseInside = true;
+      if (el.scopeTooltip) el.scopeTooltip.style.display = "block";
+    };
+    const hideTip = () => {
+      state.mouseInside = false;
+      state.hoverT = null;
+      if (el.scopeTooltip) el.scopeTooltip.style.display = "none";
+      updateReadouts();
+    };
+
+    // Pointer Events : souris, tactile et stylet, avec ou sans pause
+    cv.addEventListener("pointerenter", (e) => { setPos(e); showTip(); });
+    cv.addEventListener("pointerdown",  (e) => { setPos(e); showTip(); });
+    cv.addEventListener("pointermove",  (e) => { setPos(e); if (!state.mouseInside) showTip(); });
+    cv.addEventListener("pointerleave", (e) => { if (e.pointerType !== "touch") hideTip(); });
+    document.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "touch" && e.target !== cv && state.mouseInside) hideTip();
     });
+
+    // Clic : pose un curseur de mesure (2 maximum ; un 3e clic recommence)
+    cv.addEventListener("click", (e) => {
+      setPos(e);
+      const padL = 44, padR = 10;
+      const w = cv.clientWidth, plotW = w - padL - padR;
+      if (state.mouseX < padL || state.mouseX > w - padR || !segments.length) return;
+      const xOffset = state.posX * (plotW / 10);
+      const t = ((state.mouseX - padL - xOffset) / plotW) * windowDur();
+      if (t < 0 || t > Math.min(tScope, windowDur())) return;
+      if (state.cursors.length >= 2) state.cursors = [];
+      state.cursors.push({ t });
+    });
+  }
+  if (el.clearCursorsBtn) el.clearCursorsBtn.addEventListener("click", () => { state.cursors = []; });
+
+  // Tableau des curseurs (C1, C2, Δ)
+  let lastCursorHTML = "";
+  function updateCursorInfo(){
+    if (!el.cursorInfo) return;
+    let html = "";
+    const cs = state.cursors;
+    if (cs.length){
+      const cols = ["#ffd166", "#ff8fab"];
+      const tau = state.L / (state.R0 + state.r);
+      const vals = cs.map(c => ({ t: c.t, ur: calcUR0(c.t), uam: calcUAM(c.t), uab: calcUAB(c.t), i: calcI(c.t) }));
+      const rows = [["t", v => v.t, x => fmtEng(x, "s")]];
+      if (state.showChan1) {
+        rows.push(["u<sub>R0</sub>", v => v.ur, x => x.toFixed(2) + " V"]);
+        rows.push(["i", v => v.i, x => fmtEng(x, "A")]);
+      }
+      if (state.showChan2) rows.push(["u<sub>AM</sub>", v => v.uam, x => x.toFixed(2) + " V"]);
+      if (state.showChan3) rows.push(["u<sub>AB</sub>", v => v.uab, x => x.toFixed(2) + " V"]);
+
+      html = "<table><tr><th></th>" + vals.map((v, k) => `<th style="color:${cols[k]}">C${k + 1}</th>`).join("") + (vals.length === 2 ? "<th>Δ</th>" : "") + "</tr>";
+      rows.forEach(([lab, get, fmt]) => {
+        html += `<tr><td>${lab}</td>` + vals.map(v => `<td>${fmt(get(v))}</td>`).join("");
+        if (vals.length === 2) html += `<td style="color:var(--accent)">${fmt(get(vals[1]) - get(vals[0]))}</td>`;
+        html += "</tr>";
+      });
+      html += "</table>";
+      if (vals.length === 2) html += `<div class="ci-foot">|Δt| = ${(Math.abs(vals[1].t - vals[0].t) / tau).toFixed(2)} τ</div>`;
+    }
+    if (html !== lastCursorHTML){
+      el.cursorInfo.innerHTML = html;
+      el.cursorInfo.style.display = html ? "block" : "none";
+      lastCursorHTML = html;
+    }
   }
 
   function fitCanvas(canvas){
@@ -1132,7 +1245,27 @@
       ctx.beginPath(); ctx.moveTo(currentX, padT); ctx.lineTo(currentX, h - padB); ctx.stroke();
     }
 
+    // Curseurs de mesure posés par clic (restent visibles en pause)
+    const curColors = ["#ffd166", "#ff8fab"];
+    state.cursors.forEach((cur, idx) => {
+      const cx = padL + (cur.t / windowDuration) * plotW + xOffset;
+      if (cx < padL || cx > w - padR) return;
+      ctx.strokeStyle = curColors[idx]; ctx.lineWidth = 1.2; ctx.setLineDash([6, 3]);
+      ctx.beginPath(); ctx.moveTo(cx, padT); ctx.lineTo(cx, h - padB); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = curColors[idx]; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+      ctx.fillText("C" + (idx + 1), cx, padT + 12);
+      const dot = (val, sens, pos, col) => {
+        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cx, vToY(val, sens, pos), 4, 0, 2 * Math.PI); ctx.fill();
+      };
+      if (state.showChan1) dot(state.invY1 ? -calcUR0(cur.t) : calcUR0(cur.t), state.v1Sens, state.posY1, "#c792ea");
+      if (state.showChan2) dot(state.invY2 ? -calcUAM(cur.t) : calcUAM(cur.t), state.v2Sens, state.posY2, "#2bbd8e");
+      if (state.showChan3) dot(calcUAB(cur.t), state.v3Sens, state.posY3, "#e5a93b");
+    });
+    ctx.textAlign = "left";
+
     // Curseur de survol interactif (Tooltip)
+    state.hoverT = null;
     if (state.mouseInside && state.mouseX >= padL && state.mouseX <= w - padR && state.mouseY >= padT && state.mouseY <= h - padB) {
       const mx = state.mouseX;
       const my = state.mouseY;
@@ -1148,6 +1281,7 @@
       const tHover = ((mx - padL - xOffset) / plotW) * windowDuration;
 
       const hasData = segments.length > 0 && tHover >= 0 && tHover <= tEnd;
+      state.hoverT = hasData ? tHover : null;
       const urHover = hasData ? calcUR0(tHover) : 0;
       const uamHover = hasData ? calcUAM(tHover) : 0;
       const iHover = hasData ? calcI(tHover) : 0;
@@ -1195,6 +1329,7 @@
     }
 
     ctx.restore();
+    updateCursorInfo();
 
     ctx.font = "10px monospace";
     ctx.fillStyle = "#7c8a92";
@@ -1207,7 +1342,7 @@
     const dt = state.playing ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
     lastTs = ts;
     drawScope(dt);
-    if (dt > 0) updateReadouts();
+    if (dt > 0 || (!state.playing && state.mouseInside)) updateReadouts();
     requestAnimationFrame(loop);
   }
 
