@@ -204,6 +204,36 @@
   }
   .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
   .btn-reset.on { border-color: var(--accent); color: var(--accent); }
+  .btn-reset:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Courbes enregistrées (superposition pour comparaison) */
+  .saved-panel { display: none; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 8px; }
+  .saved-item {
+    display: flex; align-items: center; gap: 6px;
+    background: #141c22; border: 1px solid #232d39; border-radius: 4px;
+    padding: 3px 6px 3px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text);
+  }
+  .saved-item.off { opacity: 0.45; }
+  .saved-item .swatch { width: 16px; height: 0; border-top: 2px dashed; display: inline-block; }
+  .saved-item button {
+    background: transparent; border: 1px solid #2a3644; border-radius: 3px; color: var(--text-dim);
+    font-size: 11px; line-height: 1; padding: 2px 5px; cursor: pointer;
+  }
+  .saved-item button:hover { color: var(--accent); border-color: var(--accent); }
+  .saved-title { font-size: 11px; color: var(--text-faint); letter-spacing: 0.4px; }
+
+  /* Impression de l'écran de l'oscilloscope */
+  .print-sheet { display: none; }
+  @media print {
+    @page { size: A4 landscape; margin: 12mm; }
+    html, body { background: #fff !important; }
+    body > *:not(#printSheet) { display: none !important; }
+    #printSheet { display: block !important; color: #000; font-family: Arial, sans-serif; }
+    #printSheet h1 { font-size: 16px; margin: 0 0 4px; }
+    #printSheet .ps-meta { font-size: 11px; margin: 0 0 8px; line-height: 1.5; }
+    #printSheet img { width: 100%; height: auto; border: 1px solid #000; display: block; }
+    #printSheet .ps-saved { font-size: 11px; margin-top: 8px; }
+  }
 
   .top-screen-bar {
     display: flex; justify-content: space-between; align-items: center;
@@ -439,11 +469,13 @@
         </div>
 
         <div class="top-screen-bar">
-          <div class="ctrl-hint" style="margin-bottom:0;">Y1 mesure u<sub>R0</sub>(t) (reflet du courant i) | Y2 mesure la tension totale u<sub>AM</sub>(t) | Survolez la courbe pour lire les valeurs ; cliquez pour placer jusqu'à 2 curseurs (Δt, Δu) — fonctionne aussi en pause.</div>
+          <div class="ctrl-hint" style="margin-bottom:0;">Y1 mesure u<sub>R0</sub>(t) (reflet du courant i) | Y2 mesure la tension totale u<sub>AM</sub>(t) | Survolez la courbe pour lire les valeurs ; cliquez pour placer jusqu'à 2 curseurs (Δt, Δu) — fonctionne aussi en pause. | <b>Espace</b> ou <b>P</b> : pause/lecture · <b>I</b> : imprimer.</div>
           <div class="top-buttons">
-            <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
+            <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause <small style="opacity:.6">(Espace)</small></button>
             <button id="tauAidBtn" class="btn-reset" title="Afficher l'asymptote, la tangente à l'origine et le niveau 63 % (touche T)">τ : tangente</button>
+            <button id="saveCurveBtn" class="btn-reset" title="Enregistrer la courbe affichée pour la comparer ensuite avec une autre (après avoir changé un paramètre)" disabled>💾 Enregistrer la courbe</button>
             <button id="clearCursorsBtn" class="btn-reset" title="Effacer les curseurs de mesure">✕ Curseurs</button>
+            <button id="printBtn" class="btn-reset" title="Imprimer l'écran de l'oscilloscope (touche I)">🖨 Imprimer</button>
             <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
           </div>
         </div>
@@ -504,6 +536,8 @@
           <div class="pos-group" style="color:var(--out-color)">↕ Position Y2<input type="range" id="posY2Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY2Val">0.0 div</span></div>
           <div class="pos-group" style="color:var(--in-color)">↕ Position u<sub>AB</sub><input type="range" id="posY3Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY3Val">0.0 div</span></div>
         </div>
+
+        <div id="savedPanel" class="saved-panel"></div>
 
         <div class="canvas-wrapper">
           <canvas id="scopeCanvas" height="340"></canvas>
@@ -728,6 +762,8 @@
     <div class="signature"> TP Simulation Physique - Réponse d'un dipôle RL à un échelon de tension -   chrif.md@gmail.com - Octobre 2026 </div>
   </div>
 </div>
+
+<div id="printSheet" class="print-sheet"></div>
 
 <script>
 (function(){
@@ -1008,10 +1044,22 @@
                    (tag === "INPUT" && e.target.type !== "range" && e.target.type !== "checkbox");
     if (typing) return;
     const k = e.key.toLowerCase();
+    if (e.code === "Space" || k === "p") {            // pause / lecture
+      if (document.activeElement && document.activeElement.tagName === "BUTTON") document.activeElement.blur();
+      if (el.playPauseBtn) el.playPauseBtn.click();
+      e.preventDefault(); return;
+    }
+    if (k === "i") { printScope(); e.preventDefault(); return; }
     if (k === "f") { setSwitch(true);  e.preventDefault(); }
     else if (k === "o") { setSwitch(false); e.preventDefault(); }
     else if (k === "k") { toggleSwitch();   e.preventDefault(); }
     else if (k === "t") { setTauAids(!state.showTauAids); e.preventDefault(); }
+  });
+
+  // Empêche la barre d'espace de « cliquer » un bouton resté actif (double bascule)
+  document.addEventListener("keyup", (e) => {
+    const tag = e.target && e.target.tagName;
+    if (e.code === "Space" && tag !== "TEXTAREA" && tag !== "SELECT" && !(tag === "INPUT" && e.target.type !== "range" && e.target.type !== "checkbox")) e.preventDefault();
   });
 
   // Aides τ : asymptote, tangente à l'origine de la phase, niveau 63 % / 37 %, repère t0 + τ
@@ -1077,7 +1125,7 @@
   if (el.playPauseBtn) {
     el.playPauseBtn.addEventListener("click", () => {
       state.playing = !state.playing;
-      el.playPauseBtn.innerHTML = state.playing ? '<span class="pause-icon">||</span> Pause' : '▶ Lecture';
+      el.playPauseBtn.innerHTML = state.playing ? '<span class="pause-icon">||</span> Pause <small style="opacity:.6">(Espace)</small>' : '▶ Lecture <small style="opacity:.6">(Espace)</small>';
     });
   }
 
@@ -1175,6 +1223,126 @@
     }
   }
 
+  // ---- Courbes enregistrées : copie des segments (courbes exactes, rejouables à toute échelle) ----
+  const SAVE_KEY = "dipoleRL_savedCurves_v1";
+  const SAVE_COLORS = ["#ff9f43", "#f368e0", "#54a0ff", "#feca57", "#ff6b6b", "#1dd1a1"];
+  const MAX_SAVED = 6;
+  let savedCurves = [];
+  let savedCounter = 0;
+  const saveBtn = document.getElementById("saveCurveBtn");
+  const savedPanel = document.getElementById("savedPanel");
+
+  // Évalue une fonction du modèle (calcUR0, calcUAM, calcUAB) sur une liste de segments enregistrée
+  function evalOn(hist, fn, t){
+    const bak = segments;
+    segments = hist;
+    try { return fn(t); } finally { segments = bak; }
+  }
+
+  function persistSaved(){
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ counter: savedCounter, curves: savedCurves })); } catch (e) {}
+  }
+  function loadSaved(){
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d && Array.isArray(d.curves)){
+        savedCurves = d.curves.filter(c => c && Array.isArray(c.hist) && c.hist.length).slice(0, MAX_SAVED);
+        savedCounter = +d.counter || savedCurves.length;
+      }
+    } catch (e) {}
+  }
+
+  function renderSaved(){
+    savedPanel.innerHTML = "";
+    savedPanel.style.display = savedCurves.length ? "flex" : "none";
+    saveBtn.disabled = !segments.length || savedCurves.length >= MAX_SAVED;
+    saveBtn.title = savedCurves.length >= MAX_SAVED
+      ? "Limite de " + MAX_SAVED + " courbes atteinte : supprimez-en une"
+      : "Enregistrer la courbe affichée pour la comparer ensuite avec une autre (après avoir changé un paramètre)";
+    if (!savedCurves.length) return;
+
+    const title = document.createElement("span");
+    title.className = "saved-title";
+    title.textContent = "COURBES ENREGISTRÉES :";
+    savedPanel.appendChild(title);
+
+    savedCurves.forEach(sc => {
+      const item = document.createElement("div");
+      item.className = "saved-item" + (sc.visible ? "" : " off");
+      const sw = document.createElement("span");
+      sw.className = "swatch"; sw.style.borderTopColor = sc.color;
+      const lab = document.createElement("span");
+      lab.textContent = sc.label; lab.style.color = sc.color;
+      const eye = document.createElement("button");
+      eye.textContent = sc.visible ? "Masquer" : "Afficher";
+      eye.title = "Afficher / masquer cette courbe sur l'écran";
+      eye.addEventListener("click", () => { sc.visible = !sc.visible; persistSaved(); renderSaved(); });
+      const del = document.createElement("button");
+      del.textContent = "✕"; del.title = "Supprimer cette courbe";
+      del.addEventListener("click", () => { savedCurves = savedCurves.filter(x => x !== sc); persistSaved(); renderSaved(); });
+      item.append(sw, lab, eye, del);
+      savedPanel.appendChild(item);
+    });
+
+    const clr = document.createElement("button");
+    clr.className = "btn-reset"; clr.textContent = "Tout effacer";
+    clr.addEventListener("click", () => { savedCurves = []; persistSaved(); renderSaved(); });
+    savedPanel.appendChild(clr);
+  }
+
+  function saveCurrentCurve(){
+    if (!segments.length || savedCurves.length >= MAX_SAVED) return;
+    savedCounter++;
+    const tau = state.L / (state.R0 + state.r);
+    savedCurves.push({
+      id: savedCounter,
+      color: SAVE_COLORS[(savedCounter - 1) % SAVE_COLORS.length],
+      hist: segments.map(g => ({ t0: g.t0, closed: g.closed, i0: g.i0, E: g.E, R0: g.R0, L: g.L, r: g.r, Vd: g.Vd })),
+      tEnd: Math.min(tScope, windowDur()),
+      ch1: state.showChan1, ch2: state.showChan2, ch3: state.showChan3,
+      visible: true,
+      label: "#" + savedCounter + " · E=" + state.E.toFixed(1) + " V · R0=" + fmtEng(state.R0, "Ω") +
+             " · L=" + fmtEng(state.L, "H") + " · r=" + fmtEng(state.r, "Ω") +
+             (state.Vd > 0 ? " · VD=" + state.Vd.toFixed(1) + " V" : "") + " · τ=" + fmtEng(tau, "s")
+    });
+    persistSaved();
+    renderSaved();
+  }
+  saveBtn.addEventListener("click", saveCurrentCurve);
+  loadSaved();
+  renderSaved();
+
+  // Le bouton n'est actif qu'une fois un balayage lancé (rien à enregistrer avant)
+  let lastHasSegs = segments.length > 0;
+  function syncSaveBtn(){
+    const has = segments.length > 0;
+    if (has !== lastHasSegs){ lastHasSegs = has; renderSaved(); }
+  }
+
+  // ---- Impression de l'écran de l'oscilloscope ----
+  function printScope(){
+    const sheet = document.getElementById("printSheet");
+    const esc = t => String(t).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+    const tau = state.L / (state.R0 + state.r);
+    let html = "<h1>Réponse d'un dipôle RL à un échelon de tension</h1>" +
+      '<div class="ps-meta">' + esc(new Date().toLocaleString("fr-FR")) +
+      " · E = " + state.E.toFixed(1) + " V · R0 = " + esc(fmtEng(state.R0, "Ω")) + " · L = " + esc(fmtEng(state.L, "H")) +
+      " · r = " + esc(fmtEng(state.r, "Ω")) + " · V_D = " + state.Vd.toFixed(1) + " V · τ = L/(R0+r) = " + esc(fmtEng(tau, "s")) +
+      " · K : " + (state.isClosed ? "fermé" : "ouvert") + "<br>" +
+      "Base de temps : " + esc(fmtEng(state.hSens, "s")) + "/div · CH1 : " + state.v1Sens + " V/div · CH2 : " + state.v2Sens + " V/div" +
+      (state.showChan3 ? " · Math : " + state.v3Sens + " V/div" : "") + "</div>" +
+      '<img alt="Écran de l\'oscilloscope" src="' + el.scopeCanvas.toDataURL("image/png") + '">';
+    const vis = savedCurves.filter(c => c.visible);
+    if (vis.length) html += '<div class="ps-saved"><b>Courbes enregistrées (pointillés) :</b><br>' + vis.map(c => esc(c.label)).join("<br>") + "</div>";
+    sheet.innerHTML = html;
+    const img = sheet.querySelector("img");
+    const go = () => window.print();
+    if (img.complete) go(); else img.onload = go;
+  }
+  document.getElementById("printBtn").addEventListener("click", printScope);
+
   function fitCanvas(canvas){
     const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
     const cssH = +canvas.getAttribute("height");
@@ -1266,6 +1434,39 @@
     if (state.showChan1) traceChannel(calcUR0, state.v1Sens, state.posY1, "#c792ea", state.invY1);
     if (state.showChan2) traceChannel(calcUAM, state.v2Sens, state.posY2, "#2bbd8e", state.invY2);
     if (state.showChan3) traceChannel(calcUAB, state.v3Sens, state.posY3, "#e5a93b", false);
+
+    // Courbes enregistrées (pointillés), tracées avec les réglages actuels de l'écran, sur le même axe de temps
+    savedCurves.forEach(sc => {
+      if (!sc.visible) return;
+      const tMax = Math.min(sc.tEnd, windowDuration);
+      if (tMax <= 0) return;
+      const chans = [];
+      if (sc.ch1) chans.push({ fn: calcUR0, sens: state.v1Sens, pos: state.posY1, inv: state.invY1, dash: [7, 4] });
+      if (sc.ch2) chans.push({ fn: calcUAM, sens: state.v2Sens, pos: state.posY2, inv: state.invY2, dash: [3, 3] });
+      if (sc.ch3) chans.push({ fn: calcUAB, sens: state.v3Sens, pos: state.posY3, inv: false, dash: [1, 3] });
+      // Instants d'échantillonnage : grille régulière + doublons aux commutations
+      const times = [];
+      const n = Math.max(1, Math.ceil(N * tMax / windowDuration));
+      for (let i = 0; i <= n; i++) times.push((i / n) * tMax);
+      for (let k = 1; k < sc.hist.length; k++){
+        const t0 = sc.hist[k].t0;
+        if (t0 > 0 && t0 <= tMax){ times.push(t0 - 1e-12); times.push(t0); }
+      }
+      times.sort((a, b) => a - b);
+      chans.forEach(c => {
+        ctx.strokeStyle = sc.color; ctx.lineWidth = 1.8; ctx.setLineDash(c.dash);
+        ctx.beginPath();
+        times.forEach((tv, idx) => {
+          const x = padL + (tv / windowDuration) * plotW + xOffset;
+          let val = evalOn(sc.hist, c.fn, tv);
+          if (c.inv) val = -val;
+          const y = vToY(val, c.sens, c.pos);
+          if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+    });
 
     // Ligne verticale lumineuse représentant le balayage en temps réel
     const currentX = padL + (Math.min(tScope, windowDuration) / windowDuration) * plotW + xOffset;
@@ -1421,6 +1622,7 @@
     const dt = state.playing ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
     lastTs = ts;
     drawScope(dt);
+    syncSaveBtn();
     if (dt > 0 || (!state.playing && state.mouseInside)) updateReadouts();
     requestAnimationFrame(loop);
   }
