@@ -168,6 +168,10 @@
   .toolbar-check.ch2 input { accent-color: var(--out-color); }
   .toolbar-check.ch3 { color: var(--ur-color); }
   .toolbar-check.ch3 input { accent-color: var(--ur-color); }
+  .toolbar-check.chBR { color: #ff6b6b; } .toolbar-check.chBR input { accent-color: #ff6b6b; }
+  .toolbar-check.chBC { color: #f368e0; } .toolbar-check.chBC input { accent-color: #f368e0; }
+  .toolbar-check.chRC { color: #b8e04a; } .toolbar-check.chRC input { accent-color: #b8e04a; }
+  .color-dot.red { background-color: #ff6b6b; } .color-dot.pink { background-color: #f368e0; } .color-dot.lime { background-color: #b8e04a; }
   .toolbar-check.bode1 { color: var(--accent); }
   .toolbar-check.bode1 input { accent-color: var(--accent); }
   .toolbar-check.bode2 { color: var(--ur-color); }
@@ -356,6 +360,9 @@
             <span class="legend-item"><span class="color-dot orange"></span>Y2 : u(t)</span>
             <span class="legend-item"><span class="color-dot green"></span>Y1 : u<sub>R0</sub>(t) = R<sub>0</sub>·i(t)</span>
             <span class="legend-item"><span class="color-dot purple"></span>Y1 : u<sub>C</sub>(t)</span>
+            <span class="legend-item"><span class="color-dot red"></span>Y1 : u<sub>BR</sub>(t)</span>
+            <span class="legend-item"><span class="color-dot pink"></span>Y1 : u<sub>BC</sub>(t)</span>
+            <span class="legend-item"><span class="color-dot lime"></span>Y1 : u<sub>RC</sub>(t)</span>
           </div>
         </div>
 
@@ -407,6 +414,19 @@
               <option value="0.005">5 ms/div</option>
             </select>
           </div>
+        </div>
+
+        <div class="oscillo-toolbar">
+          <span style="font-size:11.5px;color:var(--text-faint)">Tensions composées (une seule à la fois sur CH1) :</span>
+          <div class="control-group"><label style="color:#ff6b6b">CH1 (u<sub>BR</sub>):</label>
+            <select id="vBRSensSelect"><option value="1">1 V/div</option><option value="2" selected>2 V/div</option><option value="5">5 V/div</option><option value="10">10 V/div</option></select></div>
+          <label class="toolbar-check chBR"><input type="checkbox" id="showChanBRCheck"> u<sub>BR</sub>(t) <small style="opacity:.7">bobine + R<sub>0</sub></small></label>
+          <div class="control-group"><label style="color:#f368e0">CH1 (u<sub>BC</sub>):</label>
+            <select id="vBCSensSelect"><option value="1">1 V/div</option><option value="2" selected>2 V/div</option><option value="5">5 V/div</option><option value="10">10 V/div</option></select></div>
+          <label class="toolbar-check chBC"><input type="checkbox" id="showChanBCCheck"> u<sub>BC</sub>(t) <small style="opacity:.7">bobine + C</small></label>
+          <div class="control-group"><label style="color:#b8e04a">CH1 (u<sub>RC</sub>):</label>
+            <select id="vRCSensSelect"><option value="1">1 V/div</option><option value="2" selected>2 V/div</option><option value="5">5 V/div</option><option value="10">10 V/div</option></select></div>
+          <label class="toolbar-check chRC"><input type="checkbox" id="showChanRCCheck"> u<sub>RC</sub>(t) <small style="opacity:.7">R<sub>0</sub> + C</small></label>
         </div>
 
         <div class="canvas-wrapper">
@@ -601,7 +621,7 @@
       </div>
       <div class="ctrl">
         <div class="ctrl-row"><span class="name">Résistance R<sub>0</sub></span><span class="val" id="r0Val">40 Ω</span></div>
-        <input type="range" id="r0Slider" min="5" max="200" step="5" value="40">
+        <input type="range" id="r0Slider" min="5" max="200" step="1" value="40">
       </div>
       <div class="ctrl">
         <div class="ctrl-row"><span class="name">Résistance bobine r</span><span class="val" id="rVal">10 Ω</span></div>
@@ -665,130 +685,98 @@
   const showChan2Check = document.getElementById('showChan2Check'); // uR0
   const showChan3Check = document.getElementById('showChan3Check'); // uC
 
-  // Gestion des permutations exclusives uR0(t) et uC(t)
-  showChan2Check.addEventListener('change', () => {
-    if (showChan2Check.checked) {
-      showChan3Check.checked = false;
-    }
+  // Canaux CH1 (Y1) : une seule tension à la fois (masse commune)
+  const Y1_CHANNELS = [
+    { key: 'uR0', chk: 'showChan2Check',  sens: 'v2SensSelect',  color: '#2bbd8e', lw: 2,   lab: 'u<sub>R0</sub>' },
+    { key: 'uC',  chk: 'showChan3Check',  sens: 'v3SensSelect',  color: '#c792ea', lw: 1.5, lab: 'u<sub>C</sub>' },
+    { key: 'uBR', chk: 'showChanBRCheck', sens: 'vBRSensSelect', color: '#ff6b6b', lw: 2,   lab: 'u<sub>BR</sub>' },
+    { key: 'uBC', chk: 'showChanBCCheck', sens: 'vBCSensSelect', color: '#f368e0', lw: 2,   lab: 'u<sub>BC</sub>' },
+    { key: 'uRC', chk: 'showChanRCCheck', sens: 'vRCSensSelect', color: '#b8e04a', lw: 2,   lab: 'u<sub>RC</sub>' }
+  ];
+  Y1_CHANNELS.forEach(c => { c.el = document.getElementById(c.chk); c.selEl = document.getElementById(c.sens); });
+  const activeY1 = () => Y1_CHANNELS.find(c => c.el.checked) || null;
+  Y1_CHANNELS.forEach(c => c.el.addEventListener('change', () => {
+    if (c.el.checked) Y1_CHANNELS.forEach(o => { if (o !== c) o.el.checked = false; });
     updateParams();
-  });
+  }));
 
-  showChan3Check.addEventListener('change', () => {
-    if (showChan3Check.checked) {
-      showChan2Check.checked = false;
-    }
-    updateParams();
-  });
+  // Amplitude et phase (par rapport à u) de chaque tension : somme de phaseurs, convention sin(ωt + θ)
+  function y1Phasors(Im, phi, om) {
+    const cx = (m, a) => ({ re: m * Math.cos(a), im: m * Math.sin(a) });
+    const add = (a, b) => ({ re: a.re + b.re, im: a.im + b.im });
+    const P = z => ({ amp: Math.hypot(z.re, z.im), ph: Math.atan2(z.im, z.re) });
+    const zR0 = cx(R0 * Im, phi);
+    const zC  = cx(Im / (C * om), phi - Math.PI / 2);
+    const zB  = add(cx(r * Im, phi), cx(L * om * Im, phi + Math.PI / 2));   // bobine (L, r)
+    return { uR0: P(zR0), uC: P(zC), uBR: P(add(zB, zR0)), uBC: P(add(zB, zC)), uRC: P(add(zR0, zC)) };
+  }
 
-  // Met à jour le schéma SVG
-  function updateSchematic(isUcActive) {
-    if (!isUcActive) {
-      schematicSvg.innerHTML = `
+  // Schéma : l'ordre des dipôles est choisi pour que Y1 (masse à gauche) mesure la tension voulue
+  const SCH_SPEC = {
+    uR0: { order: ['R', 'L', 'C'], tap: 1, color: 'var(--out-color)', name: 'R0' },
+    uC:  { order: ['C', 'L', 'R'], tap: 1, color: 'var(--ur-color)',  name: 'C' },
+    uBR: { order: ['R', 'L', 'C'], tap: 2, color: '#ff6b6b', name: 'BR' },
+    uBC: { order: ['L', 'C', 'R'], tap: 2, color: '#f368e0', name: 'BC' },
+    uRC: { order: ['R', 'C', 'L'], tap: 2, color: '#b8e04a', name: 'RC' }
+  };
+  function updateSchematic(key) {
+    const sp = SCH_SPEC[key] || SCH_SPEC.uR0;
+    const sub = t => '<tspan baseline-shift="sub" font-size="9">' + t + '</tspan>';
+    const W = { R: 35, L: 40, C: 8 };
+    const LAB = { R: 'R' + sub('0'), L: 'L,r', C: 'C' };
+    const gap = (200 - sp.order.reduce((a, k) => a + W[k], 0)) / 4;
+    let s = `
         <circle cx="140" cy="30" r="16" fill="#0d1316" stroke="var(--in-color)" stroke-width="2"/>
         <text x="140" y="34" font-size="11" font-weight="bold" fill="var(--in-color)" text-anchor="middle" font-family="sans-serif">GBF</text>
         <path d="M 40,30 L 124,30" class="sch-wire"/>
         <path d="M 156,30 L 240,30 L 240,140" class="sch-wire"/>
-
         <path d="M 115,52 L 165,52" stroke="var(--in-color)" class="sch-arrow"/>
         <path d="M 160,48 L 168,52 L 160,56" fill="var(--in-color)"/>
         <text x="140" y="68" font-size="13" font-weight="bold" fill="var(--in-color)" text-anchor="middle">u</text>
-
         <path d="M 240,65 L 240,85" stroke="var(--text)" class="sch-arrow"/>
         <path d="M 236,80 L 240,88 L 244,80" fill="var(--text)"/>
         <text x="228" y="78" font-size="12" font-style="italic" fill="var(--text)">i</text>
-
         <path d="M 40,30 L 40,140" class="sch-wire"/>
         <circle cx="40" cy="140" r="2.5" class="sch-node"/>
         <line x1="40" y1="140" x2="40" y2="160" stroke="var(--text)" stroke-width="1.8"/>
-        <line x1="26" y1="160" x2="54" y2="160" stroke="var(--text)" stroke-width="2"/>
-        <line x1="28" y1="160" x2="23" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="34" y1="160" x2="29" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="40" y1="160" x2="35" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="46" y1="160" x2="41" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="52" y1="160" x2="47" y2="167" stroke="var(--text)" stroke-width="1.5"/>
+        <line x1="26" y1="160" x2="54" y2="160" stroke="var(--text)" stroke-width="2"/>`;
+    [28, 34, 40, 46, 52].forEach(x => { s += `<line x1="${x}" y1="160" x2="${x - 5}" y2="167" stroke="var(--text)" stroke-width="1.5"/>`; });
 
-        <rect x="65" y="131" width="35" height="18" class="sch-comp"/>
-        <path d="M 40,140 L 65,140" class="sch-wire"/>
-        <text x="82" y="165" class="sch-label" text-anchor="middle">R<tspan baseline-shift="sub" font-size="9">0</tspan></text>
+    let cur = 40, x = 40 + gap, xEnd = 40;
+    sp.order.forEach((k, i) => {
+      const meas = i < sp.tap;
+      s += `<path d="M ${cur},140 L ${x},140" class="sch-wire"/>`;
+      if (k === 'R') s += `<rect x="${x}" y="131" width="35" height="18" class="sch-comp"/>`;
+      else if (k === 'L') {
+        let d = `M ${x},140`;
+        for (let j = 0; j < 4; j++) d += ` C ${x + 10 * j},128 ${x + 10 * j + 10},128 ${x + 10 * j + 10},140`;
+        s += `<path d="${d}" stroke="var(--text)" stroke-width="2" fill="none"/>`;
+      } else {
+        s += `<line x1="${x}" y1="126" x2="${x}" y2="154" stroke="var(--text)" stroke-width="2.2"/><line x1="${x + 8}" y1="126" x2="${x + 8}" y2="154" stroke="var(--text)" stroke-width="2.2"/>`;
+      }
+      s += `<text x="${x + W[k] / 2}" y="165" class="sch-label" text-anchor="middle" style="${meas ? 'fill:' + sp.color : ''}">${LAB[k]}</text>`;
+      cur = x + W[k];
+      if (meas) xEnd = cur;
+      x = cur + gap;
+    });
+    s += `<path d="M ${cur},140 L 240,140" class="sch-wire"/>`;
 
-        <path d="M 55,120 L 95,120" stroke="var(--out-color)" class="sch-arrow"/>
-        <path d="M 90,116 L 98,120 L 90,124" fill="var(--out-color)"/>
-        <text x="75" y="112" font-size="12" font-weight="bold" fill="var(--out-color)" text-anchor="middle">u<tspan baseline-shift="sub" font-size="9">R0</tspan></text>
+    // Tension mesurée par Y1 (de la masse jusqu'au point de mesure)
+    const tapX = xEnd + gap / 2;
+    s += `<path d="M 46,120 L ${xEnd},120" stroke="${sp.color}" class="sch-arrow"/>
+        <path d="M ${xEnd - 6},116 L ${xEnd + 2},120 L ${xEnd - 6},124" fill="${sp.color}"/>
+        <text x="${(46 + xEnd) / 2}" y="112" font-size="12" font-weight="bold" fill="${sp.color}" text-anchor="middle">u${sub(sp.name)}</text>
+        <circle cx="${tapX}" cy="140" r="2.5" class="sch-node"/>
+        <path d="M ${tapX},140 L ${tapX},168" stroke="${sp.color}" stroke-width="1.8"/>
+        <path d="M ${tapX - 4},162 L ${tapX},170 L ${tapX + 4},162" fill="${sp.color}"/>
+        <text x="${tapX}" y="184" font-size="13" font-weight="bold" fill="${sp.color}" text-anchor="middle">Y${sub('1')}</text>`;
 
-        <path d="M 100,140 L 120,140" class="sch-wire"/>
-        <circle cx="115" cy="140" r="2.5" class="sch-node"/>
-        <path d="M 115,140 L 115,168" stroke="var(--out-color)" stroke-width="1.8"/>
-        <path d="M 111,162 L 115,170 L 119,162" fill="var(--out-color)"/>
-        <text x="115" y="184" font-size="13" font-weight="bold" fill="var(--out-color)" text-anchor="middle">Y<tspan baseline-shift="sub" font-size="9">1</tspan></text>
-
-        <path d="M 120,140 C 120,128 130,128 130,140 C 130,128 140,128 140,140 C 140,128 150,128 150,140 C 150,128 160,128 160,140" stroke="var(--text)" stroke-width="2" fill="none"/>
-        <text x="140" y="165" class="sch-label" text-anchor="middle">L,r</text>
-
-        <path d="M 160,140 L 185,140" class="sch-wire"/>
-        <line x1="185" y1="126" x2="185" y2="154" stroke="var(--text)" stroke-width="2.2"/>
-        <line x1="193" y1="126" x2="193" y2="154" stroke="var(--text)" stroke-width="2.2"/>
-        <path d="M 193,140 L 240,140" class="sch-wire"/>
-        <text x="189" y="168" class="sch-label" text-anchor="middle">C</text>
-
-        <circle cx="240" cy="140" r="2.5" class="sch-node"/>
+    // Y2 aux bornes du GBF
+    s += `<circle cx="240" cy="140" r="2.5" class="sch-node"/>
         <path d="M 240,140 L 240,168" stroke="var(--in-color)" stroke-width="1.8"/>
         <path d="M 236,162 L 240,170 L 244,162" fill="var(--in-color)"/>
-        <text x="240" y="184" font-size="13" font-weight="bold" fill="var(--in-color)" text-anchor="middle">Y<tspan baseline-shift="sub" font-size="9">2</tspan></text>
-      `;
-    } else {
-      schematicSvg.innerHTML = `
-        <circle cx="140" cy="30" r="16" fill="#0d1316" stroke="var(--in-color)" stroke-width="2"/>
-        <text x="140" y="34" font-size="11" font-weight="bold" fill="var(--in-color)" text-anchor="middle" font-family="sans-serif">GBF</text>
-        <path d="M 40,30 L 124,30" class="sch-wire"/>
-        <path d="M 156,30 L 240,30 L 240,140" class="sch-wire"/>
-
-        <path d="M 115,52 L 165,52" stroke="var(--in-color)" class="sch-arrow"/>
-        <path d="M 160,48 L 168,52 L 160,56" fill="var(--in-color)"/>
-        <text x="140" y="68" font-size="13" font-weight="bold" fill="var(--in-color)" text-anchor="middle">u</text>
-
-        <path d="M 240,65 L 240,85" stroke="var(--text)" class="sch-arrow"/>
-        <path d="M 236,80 L 240,88 L 244,80" fill="var(--text)"/>
-        <text x="228" y="78" font-size="12" font-style="italic" fill="var(--text)">i</text>
-
-        <path d="M 40,30 L 40,140" class="sch-wire"/>
-        <circle cx="40" cy="140" r="2.5" class="sch-node"/>
-        <line x1="40" y1="140" x2="40" y2="160" stroke="var(--text)" stroke-width="1.8"/>
-        <line x1="26" y1="160" x2="54" y2="160" stroke="var(--text)" stroke-width="2"/>
-        <line x1="28" y1="160" x2="23" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="34" y1="160" x2="29" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="40" y1="160" x2="35" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="46" y1="160" x2="41" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-        <line x1="52" y1="160" x2="47" y2="167" stroke="var(--text)" stroke-width="1.5"/>
-
-        <path d="M 40,140 L 68,140" class="sch-wire"/>
-        <line x1="68" y1="126" x2="68" y2="154" stroke="var(--ur-color)" stroke-width="2.2"/>
-        <line x1="76" y1="126" x2="76" y2="154" stroke="var(--ur-color)" stroke-width="2.2"/>
-        <path d="M 76,140 L 100,140" class="sch-wire"/>
-        <text x="72" y="168" class="sch-label" fill="var(--ur-color)" text-anchor="middle">C</text>
-
-        <path d="M 50,120 L 90,120" stroke="var(--ur-color)" class="sch-arrow"/>
-        <path d="M 85,116 L 93,120 L 85,124" fill="var(--ur-color)"/>
-        <text x="70" y="112" font-size="12" font-weight="bold" fill="var(--ur-color)" text-anchor="middle">u<tspan baseline-shift="sub" font-size="9">C</tspan></text>
-
-        <circle cx="100" cy="140" r="2.5" class="sch-node"/>
-        <path d="M 100,140 L 100,168" stroke="var(--ur-color)" stroke-width="1.8"/>
-        <path d="M 96,162 L 100,170 L 104,162" fill="var(--ur-color)"/>
-        <text x="100" y="184" font-size="13" font-weight="bold" fill="var(--ur-color)" text-anchor="middle">Y<tspan baseline-shift="sub" font-size="9">1</tspan></text>
-
-        <path d="M 100,140 C 100,128 110,128 110,140 C 110,128 120,128 120,140 C 120,128 130,128 130,140 C 130,128 140,128 140,140" stroke="var(--text)" stroke-width="2" fill="none"/>
-        <text x="120" y="165" class="sch-label" text-anchor="middle">L,r</text>
-
-        <path d="M 140,140 L 170,140" class="sch-wire"/>
-        <rect x="170" y="131" width="35" height="18" class="sch-comp"/>
-        <path d="M 205,140 L 240,140" class="sch-wire"/>
-        <text x="187" y="165" class="sch-label" text-anchor="middle">R<tspan baseline-shift="sub" font-size="9">0</tspan></text>
-
-        <circle cx="240" cy="140" r="2.5" class="sch-node"/>
-        <path d="M 240,140 L 240,168" stroke="var(--in-color)" stroke-width="1.8"/>
-        <path d="M 236,162 L 240,170 L 244,162" fill="var(--in-color)"/>
-        <text x="240" y="184" font-size="13" font-weight="bold" fill="var(--in-color)" text-anchor="middle">Y<tspan baseline-shift="sub" font-size="9">2</tspan></text>
-      `;
-    }
+        <text x="240" y="184" font-size="13" font-weight="bold" fill="var(--in-color)" text-anchor="middle">Y${sub('2')}</text>`;
+    schematicSvg.innerHTML = s;
   }
 
   // Formate la valeur en radians avec indication du pi
@@ -839,8 +827,8 @@
 
     qRead.innerText = Q.toFixed(2);
 
-    const show3 = showChan3Check.checked;
-    updateSchematic(show3);
+    const ay = activeY1();
+    updateSchematic(ay ? ay.key : null);
     updateTheory();
 
     if (!isRunning) {
@@ -872,45 +860,29 @@
     const phi = Math.atan2(-X, Rtotal);
 
     const v1Sens = parseFloat(document.getElementById('v1SensSelect').value);
-    const v2Sens = parseFloat(document.getElementById('v2SensSelect').value);
-    const v3Sens = parseFloat(document.getElementById('v3SensSelect').value);
-
     const show1 = document.getElementById('showChan1Check').checked;
-    const show2 = showChan2Check.checked;
-    const show3 = showChan3Check.checked;
+    const ph = y1Phasors(Im, phi, omega);
+    const ch = activeY1();
+    const chSens = ch ? parseFloat(ch.selEl.value) : 1;
+    const chV = t => ph[ch.key].amp * Math.sin(2 * Math.PI * N * t + ph[ch.key].ph);
+    const yOf = (v, sens) => h / 2 - (v / sens) * (h / 8);
 
     // u(t)
     if (show1) {
       sCtx.strokeStyle = "#e5a93b"; sCtx.lineWidth = 2; sCtx.beginPath();
       for (let px = 0; px < w; px++) {
         const t = time + (px / w) * tSpan;
-        const e = Um * Math.sin(2 * Math.PI * N * t);
-        const py = h/2 - (e / v1Sens) * (h / 8);
+        const py = yOf(Um * Math.sin(2 * Math.PI * N * t), v1Sens);
         if (px === 0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
       }
       sCtx.stroke();
     }
 
-    // uR0(t)
-    if (show2) {
-      sCtx.strokeStyle = "#2bbd8e"; sCtx.lineWidth = 2; sCtx.beginPath();
+    // Tension affichée sur CH1 (uR0, uC, uBR, uBC ou uRC)
+    if (ch) {
+      sCtx.strokeStyle = ch.color; sCtx.lineWidth = ch.lw; sCtx.beginPath();
       for (let px = 0; px < w; px++) {
-        const t = time + (px / w) * tSpan;
-        const uR0 = R0 * Im * Math.sin(2 * Math.PI * N * t + phi);
-        const py = h/2 - (uR0 / v2Sens) * (h / 8);
-        if (px === 0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
-      }
-      sCtx.stroke();
-    }
-
-    // uC(t)
-    if (show3) {
-      sCtx.strokeStyle = "#c792ea"; sCtx.lineWidth = 1.5; sCtx.beginPath();
-      const UCm = Im / (C * omega);
-      for (let px = 0; px < w; px++) {
-        const t = time + (px / w) * tSpan;
-        const uC = UCm * Math.sin(2 * Math.PI * N * t + phi - Math.PI / 2);
-        const py = h/2 - (uC / v3Sens) * (h / 8);
+        const py = yOf(chV(time + (px / w) * tSpan), chSens);
         if (px === 0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
       }
       sCtx.stroke();
@@ -928,30 +900,18 @@
 
       const tRel = (mx / w) * tSpan;
       const tAbs = time + tRel;
-
       const eVal = Um * Math.sin(2 * Math.PI * N * tAbs);
-      const uR0Val = R0 * Im * Math.sin(2 * Math.PI * N * tAbs + phi);
-      const UCm = Im / (C * omega);
-      const uCVal = UCm * Math.sin(2 * Math.PI * N * tAbs + phi - Math.PI / 2);
-
-      if (show1) {
-        const py1 = h/2 - (eVal / v1Sens) * (h / 8);
-        sCtx.fillStyle = "#e5a93b"; sCtx.beginPath(); sCtx.arc(mx, py1, 4, 0, Math.PI * 2); sCtx.fill();
-      }
-      if (show2) {
-        const py2 = h/2 - (uR0Val / v2Sens) * (h / 8);
-        sCtx.fillStyle = "#2bbd8e"; sCtx.beginPath(); sCtx.arc(mx, py2, 4, 0, Math.PI * 2); sCtx.fill();
-      }
-      if (show3) {
-        const py3 = h/2 - (uCVal / v3Sens) * (h / 8);
-        sCtx.fillStyle = "#c792ea"; sCtx.beginPath(); sCtx.arc(mx, py3, 4, 0, Math.PI * 2); sCtx.fill();
-      }
 
       let html = `<strong>t :</strong> ${(tRel * 1000).toFixed(2)} ms<br/>`;
-      if (show1) html += `<span style="color:var(--in-color)">u(t) : ${eVal.toFixed(2)} V</span><br/>`;
-      if (show2) html += `<span style="color:var(--out-color)">u<sub>R0</sub>(t) : ${uR0Val.toFixed(2)} V</span><br/>`;
-      if (show3) html += `<span style="color:var(--ur-color)">u<sub>C</sub>(t) : ${uCVal.toFixed(2)} V</span>`;
-
+      if (show1) {
+        sCtx.fillStyle = "#e5a93b"; sCtx.beginPath(); sCtx.arc(mx, yOf(eVal, v1Sens), 4, 0, Math.PI * 2); sCtx.fill();
+        html += `<span style="color:var(--in-color)">u(t) : ${eVal.toFixed(2)} V</span><br/>`;
+      }
+      if (ch) {
+        const v = chV(tAbs);
+        sCtx.fillStyle = ch.color; sCtx.beginPath(); sCtx.arc(mx, yOf(v, chSens), 4, 0, Math.PI * 2); sCtx.fill();
+        html += `<span style="color:${ch.color}">${ch.lab}(t) : ${v.toFixed(2)} V</span>`;
+      }
       showTooltip(html);
     }
   }
@@ -1152,6 +1112,7 @@
                      document.getElementById('v2SensSelect'),
                      document.getElementById('v3SensSelect'),
                      document.getElementById('hSensSelect'),
+                     document.getElementById('vBRSensSelect'), document.getElementById('vBCSensSelect'), document.getElementById('vRCSensSelect'),
                      document.getElementById('showChan1Check'),
                      document.getElementById('showBodeI'),
                      document.getElementById('showBodeUc')];
