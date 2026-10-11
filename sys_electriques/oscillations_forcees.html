@@ -226,7 +226,13 @@
 
   .montage-row { display: flex; gap: 12px; align-items: stretch; }
   .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
-  .schematic-wrap svg { display: block; width: 100%; max-height: 240px; height: auto; margin: 0 auto; }
+  .schematic-wrap svg { display: block; width: 100%; max-height: 300px; height: auto; margin: 0 auto; }
+
+  .volt-panel { width: 190px; flex: none; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .volt-panel label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .volt-panel select { background:#0e1318; color:#fff; border:1px solid #2a3644; border-radius:4px; padding:5px 6px; font-size:12px; width:100%; }
+  .volt-note { font-size: 10.5px; color: var(--text-dim); line-height: 1.4; display: none; }
+  @media (max-width: 700px) { .montage-row { flex-direction: column; } .volt-panel { width: auto; } }
 
   .sch-wire { stroke: var(--text-dim); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .sch-comp { stroke: #4fc3e8; stroke-width: 1.8; fill: rgba(79,195,232,0.12); }
@@ -345,9 +351,21 @@
         <div class="oscillo-header"><span class="oscillo-title">SCHÉMA DU MONTAGE RÉSONANCE RLC</span></div>
         <div class="montage-row">
           <div class="schematic-wrap" style="flex:1;">
-            <svg id="schematicSvg" viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+            <svg id="schematicSvg" viewBox="0 0 345 262" xmlns="http://www.w3.org/2000/svg">
               <!-- Injecté dynamiquement via JS -->
             </svg>
+          </div>
+          <div class="volt-panel">
+            <label for="voltSelect">Voltmètre V branché aux bornes de :</label>
+            <select id="voltSelect">
+              <option value="C" selected>Condensateur (u_C)</option>
+              <option value="B">Bobine (u_B)</option>
+              <option value="BC">Bobine–condensateur</option>
+              <option value="BR">Bobine–résistor</option>
+              <option value="R0">Résistor (u_R0)</option>
+              <option value="T">Dipôle RLC entier</option>
+            </select>
+            <div class="volt-note" id="voltNote">Les choix grisés ne sont pas branchables avec la disposition imposée par la voie Y₁ (un autre dipôle se trouve entre les deux).</div>
           </div>
         </div>
       </div>
@@ -681,6 +699,8 @@
   const bodeCanvas = document.getElementById('bodeCanvas');
   const bCtx = bodeCanvas.getContext('2d');
   const schematicSvg = document.getElementById('schematicSvg');
+  const voltSelect = document.getElementById('voltSelect'), voltNote = document.getElementById('voltNote');
+  voltSelect.addEventListener('change', () => updateParams());
 
   const showChan2Check = document.getElementById('showChan2Check'); // uR0
   const showChan3Check = document.getElementById('showChan3Check'); // uC
@@ -743,6 +763,7 @@
     [28, 34, 40, 46, 52].forEach(x => { s += `<line x1="${x}" y1="160" x2="${x - 5}" y2="167" stroke="var(--text)" stroke-width="1.5"/>`; });
 
     let cur = 40, x = 40 + gap, xEnd = 40;
+    const pos = {};
     sp.order.forEach((k, i) => {
       const meas = i < sp.tap;
       s += `<path d="M ${cur},140 L ${x},140" class="sch-wire"/>`;
@@ -755,6 +776,7 @@
         s += `<line x1="${x}" y1="126" x2="${x}" y2="154" stroke="var(--text)" stroke-width="2.2"/><line x1="${x + 8}" y1="126" x2="${x + 8}" y2="154" stroke="var(--text)" stroke-width="2.2"/>`;
       }
       s += `<text x="${x + W[k] / 2}" y="165" class="sch-label" text-anchor="middle" style="${meas ? 'fill:' + sp.color : ''}">${LAB[k]}</text>`;
+      pos[k] = { x: x, e: x + W[k] };
       cur = x + W[k];
       if (meas) xEnd = cur;
       x = cur + gap;
@@ -776,6 +798,54 @@
         <path d="M 240,140 L 240,168" stroke="var(--in-color)" stroke-width="1.8"/>
         <path d="M 236,162 L 240,170 L 244,162" fill="var(--in-color)"/>
         <text x="240" y="184" font-size="13" font-weight="bold" fill="var(--in-color)" text-anchor="middle">Y${sub('2')}</text>`;
+
+    // Appareils numériques : ampèremètre (en série) et voltmètre (au choix), valeurs efficaces
+    const w_ = 2 * Math.PI * N, XL = L * w_, XC = 1 / (C * w_);
+    const Ieff = (Um / Math.hypot(R0 + r, XL - XC)) / Math.SQRT2;
+    const VG = { C: ['C'], B: ['L'], BC: ['L', 'C'], BR: ['L', 'R'], R0: ['R'], T: ['R', 'L', 'C'] };
+    const VAL = { C: XC, B: Math.hypot(r, XL), BC: Math.hypot(r, XL - XC), BR: Math.hypot(R0 + r, XL), R0: R0, T: Math.hypot(R0 + r, XL - XC) };
+    const VNAME = { C: 'C', B: 'B', BC: 'BC', BR: 'BR', R0: 'R0', T: '' };
+    // un voltmètre ne se branche qu'aux bornes de dipôles consécutifs dans la disposition courante
+    const adjacent = g => { const id = g.map(k => sp.order.indexOf(k)); return Math.max(...id) - Math.min(...id) + 1 === g.length; };
+    let anyOff = false;
+    Array.from(voltSelect.options).forEach(o => { const ok = adjacent(VG[o.value]); o.disabled = !ok; if (!ok) anyOff = true; });
+    voltNote.style.display = anyOff ? 'block' : 'none';
+    if (!adjacent(VG[voltSelect.value])) voltSelect.value = 'C';
+    const vk = voltSelect.value, grp = VG[vk];
+    const Uveff = Ieff * VAL[vk];
+    const txtI = Ieff >= 1 ? Ieff.toFixed(3) + ' A' : (Ieff * 1000).toFixed(1) + ' mA';
+    const txtU = Uveff.toFixed(2) + ' V';
+    const mcol = '#c792ea';
+    const lcd = (bx, by, label, capBelow) => `
+        <text x="${bx + 42}" y="${capBelow ? by + 33 : by - 4}" font-size="8" fill="var(--text-dim)" text-anchor="middle" font-family="sans-serif">valeur efficace</text>
+        <rect x="${bx}" y="${by}" width="84" height="22" rx="3" fill="#06100c" stroke="#2b4a3a" stroke-width="1.2"/>
+        <text x="${bx + 42}" y="${by + 15}" font-size="11" font-weight="bold" fill="#7dfca0" text-anchor="middle" font-family="monospace">${label}</text>`;
+    // Ampèremètre : dans la branche de droite, en série avec le circuit
+    s += `
+        <circle cx="240" cy="108" r="12" fill="#0d1316" stroke="var(--text)" stroke-width="2"/>
+        <text x="240" y="108" font-size="12" font-weight="bold" fill="var(--text)" text-anchor="middle" font-family="sans-serif">A</text>
+        <text x="240" y="118" font-size="9" fill="var(--text)" text-anchor="middle" font-family="sans-serif">~</text>
+        <path d="M 252,108 L 262,108" stroke="var(--text-dim)" stroke-width="1.2" stroke-dasharray="2 2"/>`
+        + lcd(262, 108, 'I = ' + txtI, false);
+    // Voltmètre : fils aux deux extrémités du groupe de dipôles choisi
+    const gx0 = Math.min(...grp.map(k => pos[k].x)), gx1 = Math.max(...grp.map(k => pos[k].e));
+    const xa = gx0 - 4, xb = gx1 + 4, vcx = (xa + xb) / 2, vcy = 204, half = (xb - xa) / 2;
+    let leads;
+    if (half >= 12) {
+      leads = `<path d="M ${xa},140 L ${xa},${vcy} L ${vcx - 12},${vcy}" stroke="${mcol}" stroke-width="1.5" fill="none"/>
+        <path d="M ${xb},140 L ${xb},${vcy} L ${vcx + 12},${vcy}" stroke="${mcol}" stroke-width="1.5" fill="none"/>`;
+    } else {
+      const dy = Math.sqrt(144 - half * half);
+      leads = `<path d="M ${xa},140 L ${xa},${vcy - dy}" stroke="${mcol}" stroke-width="1.5" fill="none"/>
+        <path d="M ${xb},140 L ${xb},${vcy - dy}" stroke="${mcol}" stroke-width="1.5" fill="none"/>`;
+    }
+    s += `
+        <circle cx="${xa}" cy="140" r="2.5" class="sch-node"/><circle cx="${xb}" cy="140" r="2.5" class="sch-node"/>
+        ${leads}
+        <circle cx="${vcx}" cy="${vcy}" r="12" fill="#0d1316" stroke="${mcol}" stroke-width="2"/>
+        <text x="${vcx}" y="${vcy}" font-size="12" font-weight="bold" fill="${mcol}" text-anchor="middle" font-family="sans-serif">V</text>
+        <text x="${vcx}" y="${vcy + 10}" font-size="9" fill="${mcol}" text-anchor="middle" font-family="sans-serif">~</text>`
+        + lcd(vcx - 42, vcy + 16, 'U' + (VNAME[vk] ? sub(VNAME[vk]) : '') + ' = ' + txtU, true);
     schematicSvg.innerHTML = s;
   }
 
