@@ -1,57 +1,236 @@
 <!DOCTYPE html>
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Entretien des Oscillations - Circuit RLC + AOP</title>
 <style>
-:root{--bg:#11161a;--panel:#161d22;--alt:#1c242a;--line:#2a353c;--text:#dbe4e8;--dim:#7c8a92;--faint:#52616a;--in:#e5a93b;--out:#2bbd8e;--ur:#c792ea;--accent:#4fc3e8;--mono:ui-monospace,"SF Mono",Consolas,monospace;--sans:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
-body{padding:18px}
-.site-header .site-title {
-    margin: 0 0 10px;
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--accent);
+  :root{
+    --bg: #11161a;
+    --panel: #161d22;
+    --panel-alt: #1c242a;
+    --line: #2a353c;
+    --line-soft: #202a30;
+    --text: #dbe4e8;
+    --text-dim: #7c8a92;
+    --text-faint: #52616a;
+    --in-color: #e5a93b;
+    --out-color: #2bbd8e;
+    --ur-color: #c792ea;
+    --time-color: #38bdf8;
+    --accent: #4fc3e8;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius: 4px;
   }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+  body { padding: 18px; }
+  .rig {
+    max-width: 1180px;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--panel), var(--bg) 140%);
+    overflow: hidden;
+  }
+
   .site-header {
     padding: 14px 20px 12px;
     border-bottom: 1px solid var(--line);
     background: var(--panel-alt);
     text-align: center;
   }
-.rig{max-width:1180px;margin:0 auto;border:1px solid var(--line);border-radius:6px;background:linear-gradient(180deg,var(--panel),var(--bg) 140%);overflow:hidden}
-.plate{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--alt);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 24px;align-items:baseline}
-.plate h1{margin:0;font-size:17px}.sub{color:var(--dim);font-size:12.5px;margin-top:3px}
-.fc .l{color:var(--dim);font-size:11px;text-align:right}.fc .v{font-family:var(--mono);font-size:22px;color:var(--accent)}
-.layout{display:grid;grid-template-columns:1fr 280px}@media(max-width:850px){.layout{grid-template-columns:1fr}.controls{border-left:none!important;border-top:1px solid var(--line)}}
-.scopes{padding:18px 20px;display:flex;flex-direction:column;gap:18px}
-.controls{border-left:1px solid var(--line);padding:18px;background:var(--panel)}
-.st{font-size:11px;color:var(--faint);margin:20px 0 10px;padding-bottom:5px;border-bottom:1px solid #202a30;text-transform:uppercase}.st:first-child{margin-top:0}
-.ctrl{margin-bottom:14px}.row{display:flex;justify-content:space-between;margin-bottom:5px;font-size:12.5px}.row .val{font-family:var(--mono);color:var(--out)}
-input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--line);border-radius:2px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #0d1215;cursor:pointer}
-input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #0d1215}
-.ot{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:8px}
-.tb{background:#141c22;border:1px solid #232d39;border-radius:6px;padding:6px 12px;display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:12.5px;font-weight:600}
-.tb select{background:#0e1318;color:#fff;border:1px solid #2a3644;border-radius:4px;padding:4px 6px;font-size:12px}
-.c1{color:var(--ur)}.c2{color:var(--out)}.ct{color:#38bdf8}
-canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px;background:#0d1316}
-.sw{border:1px solid var(--line);border-radius:4px;background:#0d1316;padding:10px}.sw svg{display:block;width:100%;max-height:330px;margin:0 auto}
-.sch-wire{stroke:var(--dim);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.sch-res{stroke:#4fc3e8;stroke-width:1.6;fill:rgba(79,195,232,.12)}.sch-node{fill:var(--text)}.sch-label{fill:var(--text);font-size:13px;font-weight:600}
-.rg{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}.rg .k{font-size:10px;color:var(--faint)}.rg .v{font-family:var(--mono);font-size:13px}
-.btn-theory-toggle{width:100%;padding:8px 12px;font-size:11.5px;font-weight:600;letter-spacing:.5px;color:var(--accent);background:var(--alt);border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s}
-.btn-theory-toggle:hover{background:var(--line);border-color:var(--accent)}.theory-container.hidden{display:none}
-.theory-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.theory-grid{grid-template-columns:1fr}}
-.theory-card{border:1px solid var(--line);border-radius:4px;background:#0d1316;padding:12px 14px;font-size:12px;line-height:1.4;color:var(--dim)}
-.theory-card h3{margin:0 0 6px;font-size:12.5px;color:var(--accent)}.theory-card p{margin:3px 0}.theory-wide{grid-column:1/-1}
-.formula{font-family:var(--mono);color:var(--text);background:var(--alt);padding:3px 6px;border-radius:3px;display:inline-block;margin:3px 0}
-.theory-card ol{margin:4px 0 6px;padding-left:20px}.theory-card li{margin:3px 0}.theory-card b{color:var(--text)}
-.theory-card .note{margin-top:6px;padding:5px 8px;border-left:2px solid #e0b040;background:var(--alt);color:var(--text);font-size:11.5px}
-.theory-card .live{margin-top:8px;padding:6px 8px;border-left:2px solid var(--accent);background:var(--alt);font-family:var(--mono);font-size:11.5px;color:var(--text)}
-.theory-card table{border-collapse:collapse;margin:6px 0;font-size:11.5px}.theory-card th,.theory-card td{border:1px solid var(--line);padding:3px 8px;text-align:center;color:var(--text)}.theory-card th{background:var(--alt);color:var(--accent)}
+  .site-header .site-title {
+    margin: 0 0 10px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .topbar a { color: var(--text-dim); text-decoration: none; font-size: 13px; }
+  .topbar a:hover { color: var(--accent); }
+  .topbar .regime-picker { display: flex; align-items: center; gap: 8px; }
+  .topbar .regime-picker label { color: var(--text-faint); font-size: 11.5px; }
+
+  .plate {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .plate h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  .plate .sub { color: var(--text-dim); font-size: 12.5px; margin-top: 3px; }
+  .fc-readout { text-align: right; line-height: 1.15; }
+  .fc-readout .label { color: var(--text-dim); font-size: 11px; }
+  .fc-readout .value { font-family: var(--font-mono); font-size: 22px; color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 1fr 280px; }
+  @media (max-width: 850px) {
+    .layout { grid-template-columns: 1fr; }
+    .controls { border-left: none; border-top: 1px solid var(--line); order: 2; }
+    .scopes { order: 1; }
+  }
+
+  .controls { border-left: 1px solid var(--line); padding: 18px 18px 22px; background: var(--panel); }
+  .section-title {
+    font-size: 11px; color: var(--text-faint); letter-spacing: 0.4px;
+    margin: 20px 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--line-soft);
+    text-transform: uppercase;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .ctrl { margin-bottom: 14px; }
+  .ctrl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .ctrl-row .name { font-size: 12.5px; color: var(--text); }
+  .ctrl-row .val { font-family: var(--font-mono); font-size: 12.5px; color: var(--out-color); }
+  .ctrl-row .val.in-tone { color: var(--in-color); }
+  .ctrl-row .val.speed-tone { color: var(--time-color); }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 3px;
+    background: var(--line); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer;
+  }
+
+  .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
+  .readout-grid .item .k { font-size: 10px; color: var(--text-faint); }
+  .readout-grid .item .v { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
+
+  .scopes { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .oscillo-panel { background-color: transparent; width: 100%; position: relative; }
+  .oscillo-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+  .oscillo-title { text-transform: uppercase; color: var(--text-dim); font-weight: bold; }
+  .oscillo-legend { display: flex; gap: 16px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0b0c0; }
+  .color-dot { width: 12px; height: 2px; display: inline-block; }
+  .color-dot.purple { background-color: var(--ur-color); }
+  .color-dot.green { background-color: var(--out-color); }
+
+  .oscillo-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px;
+  }
+  .position-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .control-group { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+  .pos-group { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+  .pos-group input[type=range] { width: 90px; }
+  .pos-group .pv { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); min-width: 34px; }
+
+  .label-ch1 { color: var(--ur-color); }
+  .label-ch2 { color: var(--out-color); }
+  .label-time { color: var(--time-color); }
+
+  .toolbar-check { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; }
+  .toolbar-check input { width: 14px; height: 14px; cursor: pointer; }
+  .toolbar-check.ch1 { color: var(--ur-color); }
+  .toolbar-check.ch1 input { accent-color: var(--ur-color); }
+  .toolbar-check.ch2 { color: var(--out-color); }
+  .toolbar-check.ch2 input { accent-color: var(--out-color); }
+
+  .oscillo-toolbar select {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer;
+  }
+
+  .btn-pause, .btn-reset {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: background-color 0.2s;
+  }
+  .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
+
+  .top-screen-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; gap: 10px; flex-wrap: wrap;
+  }
+  .top-buttons { display: flex; align-items: center; gap: 8px; }
+
+  .canvas-wrapper { position: relative; width: 100%; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; }
+
+  .montage-row { display: flex; gap: 12px; align-items: stretch; }
+  @media (max-width: 700px) { .montage-row { flex-direction: column; } }
+  
+  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
+  .schematic-wrap svg { display: block; width: 100%; max-height: 290px; height: auto; margin: 0 auto; }
+
+  .sch-wire   { stroke: var(--text-dim); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .sch-comp   { stroke: #4fc3e8; stroke-width: 1.6; fill: rgba(79,195,232,0.12); }
+  .sch-node   { fill: var(--text); }
+  .sch-label  { fill: var(--text); font-size: 13px; font-weight: 600; }
+
+  .btn-theory-toggle {
+    width: 100%; padding: 8px 12px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--accent); background: var(--panel-alt); border: 1px solid var(--line);
+    border-radius: var(--radius); cursor: pointer; transition: all 0.2s ease; margin-top: 10px;
+  }
+  .btn-theory-toggle:hover { background: var(--line); border-color: var(--accent); }
+  .theory-container.hidden { display: none; }
+  .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 12px; }
+  @media (max-width: 760px) { .theory-grid { grid-template-columns: 1fr; } }
+  .theory-card {
+    border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316;
+    padding: 12px 14px; font-size: 12px; line-height: 1.4; color: var(--text-dim);
+  }
+  .theory-card h3 { margin: 0 0 6px; font-size: 12.5px; color: var(--accent); }
+  .theory-card p { margin: 3px 0; }
+  .formula {
+    font-family: var(--font-mono); color: var(--text); background: var(--panel-alt);
+    padding: 3px 6px; border-radius: 3px; display: inline-block; margin: 3px 0;
+  }
+  .theory-wide { grid-column: 1 / -1; }
+  .ctrl-hint { font-size: 11px; color: var(--text-dim); }
+  .sw-btn {
+    background: #0e1318; border: 1px solid var(--accent); color: var(--accent);
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;
+  }
+  .sw-btn.closed { background: var(--accent); color: #0d1316; }
+
+  .sch-res{stroke:#4fc3e8;stroke-width:1.6;fill:#0d1316}
+  #swGroup{cursor:pointer}
+  #swBlade{stroke:var(--accent);stroke-width:2.8;stroke-linecap:round;transform-origin:100px 50px;transform:rotate(32deg);transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+  #sch.closed #swBlade{transform:rotate(0deg);stroke:var(--in-color)}
+  @keyframes flow{to{stroke-dashoffset:-22}}
+  #sch.closed .flow{stroke:var(--in-color);stroke-dasharray:5 6;animation:flow .7s linear infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .pulse{animation:pulse .9s ease-in-out infinite;font-weight:700}
+  .toast{position:fixed;top:18px;left:50%;transform:translate(-50%,-20px);background:#0e1318;border:1px solid var(--out-color);color:var(--out-color);padding:10px 16px;border-radius:6px;font-size:13px;max-width:90vw;opacity:0;pointer-events:none;transition:all .3s;z-index:9}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .rp-wrap{position:relative}
+  .rp-wrap .tick{position:absolute;top:-6px;width:2px;height:16px;background:var(--out-color);display:none;pointer-events:none}
+  kbd{font-family:var(--font-mono);background:var(--panel-alt);border:1px solid var(--line);border-radius:3px;padding:0 5px;font-size:11px;color:var(--text)}
 
  .page-switcher select {
     background: var(--panel);
@@ -83,164 +262,728 @@ canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px;b
             border-color: #7C9EF0;
             color: #7C9EF0;
         }
-
-</style></head>
+         .signature{
+text-align: center;
+font-family: "Arial";
+font-size: 12px;
+font-weight: bold;
+color: rgb(170, 221, 241);
+margin-top: 30px;
+}
+</style>
+</head>
 <a class="btn-home" href="https://simphysique.blogspot.com/">← Retour au site SimPhysique</a>
-<body><div 
-    
-    class="rig">
-    <div class="toast" id="toast"></div>
+<body>
+<div class="toast" id="toast"></div>
 <div class="rig">
+   <a href="index.html">← Retour à l'accueil</a>
   <div class="site-header">
-    <h1 class="site-title">DIPÔLE À RÉSISTANCE NÉGATIVE - OSCILLATIONS  ÉLECTRIQUES ENTRETENUES</h1>
-  <div class="rig">
+    <h1 class="site-title">DIPÔLE À RÉSISTANCE NÉGATIVE -  OSCILLATIONS  ÉLECTRIQUES ENTRETENUES</h1>
+    
+<div class="rig">
   <div class="site-header">
     <div class="page-switcher">
       <label for="pageSwitch">Choisir le TP :</label>
       <select id="pageSwitch" onchange="if(this.value) window.location.href=this.value;">   
      
-        <option value="dipole_resistance_negative.html" selected> dipôle à résistance négative</option>
-        <option value="oscill_entret.html" >Oscillations  entretenues</option>
+        <option value="dipole_resistance_negative.html" > Le dipôle à resistance négative</option>
+        <option value="oscill_entret.html" selected>Oscillations  entretenues</option>
       </select>
     </div>
-<div class="plate"><div><h1>Dipôle (D) à résistance négative — AOP</h1><div class="sub">Tension triangulaire du GBF, mode YT ou XY : u = f(u′), u′ étant la tension aux bornes de R′.</div></div>
-<div class="fc"><div class="l">RÉSISTANCE ÉQUIVALENTE</div><div class="v" id="rneg">−50 Ω</div></div></div>
-<div class="layout"><div class="scopes">
-<div><div class="ot">Schéma du montage</div><div class="sw">
-<svg viewBox="-5 -10 450 300" xmlns="http://www.w3.org/2000/svg">
-<rect x="185" y="-6" width="190" height="256" rx="6" fill="rgba(79,195,232,.06)" stroke="#4fc3e8" stroke-width="1.6" stroke-dasharray="7 5"/>
-<text x="280" y="283" text-anchor="middle" class="sch-label" fill="var(--accent)">dipôle (D)</text>
-<g class="sch-wire">
-<path d="M40,60 L125,60 M160,60 L230,60"/><path d="M40,60 L40,85 M40,115 L40,175 M40,220 L40,260 L350,260"/>
-<path d="M200,60 L200,20 L250,20 M294,20 L350,20 L350,80 M310,80 L350,80 M350,80 L350,115 M350,155 L350,190 M350,235 L350,260"/>
-<path d="M230,100 L205,100 L205,170 L350,170"/></g>
-<text id="tVcc" x="240" y="136" font-size="11" fill="var(--in)">±15 V</text><polygon points="230,40 230,120 310,80" fill="rgba(79,195,232,.12)" stroke="#4fc3e8" stroke-width="2"/>
-<text x="236" y="65" font-size="16" fill="var(--text)">−</text><text x="236" y="105" font-size="15" fill="var(--text)">+</text>
-<text x="212" y="54" font-size="11" fill="var(--text)">i⁻</text><text x="212" y="94" font-size="11" fill="var(--text)">i⁺</text>
-<rect class="sch-res" x="250" y="12" width="44" height="16"/><text x="263" y="6" class="sch-label">R<tspan baseline-shift="sub">1</tspan></text>
-<text x="215" y="14" font-size="11" fill="var(--text)">i<tspan baseline-shift="sub">1</tspan> →</text>
-<circle cx="350" cy="80" r="2.5" class="sch-node"/><text x="360" y="76" class="sch-label">S</text>
-<rect class="sch-res" x="342" y="115" width="16" height="40"/><text x="364" y="140" class="sch-label">R<tspan baseline-shift="sub">2</tspan></text>
-<circle cx="350" cy="170" r="2.5" class="sch-node"/><text x="330" y="164" class="sch-label" id="tD">D</text>
-<path d="M350,170 L405,170 M399,166 L407,170 L399,174" stroke="#c792ea" stroke-width="1.5" fill="#c792ea"/><text x="412" y="174" font-size="12" font-weight="bold" fill="var(--ur)">Y<tspan baseline-shift="sub">1</tspan></text>
-<rect class="sch-res" x="342" y="190" width="16" height="45"/>
-<line x1="332" y1="238" x2="368" y2="188" stroke="var(--accent)" stroke-width="1.5"/><path d="M363,187 L369,186 L366,192" fill="var(--accent)"/>
-<text x="318" y="222" class="sch-label">R′</text><text x="364" y="214" font-size="11" fill="var(--text)">i<tspan baseline-shift="sub">2</tspan></text>
-<circle cx="40" cy="60" r="2.5" class="sch-node"/><path d="M40,60 L15,60 M21,56 L13,60 L21,64" stroke="#2bbd8e" stroke-width="1.5" fill="#2bbd8e"/><text x="-5" y="52" font-size="12" font-weight="bold" fill="var(--out)">Y<tspan baseline-shift="sub">2</tspan></text>
-<circle cx="90" cy="60" r="2.5" class="sch-node"/><text x="84" y="50" class="sch-label">A</text>
-<g id="swGroup" style="cursor:pointer"><rect x="115" y="30" width="55" height="55" fill="transparent"/><line id="swBlade" x1="125" y1="60" x2="160" y2="60" stroke="var(--text)" stroke-width="2.2" stroke-linecap="round"/><circle cx="125" cy="60" r="3" class="sch-node"/><circle cx="160" cy="60" r="3" class="sch-node"/><text x="136" y="82" class="sch-label">K</text></g>
-<path d="M165,48 L185,48 M180,44 L188,48 L180,52" stroke="var(--text)" fill="var(--text)"/><text x="170" y="40" font-size="11" fill="var(--text)">i</text>
-<circle cx="40" cy="100" r="15" fill="rgba(79,195,232,.12)" stroke="#4fc3e8" stroke-width="1.6"/><text x="40" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text)">GBF</text>
-<rect class="sch-res" x="32" y="175" width="16" height="45"/><text x="10" y="202" class="sch-label">R</text>
-<path d="M90,66 L90,254 M86,72 L90,64 L94,72" stroke="var(--in)" stroke-width="1.5" fill="var(--in)"/><text x="98" y="160" font-size="14" font-weight="700" fill="var(--in)">u</text>
-<circle cx="90" cy="260" r="2.5" class="sch-node"/><text x="98" y="256" class="sch-label">M</text>
-<line x1="78" y1="266" x2="102" y2="266" stroke="var(--text)" stroke-width="2"/><line x1="82" y1="271" x2="98" y2="271" stroke="var(--text)" stroke-width="1.6"/><line x1="86" y1="276" x2="94" y2="276" stroke="var(--text)" stroke-width="1.2"/>
-</svg></div></div>
-<div><div class="ot">Oscilloscope</div>
-<div class="tb"><label>Mode <select id="mode"><option value="yt">YT</option><option value="xy" selected>XY : u = f(u′)</option></select></label>
-<label>Voie Y1 / axe X <select id="xs"><option value="up">u′ (aux bornes de R′)</option><option value="i">i (courant du dipôle)</option></select></label><label class="c1"><select id="v1"></select></label><label class="c1" style="cursor:pointer"><input type="checkbox" id="inv" style="accent-color:#c792ea"> Inverse Y1</label><label style="cursor:pointer"><input type="checkbox" id="cur" checked> Curseurs</label><button id="kbtn" style="background:#0e1318;color:#fff;border:1px solid #2a3644;border-radius:4px;padding:4px 12px;font-size:12px;cursor:pointer"></button><label class="c2">Y2 (u) <select id="v2"></select></label>
-<label class="ct">Base de temps <select id="td"><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option></select> ms/div</label></div>
-<canvas id="cv" style="touch-action:none" width="800" height="520"></canvas></div>
-<div><button id="thb" class="btn-theory-toggle">APERÇU THÉORIQUE — RÉSISTANCE NÉGATIVE &amp; CARACTÉRISTIQUES</button>
-<div id="thd" class="theory-container hidden" style="margin-top:12px"><div class="theory-grid">
-<div class="theory-card theory-wide"><h3>Vue d'ensemble : dipôle (D) à résistance négative</h3>
-<p>Le dipôle (D) est formé de l'AOP, de R₁, R₂ et de la résistance ajustable R′. Alimenté par le GBF à travers R, il se comporte, tant que l'AOP reste linéaire, comme une résistance négative R₋ = −R₁R′/R₂. À l'ouverture de K, le dipôle est déconnecté : u = e et u′ = 0. Quand l'aperçu est affiché, la caractéristique théorique s'ajoute en pointillés orange sur l'écran XY.</p></div>
-<div class="theory-card"><h3>1. AOP idéal en régime linéaire</h3>
-<p>Courants d'entrée nuls (i⁻ = i⁺ = 0) et ε = V₊ − V₋ = 0 :</p>
-<div class="formula">V₋ = u &nbsp;;&nbsp; V₊ = u′ &nbsp;⇒&nbsp; u′ = u</div>
-<p>La tension u′ aux bornes de R′ est donc égale à u.</p></div>
-<div class="theory-card"><h3>2. Calcul de la résistance négative</h3>
-<ol><li>Dans R′ : <span class="formula">i₂ = u′/R′ = u/R′</span></li>
-<li>Dans R₂ : <span class="formula">V<sub>S</sub> = u′ + R₂i₂ = u(1 + R₂/R′)</span></li>
-<li>Dans R₁ (i₁ = i) : <span class="formula">i = (u − V<sub>S</sub>)/R₁ = −(R₂/R₁R′)·u</span></li></ol>
-<div class="formula">u = −(R₁R′/R₂)·i &nbsp;→&nbsp; u = −R′·i si R₁ = R₂</div>
-<div class="live" id="thLive"></div></div>
-<div class="theory-card"><h3>3. Pente selon l'axe X choisi</h3>
-<table><tr><th>Courbe</th><th>Pente (zone linéaire)</th><th>Dépend de R′ ?</th></tr>
-<tr><td>u = f(u′)</td><td>1</td><td>non</td></tr>
-<tr><td>u = f(i)</td><td>−R₁R′/R₂</td><td>oui</td></tr></table>
-<p>Comme u′ = u, la courbe u = f(u′) est toujours une droite de pente 1. Pour mesurer −R′, choisir « i (courant du dipôle) » comme axe X, avec i = (e − u)/R.</p></div>
-<div class="theory-card"><h3>4. Saturation de l'AOP</h3>
-<p>Lorsque |V<sub>S</sub>| atteint Vcc, l'AOP sort du régime linéaire :</p>
-<div class="formula">|u| ≤ Vcc·R′/(R₂+R′) &nbsp;(zone linéaire)</div>
-<div class="formula">u′ = ±Vcc·R′/(R₂+R′) &nbsp;;&nbsp; u = ±Vcc + R₁·i</div>
-<p>Sur u = f(u′) on obtient deux branches verticales. Sur u = f(i), des droites de pente +R₁ décalées de ±Vcc.</p>
-<div class="live" id="thLive2"></div></div>
-<div class="theory-card theory-wide"><h3>5. Rôle du GBF et de R</h3>
-<p>Loi des mailles à gauche : <span class="formula">e = u + R·i</span>. En régime linéaire, avec i = −R₂u/(R₁R′) :</p>
-<div class="formula">u = e / (1 − R·R₂/(R₁R′))</div>
-<div class="note">Si R = R₁R′/R₂ (R = |R₋|), le dénominateur s'annule : le point de fonctionnement n'est plus déterminé par le GBF et le système bascule en saturation.</div></div>
-</div></div></div>
+  
+  <div class="topbar"
+    <div class="regime-picker">
+      <label>Système d'Entretien :</label>
+      <span style="color:var(--text-dim); font-size:12.5px;">Générateur à Résistance Négative (-R₀)</span>
+    </div>
+  </div>
+
+  <div class="plate">
+    <div>
+      <h1>Circuit RLC Série avec Montage d'Entretien à AOP</h1>
+      <div class="sub">Compensation des pertes Joule par amplification pour maintenir des oscillations sinusoïdales.</div>
+    </div>
+    <div class="fc-readout">
+      <div class="label">FRÉQUENCE PROPRE N₀</div>
+      <div class="value" id="freqHeaderValue">159.2 Hz</div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- PANNEAU DES SCOPES & THÉORIE -->
+    <div class="scopes">
+
+      <!-- 1. SCHÉMA DU MONTAGE -->
+      <div class="scope-block">
+        <div class="oscillo-header"><span class="oscillo-title">SCHÉMA DU MONTAGE — cliquer sur K (ou touche K / Espace) pour ouvrir / fermer</span></div>
+        <div class="schematic-wrap">
+          <svg id="sch" viewBox="0 -16 440 276" xmlns="http://www.w3.org/2000/svg">
+            <rect x="150" y="-12" width="212" height="253" rx="6" fill="rgba(79,195,232,0.06)" stroke="#4fc3e8" stroke-width="1.6" stroke-dasharray="7 5"/>
+            <text x="256" y="256" text-anchor="middle" class="sch-label" fill="var(--accent)">dipôle (D)</text>
+            <g class="sch-wire">
+              <path class="flow" d="M165,50 L100,50"/>
+              <path class="flow" d="M65,50 L40,50 L40,85"/>
+              <path class="flow" d="M40,91 L40,104"/>
+              <path class="flow" d="M40,150 L40,170"/>
+              <path class="flow" d="M40,205 L40,235"/>
+              <path d="M165,50 L200,50"/>
+              <path d="M320,70 L320,15 L165,15 L165,50"/>
+              <path d="M280,70 L400,70"/>
+              <path d="M320,70 L320,100 M320,140 L320,185 M320,225 L320,235 L40,235"/>
+              <path d="M320,165 L180,165 L180,90 L200,90"/>
+            </g>
+            <polygon points="200,30 200,110 280,70" fill="rgba(79,195,232,0.12)" stroke="#4fc3e8" stroke-width="2"/>
+            <text x="206" y="55" font-size="16" fill="var(--text)">−</text>
+            <text x="206" y="100" font-size="15" fill="var(--text)">+</text>
+            <!-- R1 -->
+            <rect class="sch-res" x="215" y="7" width="44" height="16"/>
+            <text x="228" y="-2" class="sch-label">R<tspan baseline-shift="sub">1</tspan></text>
+            <path d="M285,15 L275,15" stroke="var(--text)" stroke-width="1.2"/>
+            <path d="M277,12 L272,15 L277,18" fill="var(--text)"/>
+            <text x="276" y="8" font-size="11" fill="var(--text)">i<tspan baseline-shift="sub">1</tspan></text>
+            <text x="172" y="44" font-size="11" fill="var(--text)">i<tspan baseline-shift="super">−</tspan></text>
+            <text x="172" y="84" font-size="11" fill="var(--text)">i<tspan baseline-shift="super">+</tspan></text>
+            <!-- S / Y2 -->
+            <circle cx="320" cy="70" r="2.5" class="sch-node"/>
+            <text x="296" y="62" class="sch-label">S</text>
+            <path d="M400,70 L410,70" stroke="var(--out-color)" stroke-width="1.5"/>
+            <path d="M405,66 L413,70 L405,74" fill="var(--out-color)"/>
+            <text x="416" y="74" font-size="12" font-weight="bold" fill="var(--out-color)">Y<tspan baseline-shift="sub">2</tspan></text>
+            <!-- R2, D, R' -->
+            <rect class="sch-res" x="312" y="100" width="16" height="40"/>
+            <text x="335" y="125" class="sch-label">R<tspan baseline-shift="sub">2</tspan></text>
+            <circle cx="320" cy="165" r="2.5" class="sch-node"/>
+            <text x="334" y="168" class="sch-label">D</text>
+            <rect class="sch-res" x="312" y="185" width="16" height="40"/>
+            <line x1="302" y1="230" x2="338" y2="182" stroke="var(--accent)" stroke-width="1.5"/>
+            <path d="M333,181 L339,180 L336,186" fill="var(--accent)"/>
+            <text x="286" y="212" class="sch-label">R′</text>
+            <!-- Nœud A et K -->
+            <circle cx="130" cy="50" r="2.5" class="sch-node"/>
+            <text x="124" y="40" class="sch-label">A</text>
+            <g id="swGroup">
+              <rect x="55" y="15" width="60" height="55" fill="transparent"/>
+              <circle cx="100" cy="50" r="3" class="sch-node"/>
+              <circle cx="65" cy="50" r="3" class="sch-node"/>
+              <line id="swBlade" x1="100" y1="50" x2="65" y2="50"/>
+              <text x="78" y="75" class="sch-label">K</text>
+            </g>
+            <!-- C, L, Y1, R0, M -->
+            <line x1="28" y1="85" x2="52" y2="85" stroke="var(--ur-color)" stroke-width="2.2"/>
+            <line x1="28" y1="91" x2="52" y2="91" stroke="var(--ur-color)" stroke-width="2.2"/>
+            <text x="58" y="92" class="sch-label" fill="var(--ur-color)">C</text>
+            <path d="M40,104 Q52,109 40,115 Q52,120 40,126 Q52,131 40,137 Q52,142 40,150" class="sch-wire" stroke-width="1.8"/>
+            <text x="18" y="130" class="sch-label">L</text>
+            <circle cx="40" cy="160" r="2.5" class="sch-node"/>
+            <path d="M40,160 L18,160" stroke="var(--ur-color)" stroke-width="1.5"/>
+            <path d="M23,156 L15,160 L23,164" fill="var(--ur-color)"/>
+            <text x="0" y="152" font-size="12" font-weight="bold" fill="var(--ur-color)">Y<tspan baseline-shift="sub">1</tspan></text>
+            <rect class="sch-res" x="32" y="170" width="16" height="35"/>
+            <text x="54" y="192" class="sch-label">R<tspan baseline-shift="sub">0</tspan></text>
+            <circle cx="40" cy="235" r="2.5" class="sch-node"/>
+            <line x1="28" y1="239" x2="52" y2="239" stroke="var(--text)" stroke-width="2"/>
+            <line x1="32" y1="244" x2="48" y2="244" stroke="var(--text)" stroke-width="1.6"/>
+            <line x1="36" y1="249" x2="44" y2="249" stroke="var(--text)" stroke-width="1.2"/>
+            <text x="100" y="232" class="sch-label">M</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- PROTOCOLE D'OBSERVATION -->
+      <div class="theory-card">
+        <h3>Protocole d'observation</h3>
+        <p><b>1)</b> Fermer K (touche <kbd>K</kbd> ou <kbd>Espace</kbd>) : le condensateur, chargé à U₀ = 0,02 V, se décharge dans la bobine.</p>
+        <p><b>2)</b> Avec R′ faible (1000 Ω par défaut), observer l'amortissement des oscillations sur Y1 et Y2.</p>
+        <p><b>3)</b> Augmenter R′ lentement : l'amortissement diminue puis, au seuil R′<sub>c</sub> (repère vert sous le curseur R′), le message « accrochage » apparaît, un repère vertical est tracé sur l'écran et l'amplitude ne décroît plus.</p>
+        <p><b>4)</b> Choisir R′ juste au-dessus du seuil (par exemple 2010 à 2030 Ω avec les valeurs par défaut) puis ↺ Réinitialiser : l'amplitude croît progressivement sur quelques périodes (base de temps en mode Auto).</p>
+        <p><b>5)</b> Augmenter encore R′ : l'amplitude croît puis l'écrêtage apparaît sur Y2.</p>
+      </div>
+
+<!-- 2. OSCILLOSCOPE -->
+      <div class="oscillo-panel">
+        <div class="oscillo-header">
+          <span class="oscillo-title">OSCILLOSCOPE — TENSIONS Y1 (u<sub>R0</sub>) & Y2 (u<sub>S</sub>)</span>
+          <div class="oscillo-legend">
+            <span class="legend-item"><span class="color-dot purple"></span>CH1 (Y1) : u<sub>R0</sub>(t) ∝ i(t)</span>
+            <span class="legend-item"><span class="color-dot green"></span>CH2 (Y2) : u<sub>S</sub>(t)</span>
+          </div>
+        </div>
+
+        <div class="top-screen-bar">
+          <div class="ctrl-hint">Raccourcis : <kbd>K</kbd> / <kbd>Espace</kbd> ouvrir-fermer K · <kbd>P</kbd> pause · <kbd>R</kbd> réinitialiser</div>
+          <div class="top-buttons">
+            <button id="swToggleBtn" class="sw-btn">Fermer K (K)</button>
+            <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
+            <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
+          </div>
+        </div>
+
+        <!-- Toolbar Oscilloscope -->
+        <div class="oscillo-toolbar">
+          <div class="control-group">
+            <label class="label-ch1">CH1 (Y1):</label>
+            <select id="v1SensSelect">
+              <option value="auto" selected>Auto</option>
+              <option value="0.05">0.05 V/div</option>
+              <option value="0.1">0.1 V/div</option>
+              <option value="0.2">0.2 V/div</option>
+              <option value="0.5">0.5 V/div</option>
+              <option value="1">1 V/div</option>
+              <option value="2">2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch1"><input type="checkbox" id="showChan1Check" checked> u<sub>R0</sub> (Y1)</label>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-ch2">CH2 (Y2):</label>
+            <select id="v2SensSelect">
+              <option value="auto" selected>Auto</option>
+              <option value="1">1 V/div</option>
+              <option value="2">2 V/div</option>
+              <option value="5">5 V/div</option>
+              <option value="10">10 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch2"><input type="checkbox" id="showChan2Check" checked> u<sub>S</sub> (Y2)</label>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label class="label-time">Base de temps:</label>
+            <select id="hSensSelect">
+              <option value="auto" selected>Auto</option>
+              <option value="0.0005">0.5 ms/div</option>
+              <option value="0.001">1 ms/div</option>
+              <option value="0.002">2 ms/div</option>
+              <option value="0.005">5 ms/div</option>
+              <option value="0.01">10 ms/div</option>
+              <option value="0.02">20 ms/div</option>
+              <option value="0.05">50 ms/div</option>
+              <option value="0.1">100 ms/div</option>
+              <option value="0.2">200 ms/div</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Position Toolbar -->
+        <div class="position-toolbar">
+          <div class="pos-group">↔ Position X<input type="range" id="posXSlider" min="-5" max="5" step="0.5" value="0"><span class="pv" id="posXVal">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--ur-color)">↕ Pos Y1<input type="range" id="posY1Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY1Val">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--out-color)">↕ Pos Y2<input type="range" id="posY2Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY2Val">0.0 div</span></div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="scopeCanvas" height="320"></canvas>
+        </div>
+        <div class="oscillo-toolbar" style="margin-top:6px">
+          <label class="toolbar-check"><input type="checkbox" id="curCheck"> Curseurs (glisser les lignes sur l'écran)</label>
+          <div class="control-group"><label>Voie :</label><select id="curChan"><option value="1">CH1 (Y1)</option><option value="2">CH2 (Y2)</option></select></div>
+          <span id="curReadout" class="ctrl-hint" style="font-family:var(--font-mono)">Activez les curseurs pour mesurer T, N, U</span>
+        </div>
+      </div>
+
+      <!-- 3. APERÇU THÉORIQUE -->
+      <button id="toggleTheoryBtn" class="btn-theory-toggle">APERÇU THÉORIQUE — ÉQUATIONS DE L'ENTRETIEN</button>
+
+      <div id="theoryContainer" class="theory-container hidden">
+        <div class="theory-grid">
+          <div class="theory-card theory-wide">
+            <h3>Principe : compenser les pertes par une résistance négative</h3>
+            <p>Dans un circuit RLC série libre, l'énergie <b>E = ½Li² + ½Cu<sub>C</sub>²</b> est dissipée par effet Joule dans R₀ (qui inclut la résistance r de la bobine) : <span class="formula">dE/dt = −R₀·i²</span> Les oscillations sont donc amorties. Le montage à AOP se comporte, vu des bornes A–M, comme une résistance négative −R<sub>g</sub> : il fournit au circuit une puissance <b>R<sub>g</sub>·i²</b>. Lorsque R<sub>g</sub> = R₀, la puissance fournie compense exactement les pertes : <span class="formula">dE/dt = −(R₀ − R<sub>g</sub>)·i² = 0</span></p>
+          </div>
+
+          <div class="theory-card">
+            <h3>1. Analyse du montage (AOP idéal)</h3>
+            <p>Entrée − reliée à A (et à S par R₁) ; entrée + reliée au point D du pont diviseur R₂/R′ placé entre S et la masse. AOP idéal en régime linéaire : i⁺ = i⁻ = 0 et V⁺ = V⁻ = u<sub>AM</sub>.</p>
+            <div class="formula">u<sub>D</sub> = u<sub>S</sub>·R′/(R₂+R′) = u<sub>AM</sub> ⇒ u<sub>S</sub> = (1 + R₂/R′)·u<sub>AM</sub></div>
+            <p>Le courant i entrant dans le dipôle traverse R₁ : i = (u<sub>S</sub> − u<sub>AM</sub>)/R₁ = u<sub>AM</sub>·R₂/(R₁R′), donc :</p>
+            <div class="formula">u<sub>AM</sub> = R<sub>g</sub>·i  avec  R<sub>g</sub> = R₁·R′/R₂</div>
+          </div>
+
+          <div class="theory-card">
+            <h3>2. Équation différentielle</h3>
+            <p>Loi des mailles : u<sub>AM</sub> = u<sub>C</sub> + L·di/dt + R₀·i, d'où (i = C·du<sub>C</sub>/dt) :</p>
+            <div class="formula">L·di/dt + (R₀ − R<sub>g</sub>)·i + u<sub>C</sub> = 0</div>
+            <div class="formula">d²u<sub>C</sub>/dt² + (R<sub>net</sub>/L)·du<sub>C</sub>/dt + u<sub>C</sub>/(LC) = 0</div>
+            <p>avec R<sub>net</sub> = R₀ − R<sub>g</sub> (résistance totale effective du circuit : R₀ est la résistance du circuit, bobine comprise, et R<sub>g</sub> = R₁R′/R₂ celle que « compense » le montage à AOP). On pose δ = R<sub>net</sub>/(2L) (coefficient d'amortissement) et ω₀ = 1/√(LC).</p>
+          </div>
+
+          <div class="theory-card">
+            <h3>3. Régimes et accrochage (bilan énergétique)</h3>
+            <p>L'énergie du circuit est E = ½Li² + ½Cu<sub>C</sub>². Sa variation est :</p>
+            <div class="formula">dE/dt = −(R₀ − R<sub>g</sub>)·i² = −R<sub>net</sub>·i²</div>
+            <p>• <b>R′ &lt; R′<sub>c</sub> (R<sub>net</sub> &gt; 0)</b> : dE/dt &lt; 0. Le montage compense en partie seulement l'énergie dissipée par effet Joule : l'énergie diminue et les oscillations sont <b>amorties</b>.</p>
+            <p>• <b>R′ = R′<sub>c</sub> (R<sub>net</sub> = 0)</b> : dE/dt = 0. L'énergie fournie par le montage compense exactement l'énergie dissipée : c'est l'<b>accrochage</b>. L'énergie reste constante, les oscillations sont sinusoïdales d'amplitude constante, de période T₀ = 2π√(LC).</p>
+            <p>• <b>R′ &gt; R′<sub>c</sub> (R<sub>net</sub> &lt; 0)</b> : dE/dt &gt; 0. Le montage fournit plus d'énergie que R₀ n'en dissipe : l'amplitude <b>augmente</b> jusqu'à la saturation de l'AOP.</p>
+            <div class="formula">R′<sub>c</sub> = R₀·R₂/R₁  (repère vert sous le curseur R′)</div>
+          </div>
+
+          <div class="theory-card">
+            <h3>4. Saturation et distorsion</h3>
+            <p>L'AOP ne peut pas dépasser ±V<sub>sat</sub> (≈ 14 V). Dès que |u<sub>S</sub>| = (R₁ + R<sub>g</sub>)·|i| atteint V<sub>sat</sub>, le montage n'est plus linéaire : u<sub>S</sub> = ±V<sub>sat</sub> et R₁ redevient une simple résistance en série :</p>
+            <div class="formula">L·di/dt + (R₀ + R₁)·i + u<sub>C</sub> = ±V<sub>sat</sub></div>
+            <p>L'amplitude se stabilise, mais u<sub>S</sub> est écrêté (créneaux aux sommets). Comme u<sub>S</sub> ≈ R₁·i est grand devant u<sub>AM</sub>, l'AOP sature pour un courant faible : travailler avec de petites amplitudes (la perturbation initiale est ici U₀ = 0,02 V).</p>
+          </div>
+
+          <div class="theory-card">
+            <h3>5. Voies de l'oscilloscope</h3>
+            <p>• <b>Y1</b> = u<sub>R0</sub> = R₀·i : image du courant, en phase avec i.</p>
+            <p>• <b>Y2</b> = u<sub>S</sub> : tension de sortie de l'AOP, proportionnelle à i tant que l'AOP est linéaire, écrêtée sinon.</p>
+            <p>À l'accrochage, Y1 et Y2 sont en phase et de même fréquence N₀ = 1/(2π√(LC)). Mesurer T₀ sur l'écran permet de retrouver L ou C.</p>
+          </div>
+
+          <div class="theory-card theory-wide">
+            <h3>6. Étude théorique de l'amorçage des oscillations</h3>
+            <p>Si R<sub>net</sub> = R₀ − R<sub>g</sub> &lt; 0 (c'est-à-dire R′ &gt; R′<sub>c</sub>), le montage fournit plus d'énergie que R₀ n'en dissipe : la perturbation initiale (ici U₀ = 0,02 V) est amplifiée et l'amplitude des oscillations augmente jusqu'à la saturation de l'AOP (voir 4).</p>
+            <p>Les oscillations s'amorcent sous forme oscillante tant que |R<sub>net</sub>| &lt; 2√(L/C), soit :</p>
+            <div class="formula">R′<sub>c</sub> = R₀R₂/R₁ &lt; R′ &lt; R′<sub>c</sub> + 2√(L/C)·R₂/R₁</div>
+            <p>Au-delà de cette fenêtre, la croissance est apériodique : il n'y a pas d'oscillation.</p>
+            <div class="live" id="thLiveAm"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PANNEAU DE CONTRÔLE DES PARAMÈTRES -->
+    <div class="controls">
+      <div class="section-title">Composants RLC</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Inductance L</span>
+          <span class="val" id="lVal">1.0 H</span>
+        </div>
+        <input type="range" id="lSlider" min="100" max="2000" step="100" value="1000">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Capacité C</span>
+          <span class="val in-tone" id="cVal">47.0 µF</span>
+        </div>
+        <input type="range" id="cSlider" min="1" max="100" step="1" value="47">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Résistance R₀ + r</span>
+          <span class="val" id="r0Val">2000 Ω</span>
+        </div>
+        <input type="range" id="r0Slider" min="100" max="4000" step="50" value="2000">
+      </div>
+
+      
+      <div class="section-title">Bloc d'Entretien (AOP)</div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Résistance R₁</span>
+          <span class="val" id="r1Val">1.0 kΩ</span>
+        </div>
+        <input type="range" id="r1Slider" min="0.5" max="10" step="0.5" value="1">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Résistance R₂</span>
+          <span class="val" id="r2Val">1.0 kΩ</span>
+        </div>
+        <input type="range" id="r2Slider" min="0.5" max="10" step="0.5" value="1">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Résistance variable R'</span>
+          <span class="val speed-tone" id="rPrimeVal">1000 Ω</span>
+        </div>
+        <div class="rp-wrap"><input type="range" id="rPrimeSlider" min="0" max="2500" step="1" value="1000"><span class="tick" id="rcTick"></span></div><div class="ctrl-hint" style="margin-top:4px">Repère vert = seuil d'accrochage R′c</div>
+      </div>
+
+      <div class="section-title">Diagnostic d'Entretien</div>
+      <div class="readout-grid">
+        <div class="item">
+          <div class="k">−R<sub>g</sub> (montage à AOP)</div>
+          <div class="v" id="rgReadout">-20.0 Ω</div>
+        </div>
+        <div class="item">
+          <div class="k">R<sub>net</sub> = R₀ − R<sub>g</sub></div>
+          <div class="v" id="rnetReadout">0.0 Ω</div>
+        </div>
+        <div class="item">
+          <div class="k">Régime</div>
+          <div class="v" id="regimeReadout" style="color:var(--out-color);">Entretenu</div>
+        </div>
+        <div class="item">
+          <div class="k">Période T₀</div>
+          <div class="v" id="t0Readout">6.28 ms</div>
+        </div>
+        <div class="item"><div class="k">Seuil R′c</div><div class="v" id="rcReadout">20 Ω</div></div>
+        <div class="item"><div class="k"></div><div class="v" id="deltaReadout"></div>
+      </div>
+      </div>
+      <div class="ctrl-hint" style="margin-top:12px;line-height:1.45">
+        <b style="color:var(--text)">R<sub>g</sub> = R₁·R′/R₂</b> : résistance équivalente du montage à AOP. Vu des bornes A–M, celui-ci se comporte comme une résistance négative −R<sub>g</sub> : il <i>fournit</i> de l'énergie au circuit.<br>
+        <b style="color:var(--text)">R<sub>net</sub> = R₀ − R<sub>g</sub></b> : résistance totale effective du circuit RLC (R₀ comprend la résistance r de la bobine).
+        R<sub>net</sub> &gt; 0 : oscillations amorties ; R<sub>net</sub> = 0 : oscillations entretenues ; R<sub>net</sub> &lt; 0 : amplitude croissante.
+      </div>
+    </div>
+
+  </div>
+  <div class="signature"> TP Simulation Physique - Oscillations entretenues - chrif.md@gmail.com - Octobre 2026 </div>
 </div>
-<div class="controls">
-<div class="st">GBF (triangle)</div><div id="c1"></div>
-<div class="st">Montage</div><div id="c2"></div>
-<div class="st">Mesures</div>
-<div class="rg"><div><div class="k">R₋ = −R₁R′/R₂</div><div class="v" id="o1"></div></div><div><div class="k">Seuil sat. |u|</div><div class="v" id="o2"></div></div>
-<div><div class="k">|X| max</div><div class="v" id="o3"></div></div><div><div class="k">u max</div><div class="v" id="o4"></div></div><div><div class="k">ΔX (curseurs)</div><div class="v" id="o5">—</div></div><div><div class="k">Δu (curseurs)</div><div class="v" id="o6">—</div></div><div><div class="k">Pente mesurée Δu/ΔX</div><div class="v" id="o7" style="color:#4fc3e8">—</div></div><div><div class="k">Pente théorique</div><div class="v" id="o8" style="color:#e5a93b">—</div></div></div>
-</div></div></div>
+
 <script>
-const P={Vcc:15,A:2,N:250,R:200,Rp:50,R1:2000,R2:2000};
-const defs=[["Vcc","Polarisation AOP ±Vcc",1,15,0.5,"V","c2"],["A","Amplitude c-à-c",0.2,10,0.1,"V","c1"],["N","Fréquence N",50,2000,10,"Hz","c1"],["R","Résistance R",10,1000,10,"Ω","c2"],["Rp","Résistance R′",5,500,5,"Ω","c2"],["R1","Résistance R₁",500,5000,100,"Ω","c2"],["R2","Résistance R₂",500,5000,100,"Ω","c2"]];
-const $=id=>document.getElementById(id);
-defs.forEach(([k,n,mn,mx,st,u,box])=>{const d=document.createElement('div');d.className='ctrl';
-d.innerHTML=`<div class="row"><span>${n}</span><span class="val" id="l${k}"></span></div><input type="range" id="s${k}" min="${mn}" max="${mx}" step="${st}" value="${P[k]}">`;$(box).appendChild(d);
-$('s'+k).oninput=e=>{P[k]=+e.target.value;draw()}});
-const vd=[0.05,0.1,0.2,0.5,1,2,5];
-["v1","v2"].forEach((id,i)=>{$(id).innerHTML=vd.map(v=>`<option ${v===(i?0.5:0.2)?'selected':''}>${v}</option>`).join('');});
-const C=[[-0.2,-0.2],[0.2,0.2]];let drag=-1;
-const cp=e=>{const c=$('cv'),r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
-const cpx=i=>[400+C[i][0]/+$('v1').value*80,260-C[i][1]/+$('v2').value*65];
-$('cv').onpointerdown=e=>{if($('mode').value!=='xy'||!$('cur').checked)return;const[x,y]=cp(e);let best=-1,bd=1e9;
- [0,1].forEach(i=>{const p=cpx(i),d=Math.hypot(p[0]-x,p[1]-y);if(d<bd){bd=d;best=i}});if(bd<40){drag=best;$('cv').setPointerCapture(e.pointerId)}};
-$('cv').onpointermove=e=>{if(drag<0)return;const[x,y]=cp(e);C[drag]=[(x-400)/80*+$('v1').value,-(y-260)/65*+$('v2').value];draw()};
-$('cv').onpointerup=()=>drag=-1;
-$('cur').onchange=()=>draw();
-$('xs').onchange=()=>{const x=$('xs').value==='i',L=x?[0.5,1,2,5,10,20]:vd,d=x?2:0.2;$('v1').innerHTML=L.map(v=>`<option ${v===d?'selected':''}>${v}</option>`).join('');C[0]=x?[4,-0.2]:[-0.2,-0.2];C[1]=x?[-4,0.2]:[0.2,0.2];draw()};
-let thOpen=false;
-$('thb').onclick=()=>{thOpen=!thOpen;$('thd').classList.toggle('hidden',!thOpen);draw()};
-let kOn=true;
-function setK(v){kOn=v;const b=$('swBlade');b.setAttribute('x2',v?160:152);b.setAttribute('y2',v?60:40);$('kbtn').textContent='K : '+(v?'fermé':'ouvert');draw()}
-$('swGroup').onclick=$('kbtn').onclick=()=>setK(!kOn);
-addEventListener('keydown',e=>{if(e.key==='k'||e.key==='K')setK(!kOn)});
-$('inv').onchange=()=>draw();
-["mode","v1","v2","td"].forEach(id=>$(id).onchange=draw);
-function solve(e,s){const{R,Rp,R1,R2}=P,den=1-R*R2/(R1*Rp);let u=e/(Math.abs(den)<1e-9?1e-9:den),Vs=u*(1+R2/Rp);
- if(Math.abs(Vs)<=P.Vcc)return{u,Vs,s};
- for(const sg of[s,-s]){Vs=sg*P.Vcc;u=(Vs+R1*e/R)/(1+R1/R);if((Vs*Rp/(R2+Rp)-u)*sg>=0)return{u,Vs,s:sg}}
- Vs=s*P.Vcc;return{u:(Vs+R1*e/R)/(1+R1/R),Vs,s}}
-const tri=p=>p<.25?4*p:p<.75?2-4*p:4*p-4;
-function draw(){const{A,N,R,Rp,R1,R2}=P,T=1/N;
- $('lVcc').textContent='±'+P.Vcc.toFixed(1)+' V';$('tVcc').textContent='±'+P.Vcc.toFixed(1)+' V';$('lA').textContent=A.toFixed(1)+' V';$('lN').textContent=N+' Hz';$('lR').textContent=R+' Ω';$('lRp').textContent=Rp+' Ω';$('lR1').textContent=R1+' Ω';$('lR2').textContent=R2+' Ω';
- const rn=-R1*Rp/R2;$('rneg').textContent=rn.toFixed(0)+' Ω';$('thLive2').textContent=`Seuil actuel : |u| ≤ ${(P.Vcc*Rp/(R2+Rp)).toFixed(3)} V (Vcc = ${P.Vcc.toFixed(1)} V).`;$('thLive').textContent=`Valeurs actuelles : R₋ = −R₁R′/R₂ = −${R1}×${Rp}/${R2} = ${rn.toFixed(1)} Ω ; u = e / (1 − R R₂/(R₁R′)) = e / ${(1-R*R2/(R1*Rp)).toFixed(2)} dans la zone linéaire.`;$('o1').textContent=rn.toFixed(1)+' Ω';
- const th=P.Vcc*Rp/(R2+Rp);$('o2').textContent=th.toFixed(3)+' V';
- const mode=$('mode').value,td=+$('td').value*1e-3,k1=+$('v1').value,k2=+$('v2').value;
- const span=mode==='xy'?2*T:10*td,n=1600;const xi=$('xs').value==='i',sgn=$('inv').checked?-1:1;let s=1,pts=[],m1=0,m2=0;
- for(let i=-400;i<n;i++){const t=T*0.0+i/(n-1)*span,e=A/2*tri(((t*N)%1+1)%1),r=kOn?solve(e,s):{u:e,Vs:0,s};s=r.s;
-  if(i>=0){const up=(xi?(e-r.u)/R*1e3:r.Vs*Rp/(R2+Rp))*sgn;pts.push([t,up,r.u]);m1=Math.max(m1,Math.abs(up));m2=Math.max(m2,Math.abs(r.u))}}
- $('o3').textContent=m1.toFixed(3)+(xi?' mA':' V');$('o4').textContent=m2.toFixed(3)+' V';
- const c=$('cv'),g=c.getContext('2d'),W=c.width,H=c.height,dx=W/10,dy=H/8;g.clearRect(0,0,W,H);
- g.strokeStyle='#1d2a31';g.lineWidth=1;g.beginPath();for(let i=0;i<=10;i++){g.moveTo(i*dx,0);g.lineTo(i*dx,H)}for(let j=0;j<=8;j++){g.moveTo(0,j*dy);g.lineTo(W,j*dy)}g.stroke();
- g.strokeStyle='#33444d';g.beginPath();g.moveTo(W/2,0);g.lineTo(W/2,H);g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();
- const tr=(col,f)=>{g.strokeStyle=col;g.lineWidth=2;g.beginPath();pts.forEach((p,i)=>{const[x,y]=f(p);i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()};
- if(mode==='xy')tr('#4fc3e8',p=>[W/2+p[1]/k1*dx,H/2-p[2]/k2*dy]);
- else{tr('#c792ea',p=>[p[0]/span*W,H/2-p[1]/k1*dy]);tr('#2bbd8e',p=>[p[0]/span*W,H/2-p[2]/k2*dy])}
- const sg=$('inv').checked?-1:1,X=v=>W/2+sg*v/k1*dx,Y=v=>H/2-v/k2*dy;
- const xi2=xi,U1=xi?'mA':'V';
- $('o8').textContent=mode==='xy'&&thOpen?(xi?rn.toFixed(1)+' Ω':'1 (∞ en sat.)'):'—';
- if(mode==='xy'&&thOpen){g.setLineDash([8,6]);g.strokeStyle='#e5a93b';g.lineWidth=1.5;g.beginPath();
-  const den=1-R*R2/(R1*Rp),ul=Math.min(th,A/2/Math.max(Math.abs(den),1e-9)),q=R1/R;
-  const xv=(u,sn)=>xi?(sn===0?u/rn:(u-sn*P.Vcc)/R1)*1e3:(sn===0?u:sn*th);
-  g.moveTo(X(xv(-ul,0)),Y(-ul));g.lineTo(X(xv(ul,0)),Y(ul));
-  let lo=Math.max(-th,(-P.Vcc-q*A/2)/(1+q)),hi=(-P.Vcc+q*A/2)/(1+q);if(hi>lo){g.moveTo(X(xv(lo,-1)),Y(lo));g.lineTo(X(xv(hi,-1)),Y(hi))}
-  lo=(P.Vcc-q*A/2)/(1+q);hi=Math.min(th,(P.Vcc+q*A/2)/(1+q));if(hi>lo){g.moveTo(X(xv(lo,1)),Y(lo));g.lineTo(X(xv(hi,1)),Y(hi))}
-  g.stroke();g.setLineDash([])}
- if(mode==='xy'&&$('cur').checked){const px=C.map(c=>[W/2+c[0]/k1*dx,H/2-c[1]/k2*dy]);g.lineWidth=1;g.setLineDash([5,4]);g.strokeStyle='#e5a93b';g.beginPath();
-  px.forEach(p=>{g.moveTo(p[0],0);g.lineTo(p[0],H);g.moveTo(0,p[1]);g.lineTo(W,p[1])});g.stroke();g.setLineDash([]);
-  g.strokeStyle='#fff';g.beginPath();g.moveTo(px[0][0],px[0][1]);g.lineTo(px[1][0],px[1][1]);g.stroke();
-  px.forEach((p,i)=>{g.fillStyle='#e5a93b';g.beginPath();g.arc(p[0],p[1],6,0,7);g.fill();g.fillStyle='#000';g.fillText(i+1,p[0]-3,p[1]+4)});
-  const a=C[1][0]-C[0][0],b=C[1][1]-C[0][1];$('o5').textContent=a.toFixed(3)+' '+U1;$('o6').textContent=b.toFixed(3)+' V';$('o7').textContent=Math.abs(a)<1e-6?'∞':xi?(b/a*1e3).toFixed(1)+' Ω':(b/a).toFixed(3)}
- else{['o5','o6','o7'].forEach(i=>$(i).textContent='—')}
- g.fillStyle='#7c8a92';g.font='13px monospace';g.fillText(mode==='xy'?`X = ${xi?'i':'u′'} : ${k1} ${U1}/div   Y = u : ${k2} V/div`:`Y1 (${xi?'i':'u′'}) ${k1} ${U1}/div · Y2 (u) ${k2} V/div · ${$('td').value} ms/div`,10,18)}
-setK(true);
-</script></body></html>
+  // Paramètres du circuit RLC
+  let L = 1.0;     // Henrys
+  let C = 47e-6;     // Farads
+  let R0 = 2000.0;     // Ohms (inclut r)
+
+  // Paramètres du bloc d'entretien
+  let R1 = 1000;     // Ohms
+  let R2 = 1000;     // Ohms
+  let Rprime = 1000.0; // Ohms
+  let Vsat = 14.0;   // Tension de saturation de l'AOP
+
+  // État du circuit (i = courant, q = charge du condensateur)
+  let isClosed = false, U0 = 0.02, q = 0, i_curr = 0.0, us_curr = 0.0;
+  let tClose = 0, markers = [], prevState = null, toastTimer;
+  const REC = 2;
+  // Simulation time & control
+  let isRunning = true;
+  let simTime = 0;
+  const dt = 0.00002; // Pas de temps de 5 µs
+
+  // Buffers oscilloscope
+  const maxHistory = 80000;
+  let timeHistory = [];
+  let y1History = []; // uR0 = R0 * i
+  let y2History = []; // uS
+
+  // Elements DOM
+  const lSlider = document.getElementById('lSlider');
+  const cSlider = document.getElementById('cSlider');
+  const r0Slider = document.getElementById('r0Slider');
+  const r1Slider = document.getElementById('r1Slider');
+  const r2Slider = document.getElementById('r2Slider');
+  const rPrimeSlider = document.getElementById('rPrimeSlider');
+
+  const lVal = document.getElementById('lVal');
+  const cVal = document.getElementById('cVal');
+  const r0Val = document.getElementById('r0Val');
+  const r1Val = document.getElementById('r1Val');
+  const r2Val = document.getElementById('r2Val');
+  const rPrimeVal = document.getElementById('rPrimeVal');
+
+  const freqHeaderValue = document.getElementById('freqHeaderValue');
+  const rgReadout = document.getElementById('rgReadout');
+  const rnetReadout = document.getElementById('rnetReadout');
+  const regimeReadout = document.getElementById('regimeReadout');
+  const t0Readout = document.getElementById('t0Readout');
+
+  const canvas = document.getElementById('scopeCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const hSensSelect = document.getElementById('hSensSelect');
+  const v1SensSelect = document.getElementById('v1SensSelect');
+  const v2SensSelect = document.getElementById('v2SensSelect');
+
+  const posXSlider = document.getElementById('posXSlider');
+  const posY1Slider = document.getElementById('posY1Slider');
+  const posY2Slider = document.getElementById('posY2Slider');
+
+  const posXVal = document.getElementById('posXVal');
+  const posY1Val = document.getElementById('posY1Val');
+  const posY2Val = document.getElementById('posY2Val');
+
+  const showChan1Check = document.getElementById('showChan1Check');
+  const showChan2Check = document.getElementById('showChan2Check');
+
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const swToggleBtn = document.getElementById('swToggleBtn');
+  const swSvg = document.getElementById('sch'), swGroup = document.getElementById('swGroup'), toast = document.getElementById('toast'), rcTick = document.getElementById('rcTick'), rcReadout = document.getElementById('rcReadout'), deltaReadout = document.getElementById('deltaReadout');
+
+  const toggleTheoryBtn = document.getElementById('toggleTheoryBtn');
+  const theoryContainer = document.getElementById('theoryContainer');
+
+  function showToast(m) {
+    toast.textContent = m; toast.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 3600);
+  }
+
+  function updateParams() {
+    L = parseFloat(lSlider.value) / 1000;
+    C = parseFloat(cSlider.value) * 1e-6;
+    R0 = parseFloat(r0Slider.value);
+    R1 = parseFloat(r1Slider.value) * 1000;
+    R2 = parseFloat(r2Slider.value) * 1000;
+    Rprime = parseFloat(rPrimeSlider.value);
+
+    lVal.textContent = L.toFixed(1) + ' H';
+    cVal.textContent = (C * 1e6).toFixed(1) + ' µF';
+    r0Val.textContent = R0.toFixed(0) + ' Ω';
+    r1Val.textContent = (R1 / 1000).toFixed(1) + ' kΩ';
+    r2Val.textContent = (R2 / 1000).toFixed(1) + ' kΩ';
+    rPrimeVal.textContent = Rprime.toFixed(0) + ' Ω';
+
+    const Rg = R1 * Rprime / R2;          // R_g = R1·R'/R2
+    const Rc = R0 * R2 / R1;              // seuil d'accrochage
+    const Rnet = R0 - Rg;
+    const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+
+    freqHeaderValue.textContent = f0.toFixed(1) + ' Hz';
+    rgReadout.textContent = '-' + Rg.toFixed(1) + ' Ω';
+    rnetReadout.textContent = (Rnet >= 0 ? '+' : '') + Rnet.toFixed(1) + ' Ω';
+    t0Readout.textContent = (1000 / f0).toFixed(2) + ' ms';
+    rcReadout.textContent = Rc.toFixed(1) + ' Ω';
+    deltaReadout.textContent = (Rnet / (2 * L)).toFixed(1) + ' s⁻¹';
+    const Rcr = 2 * Math.sqrt(L / C), thl = document.getElementById('thLiveAm');
+    if (thl) {
+      let reg;
+      if (Math.abs(Rnet) < 0.5) reg = 'accrochage (oscillations entretenues)';
+      else if (Rnet < 0) reg = Math.abs(Rnet) < Rcr ? 'amorçage oscillant (amplitude croissante)' : 'croissance apériodique (pas d\'oscillation)';
+      else reg = Rnet < Rcr ? 'amortissement pseudo-périodique' : 'amortissement apériodique';
+      thl.innerHTML = 'R′c = ' + Rc.toFixed(0) + ' Ω · 2√(L/C) = ' + Rcr.toFixed(0) + ' Ω<br>Amorçage oscillant pour ' + Rc.toFixed(0) + ' &lt; R′ &lt; ' + (Rc + Rcr * R2 / R1).toFixed(0) + ' Ω<br>R′ = ' + Rprime.toFixed(0) + ' Ω → R<sub>net</sub> = ' + Rnet.toFixed(0) + ' Ω : ' + reg;
+    }
+
+    const mx = parseFloat(rPrimeSlider.max);
+    rcTick.style.display = Rc <= mx ? 'block' : 'none';
+    rcTick.style.left = 'calc(' + (Rc / mx * 100) + '% + ' + (7 - 14 * Rc / mx) + 'px)';
+
+    const state = Math.abs(Rnet) < 0.5 ? 'sustained' : (Rnet > 0 ? 'damped' : 'amplified');
+    regimeReadout.classList.toggle('pulse', state === 'sustained');
+    if (state === 'sustained') { regimeReadout.textContent = "ACCROCHAGE — entretenu"; regimeReadout.style.color = "var(--out-color)"; }
+    else if (state === 'damped') { regimeReadout.textContent = "Amorti"; regimeReadout.style.color = "var(--in-color)"; }
+    else { regimeReadout.textContent = "Amplifié (saturation)"; regimeReadout.style.color = "var(--ur-color)"; }
+    if (state !== prevState) {
+      if (state === 'sustained' && prevState !== null && isClosed) {
+        markers.push(simTime);
+        showToast("⚡ Accrochage : R′ = R′c — oscillations sinusoïdales entretenues");
+      }
+      prevState = state;
+    }
+
+    posXVal.textContent = parseFloat(posXSlider.value).toFixed(1) + ' div';
+    posY1Val.textContent = parseFloat(posY1Slider.value).toFixed(1) + ' div';
+    posY2Val.textContent = parseFloat(posY2Slider.value).toFixed(1) + ' div';
+  }
+
+  // Dynamique : état (q, i). Modèle linéaire ou saturé de l'AOP.
+  function deriv(qq, ii) {
+    const Rg = R1 * Rprime / R2, uC = qq / C, us = (R1 + Rg) * ii;
+    if (Math.abs(us) < Vsat) return -(uC + (R0 - Rg) * ii) / L;
+    return ((us > 0 ? Vsat : -Vsat) - uC - (R0 + R1) * ii) / L;
+  }
+
+  // Intégration RK4 (stable : pas de dérive d'amplitude à R_net = 0)
+  function rk4() {
+    const h = dt;
+    const a1 = i_curr, b1 = deriv(q, i_curr);
+    const a2 = i_curr + b1 * h / 2, b2 = deriv(q + a1 * h / 2, a2);
+    const a3 = i_curr + b2 * h / 2, b3 = deriv(q + a2 * h / 2, a3);
+    const a4 = i_curr + b3 * h, b4 = deriv(q + a3 * h, a4);
+    q += h / 6 * (a1 + 2 * a2 + 2 * a3 + a4);
+    i_curr += h / 6 * (b1 + 2 * b2 + 2 * b3 + b4);
+    simTime += h;
+  }
+
+  function stepSimulation(n) {
+    for (let k = 0; k < n; k++) {
+      rk4();
+      if (k % REC === 0) {
+        const Rg = R1 * Rprime / R2, us = (R1 + Rg) * i_curr;
+        us_curr = Math.max(-Vsat, Math.min(Vsat, us));
+        timeHistory.push(simTime); y1History.push(R0 * i_curr); y2History.push(us_curr);
+      }
+    }
+    if (timeHistory.length > maxHistory + 5000) {
+      timeHistory.splice(0, 5000); y1History.splice(0, 5000); y2History.splice(0, 5000);
+    }
+  }
+
+  function setK(close) {
+    isClosed = close;
+    swSvg.classList.toggle('closed', close);
+    swToggleBtn.classList.toggle('closed', close);
+    swToggleBtn.textContent = close ? 'Ouvrir K (K)' : 'Fermer K (K)';
+    timeHistory = []; y1History = []; y2History = []; markers = [];
+    simTime = 0; tClose = 0; i_curr = 0; us_curr = 0;
+    q = close ? C * U0 : 0;   // condensateur chargé à U0 à la fermeture
+    if (close) { timeHistory.push(0); y1History.push(0); y2History.push(0); }
+  }
+  function toggleK() { setK(!isClosed); }
+
+  // Balayage déclenché : démarre à la fermeture de K, puis sur le passage
+  // par zéro descendant de Y1 -> image stationnaire dès la fermeture.
+  function sweepStart(W) {
+    const n = timeHistory.length, latest = timeHistory[n - 1];
+    if (latest - tClose < W) return tClose;
+    for (let j = n - 1; j > 0; j--) {
+      if (timeHistory[j] > latest - W) continue;
+      if (y1History[j - 1] > 0 && y1History[j] <= 0) {
+        const f = y1History[j - 1] / (y1History[j - 1] - y1History[j]);
+        return timeHistory[j - 1] + f * (timeHistory[j] - timeHistory[j - 1]);
+      }
+    }
+    return latest - W;
+  }
+
+  // Échelles automatiques : base de temps selon le régime, calibres Y selon l'amplitude attendue
+  function getDiv() {
+    if (hSensSelect.value !== 'auto') return parseFloat(hSensSelect.value);
+    const Rg = R1 * Rprime / R2, Rn = R0 - Rg, T0 = 2 * Math.PI * Math.sqrt(L * C), disc = Rn * Rn - 4 * L / C;
+    let Wt;
+    if (Math.abs(Rn) < 0.5) Wt = 6 * T0;
+    else if (Rn > 0) Wt = Math.max(4 * (disc > 0 ? 2 * L / (Rn - Math.sqrt(disc)) : 2 * L / Rn), 2.5 * T0);
+    else Wt = 4 * 2 * L / -Rn + 3 * T0;
+    const nice = [0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2];
+    let d = nice[nice.length - 1];
+    for (const v of nice) { if (v >= Wt / 10) { d = v; break; } }
+    hSensSelect.options[0].textContent = 'Auto (' + (d * 1000) + ' ms/div)';
+    return d;
+  }
+  function vSensOf(sel, hist, isY1) {
+    if (sel.value !== 'auto') return parseFloat(sel.value);
+    const Rg = R1 * Rprime / R2, Rn = R0 - Rg;
+    let pk = 0;
+    for (let i = 0; i < hist.length; i++) { const a = Math.abs(hist[i]); if (a > pk) pk = a; }
+    if (Rn <= 0.5) pk = Math.max(pk, isY1 ? R0 * Vsat / (R1 + Rg) : Vsat);
+    const lv = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20];
+    let sv = lv[lv.length - 1];
+    for (const v of lv) { if (pk / v <= 3.6) { sv = v; break; } }
+    sel.options[0].textContent = 'Auto (' + sv + ' V/div)';
+    return sv;
+  }
+
+  function drawScope() {
+    const rect = canvas.parentNode.getBoundingClientRect();
+    if (canvas.width !== Math.round(rect.width)) canvas.width = Math.round(rect.width);
+    const w = canvas.width, h = canvas.height, numHDiv = 10, numVDiv = 8;
+    const divW = w / numHDiv, divH = h / numVDiv;
+
+    ctx.fillStyle = '#0d1316'; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#1a252c'; ctx.lineWidth = 1;
+    for (let i = 0; i <= numHDiv; i++) { ctx.beginPath(); ctx.moveTo(i * divW, 0); ctx.lineTo(i * divW, h); ctx.stroke(); }
+    for (let j = 0; j <= numVDiv; j++) { ctx.beginPath(); ctx.moveTo(0, j * divH); ctx.lineTo(w, j * divH); ctx.stroke(); }
+    ctx.strokeStyle = '#2a3b47';
+    ctx.beginPath(); ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
+
+    if (!isClosed || timeHistory.length < 2) {
+      ctx.fillStyle = '#52616a'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('K ouvert — touche K ou Espace pour fermer le circuit', w / 2, h / 2 - 12);
+      ctx.textAlign = 'left';
+      return;
+    }
+
+    const W = getDiv() * numHDiv;
+    const t0 = sweepStart(W);
+    const posXOffset = parseFloat(posXSlider.value) * divW;
+    const getX = t => ((t - t0) / W) * w + posXOffset;
+
+    // Repères d'accrochage
+    markers.forEach(tm => {
+      const x = getX(tm);
+      if (x >= 0 && x <= w) {
+        ctx.strokeStyle = '#2bbd8e'; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#2bbd8e'; ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('accrochage', Math.min(x + 5, w - 70), 16);
+      }
+    });
+
+    function drawTrace(history, vSens, yOffsetDiv, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+      const yZero = h / 2 - yOffsetDiv * divH;
+      let started = false;
+      for (let i = 0; i < history.length; i++) {
+        const t = timeHistory[i];
+        if (t < t0 - 1e-9) continue;
+        if (t > t0 + W) break;
+        const x = getX(t), y = yZero - (history[i] / vSens) * divH;
+        if (x < 0 || x > w) continue;
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    if (showChan2Check.checked) drawTrace(y2History, vSensOf(v2SensSelect, y2History, false), parseFloat(posY2Slider.value), '#2bbd8e');
+    if (showChan1Check.checked) drawTrace(y1History, vSensOf(v1SensSelect, y1History, true), parseFloat(posY1Slider.value), '#c792ea');
+    drawCursors(w, h, W);
+  }
+
+  // Curseurs de mesure (2 verticaux : temps, 2 horizontaux : tension)
+  const cur = { x1: 0.3, x2: 0.5, y1: 0.35, y2: 0.65 };
+  const curCheck = document.getElementById('curCheck'), curChan = document.getElementById('curChan'), curReadout = document.getElementById('curReadout');
+  let curDrag = null;
+  function drawCursors(w, h, W) {
+    if (!curCheck.checked) return;
+    ctx.lineWidth = 1.3; ctx.setLineDash([6, 4]); ctx.font = '11px sans-serif';
+    ctx.strokeStyle = '#e5a93b'; ctx.fillStyle = '#e5a93b';
+    [['x1', 'T1'], ['x2', 'T2']].forEach(([k, n]) => { const x = cur[k] * w; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.fillText(n, x + 3, h - 5); });
+    ctx.strokeStyle = '#38bdf8'; ctx.fillStyle = '#38bdf8';
+    [['y1', 'U1'], ['y2', 'U2']].forEach(([k, n]) => { const y = cur[k] * h; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); ctx.fillText(n, 4, y - 3); });
+    ctx.setLineDash([]);
+    const ch = curChan.value === '1', sens = vSensOf(ch ? v1SensSelect : v2SensSelect, ch ? y1History : y2History, ch), off = parseFloat((ch ? posY1Slider : posY2Slider).value);
+    const volt = f => (0.5 - off / 8 - f) * 8 * sens;
+    const dt_ = Math.abs(cur.x2 - cur.x1) * W, dU = Math.abs(volt(cur.y1) - volt(cur.y2));
+    curReadout.textContent = 'ΔT = ' + (dt_ * 1000).toFixed(2) + ' ms · N = 1/ΔT = ' + (dt_ > 0 ? (1 / dt_).toFixed(1) : '—') + ' Hz · U1 = ' + volt(cur.y1).toFixed(3) + ' V · U2 = ' + volt(cur.y2).toFixed(3) + ' V · ΔU = ' + dU.toFixed(3) + ' V';
+  }
+  canvas.style.touchAction = 'none';
+  canvas.addEventListener('pointerdown', e => {
+    if (!curCheck.checked) return;
+    const r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    let best = null, bd = 14;
+    ['x1', 'x2'].forEach(k => { const d = Math.abs(x - cur[k] * r.width); if (d < bd) { bd = d; best = k; } });
+    ['y1', 'y2'].forEach(k => { const d = Math.abs(y - cur[k] * r.height); if (d < bd) { bd = d; best = k; } });
+    if (best) { curDrag = best; canvas.setPointerCapture(e.pointerId); }
+  });
+  canvas.addEventListener('pointermove', e => {
+    const r = canvas.getBoundingClientRect();
+    if (!curDrag) { if (curCheck.checked) { const x = e.clientX - r.left, y = e.clientY - r.top; canvas.style.cursor = (['x1','x2'].some(k => Math.abs(x - cur[k]*r.width) < 14) ? 'col-resize' : ['y1','y2'].some(k => Math.abs(y - cur[k]*r.height) < 14) ? 'row-resize' : 'default'); } return; }
+    const v = curDrag[0] === 'x' ? (e.clientX - r.left) / r.width : (e.clientY - r.top) / r.height;
+    cur[curDrag] = Math.max(0, Math.min(1, v));
+  });
+  canvas.addEventListener('pointerup', () => { curDrag = null; });
+
+  function loop() {
+    if (isRunning && isClosed) {
+      const W = getDiv() * 10;
+      stepSimulation(Math.max(8, Math.min(2000, Math.round(W / dt / 70))));
+    }
+    drawScope();
+    requestAnimationFrame(loop);
+  }
+
+  [lSlider, cSlider, r0Slider, r1Slider, r2Slider, rPrimeSlider, posXSlider, posY1Slider, posY2Slider]
+    .forEach(el => el.addEventListener('input', updateParams));
+  // Changer C à chaud : conserver la tension u_C
+  cSlider.addEventListener('input', () => {});
+
+  playPauseBtn.addEventListener('click', () => {
+    isRunning = !isRunning;
+    playPauseBtn.innerHTML = isRunning ? '<span class="pause-icon">||</span> Pause' : '▶ Reprendre';
+  });
+  swToggleBtn.addEventListener('click', toggleK);
+  swGroup.addEventListener('click', toggleK);
+  resetBtn.addEventListener('click', () => setK(isClosed));
+  toggleTheoryBtn.addEventListener('click', () => theoryContainer.classList.toggle('hidden'));
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = e.target.tagName;
+    if (tag === 'SELECT' || tag === 'TEXTAREA') return;
+    const k = e.key.toLowerCase();
+    if (k === 'k' || e.code === 'Space') {
+      e.preventDefault(); if (e.repeat) return;
+      toggleK(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    } else if (k === 'r') { if (!e.repeat) resetBtn.click(); }
+    else if (k === 'p') { if (!e.repeat) playPauseBtn.click(); }
+  });
+
+  updateParams();
+  loop();
+
+</script>
+
+</body>
+</html>
