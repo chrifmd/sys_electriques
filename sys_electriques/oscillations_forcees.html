@@ -677,6 +677,7 @@
 
   // Mouse Tracking
   let mouseScope = { x: -1, y: -1, active: false };
+  let originFrac = null;   // 2e curseur (origine t′ fixée au clic), en fraction de la largeur de l'écran
   let mouseBode = { x: -1, y: -1, active: false };
 
   // DOM
@@ -958,6 +959,16 @@
       sCtx.stroke();
     }
 
+    // 2e curseur : origine des temps t′ définie au clic
+    if (originFrac !== null) {
+      const ox = originFrac * w;
+      sCtx.strokeStyle = "#ffffff"; sCtx.lineWidth = 1.5;
+      sCtx.beginPath(); sCtx.moveTo(ox, 0); sCtx.lineTo(ox, h); sCtx.stroke();
+      sCtx.fillStyle = "#ffffff";
+      sCtx.beginPath(); sCtx.moveTo(ox - 5, 0); sCtx.lineTo(ox + 5, 0); sCtx.lineTo(ox, 8); sCtx.closePath(); sCtx.fill();
+      sCtx.font = "11px sans-serif"; sCtx.fillText("t′ = 0", ox + 6, 18);
+    }
+
     // Tooltip Scope
     if (mouseScope.active) {
       const mx = mouseScope.x;
@@ -980,8 +991,22 @@
       if (ch) {
         const v = chV(tAbs);
         sCtx.fillStyle = ch.color; sCtx.beginPath(); sCtx.arc(mx, yOf(v, chSens), 4, 0, Math.PI * 2); sCtx.fill();
-        html += `<span style="color:${ch.color}">${ch.lab}(t) : ${v.toFixed(2)} V</span>`;
+        html += `<span style="color:${ch.color}">${ch.lab}(t) : ${v.toFixed(2)} V</span><br/>`;
       }
+      html += `<span style="color:var(--text-dim)">──────────</span><br/>`;
+      if (originFrac !== null) {
+        const ox = originFrac * w;
+        const dt = Math.abs(tRel - originFrac * tSpan);
+        sCtx.strokeStyle = "#ffffff"; sCtx.lineWidth = 1.5;
+        const by = h - 12;
+        sCtx.beginPath(); sCtx.moveTo(ox, by); sCtx.lineTo(mx, by);
+        sCtx.moveTo(ox, by - 5); sCtx.lineTo(ox, by + 5); sCtx.moveTo(mx, by - 5); sCtx.lineTo(mx, by + 5); sCtx.stroke();
+        html += `<strong>Δt :</strong> ${(dt * 1000).toFixed(2)} ms<br/>`;
+      } else {
+        html += `<span style="color:var(--text-dim)">Clic : fixer l'origine t′</span><br/>`;
+      }
+      html += `<strong>T = 1/N :</strong> ${(1000 / N).toFixed(2)} ms`;
+      if (originFrac !== null) html += `<br/><span style="color:var(--text-dim)">Clic droit : effacer t′</span>`;
       showTooltip(html);
     }
   }
@@ -1064,12 +1089,6 @@
       bCtx.fillStyle = "#7c8a92"; bCtx.font = "10px sans-serif"; bCtx.fillText("Échelle : Im max = " + (maxI * 1000).toFixed(0) + " mA · Ucm max = " + maxUcm.toFixed(1) + " V", 48, 22);
     }
 
-    // Ligne verticale GBF
-    const currentX = 40 + (N / maxN) * (w - 50);
-    bCtx.strokeStyle = "#e5a93b"; bCtx.setLineDash([3, 3]);
-    bCtx.beginPath(); bCtx.moveTo(currentX, 10); bCtx.lineTo(currentX, h - 25); bCtx.stroke();
-    bCtx.setLineDash([]);
-
     bCtx.fillStyle = "#7c8a92"; bCtx.font = "10px sans-serif";
     bCtx.fillText("0 Hz", 35, h - 10);
     bCtx.fillText(maxN + " Hz", w - 35, h - 10);
@@ -1146,6 +1165,19 @@
     mouseScope.y = e.clientY - rect.top;
     mouseScope.active = true;
     updateTooltipPos(e);
+    if (!isRunning) drawScope();
+  });
+
+  // Clic : fixe l'origine des temps t′ (2e curseur) ; clic droit : l'efface
+  scopeCanvas.title = "Clic : origine des temps t′ · Clic droit : l'effacer";
+  scopeCanvas.addEventListener('click', (e) => {
+    const rect = scopeCanvas.getBoundingClientRect();
+    originFrac = (e.clientX - rect.left) / rect.width;
+    if (!isRunning) drawScope();
+  });
+  scopeCanvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    originFrac = null;
     if (!isRunning) drawScope();
   });
 
