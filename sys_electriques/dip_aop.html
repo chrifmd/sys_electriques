@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#11161a">
+<title>Entretien des Oscillations - Dipôle à Résistance Négative</title>
+<style>
+  :root{
+    --bg: #11161a;
+    --panel: #161d22;
+    --panel-alt: #1c242a;
+    --line: #2a353c;
+    --line-soft: #202a30;
+    --text: #dbe4e8;
+    --text-dim: #7c8a92;
+    --text-faint: #52616a;
+    --in-color: #e5a93b;
+    --out-color: #2bbd8e;
+    --ur-color: #c792ea;
+    --time-color: #38bdf8;
+    --energy-e: #38bdf8;
+    --energy-m: #f59e0b;
+    --energy-tot: #ef4444;
+    --accent: #4fc3e8;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+    --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius: 4px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+  body { padding: 18px; }
+  .rig {
+    max-width: 1180px;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: linear-gradient(180deg, var(--panel), var(--bg) 140%);
+    overflow: hidden;
+  }
+
+  .site-header {
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+    text-align: center;
+  }
+  .site-header .site-title {
+    margin: 0 0 10px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  .page-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .page-switcher label {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .page-switcher select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 12.5px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .topbar a { color: var(--text-dim); text-decoration: none; font-size: 13px; }
+  .topbar a:hover { color: var(--accent); }
+  .topbar .regime-picker { display: flex; align-items: center; gap: 8px; }
+  .topbar .regime-picker label { color: var(--text-faint); font-size: 11.5px; }
+
+  .plate {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-alt);
+  }
+  .plate h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  .plate .sub { color: var(--text-dim); font-size: 12.5px; margin-top: 3px; }
+  .fc-readout { text-align: right; line-height: 1.15; }
+  .fc-readout .label { color: var(--text-dim); font-size: 11px; }
+  .fc-readout .value { font-family: var(--font-mono); font-size: 22px; color: var(--accent); }
+
+  .layout { display: grid; grid-template-columns: 1fr 270px; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+    .controls { border-left: none; border-top: 1px solid var(--line); order: 2; }
+    .scopes { order: 1; }
+  }
+
+  .controls { border-left: 1px solid var(--line); padding: 18px 18px 22px; background: var(--panel); }
+  .section-title {
+    font-size: 11px; color: var(--text-faint); letter-spacing: 0.4px;
+    margin: 20px 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--line-soft);
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .ctrl { margin-bottom: 14px; }
+  .ctrl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .ctrl-row .name { font-size: 12.5px; color: var(--text); }
+  .ctrl-row .val { font-family: var(--font-mono); font-size: 12.5px; color: var(--out-color); }
+  .ctrl-row .val.in-tone { color: var(--in-color); }
+  .ctrl-row .val.speed-tone { color: var(--time-color); }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 3px;
+    background: var(--line); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #0d1215; cursor: pointer;
+  }
+
+  .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
+  .readout-grid .item .k { font-size: 10px; color: var(--text-faint); }
+  .readout-grid .item .v { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
+
+  .scopes { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .oscillo-panel { background-color: transparent; width: 100%; position: relative; }
+  .oscillo-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+  .oscillo-title { text-transform: uppercase; color: var(--text-dim); }
+  .oscillo-legend { display: flex; gap: 16px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0b0c0; transition: opacity 0.2s; }
+  .color-dot { width: 12px; height: 2px; display: inline-block; }
+  .color-dot.purple { background-color: var(--ur-color); }
+  .color-dot.green { background-color: var(--out-color); }
+  .color-dot.orange { background-color: var(--in-color); }
+  .color-dot.blue { background-color: var(--energy-e); }
+  .color-dot.yellow { background-color: var(--energy-m); }
+  .color-dot.red { background-color: var(--energy-tot); }
+  .legend-item.dim { opacity: 0.35; }
+
+  .oscillo-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px;
+  }
+  .position-toolbar {
+    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    padding: 6px 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .control-group { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+  .pos-group { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+  .pos-group input[type=range] { width: 90px; }
+  .pos-group .pv { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); min-width: 34px; }
+
+  .label-ch1 { color: var(--ur-color); }
+  .label-ch2 { color: var(--out-color); }
+  .label-ch3 { color: var(--in-color); }
+  .label-time { color: var(--time-color); }
+
+  .toolbar-check { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; }
+  .toolbar-check input { width: 14px; height: 14px; cursor: pointer; }
+  .toolbar-check.ch1 { color: var(--ur-color); }
+  .toolbar-check.ch1 input { accent-color: var(--ur-color); }
+  .toolbar-check.ch2 { color: var(--out-color); }
+  .toolbar-check.ch2 input { accent-color: var(--out-color); }
+  .toolbar-check.ch3 { color: var(--in-color); }
+  .toolbar-check.ch3 input { accent-color: var(--in-color); }
+  .toolbar-check.ee { color: var(--energy-e); }
+  .toolbar-check.ee input { accent-color: var(--energy-e); }
+  .toolbar-check.em { color: var(--energy-m); }
+  .toolbar-check.em input { accent-color: var(--energy-m); }
+  .toolbar-check.etot { color: var(--energy-tot); }
+  .toolbar-check.etot input { accent-color: var(--energy-tot); }
+
+  .oscillo-toolbar select {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer;
+  }
+
+  .btn-inv {
+    background-color: #0e1318; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 3px 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-inv.ch1-btn { color: var(--ur-color); }
+  .btn-inv.ch1-btn.active { background-color: var(--ur-color); color: #0b1114; border-color: var(--ur-color); }
+  .btn-inv.ch2-btn { color: var(--out-color); }
+  .btn-inv.ch2-btn.active { background-color: var(--out-color); color: #0b1114; border-color: var(--out-color); }
+  .btn-inv.ch3-btn { color: var(--in-color); }
+  .btn-inv.ch3-btn.active { background-color: var(--in-color); color: #0b1114; border-color: var(--in-color); }
+
+  .btn-pause, .btn-reset {
+    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    padding: 4px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: background-color 0.2s;
+  }
+  .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
+
+  .top-screen-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; gap: 10px; flex-wrap: wrap;
+  }
+  .top-buttons { display: flex; align-items: center; gap: 8px; }
+
+  .canvas-wrapper { position: relative; width: 100%; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; }
+
+  .scope-tooltip {
+    position: absolute; pointer-events: none; background: rgba(14, 20, 26, 0.92);
+    border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; z-index: 10; line-height: 1.4; white-space: nowrap;
+  }
+
+  .montage-row { display: flex; gap: 12px; align-items: stretch; }
+  @media (max-width: 700px) { .montage-row { flex-direction: column; } }
+  
+  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
+  .schematic-wrap svg { display: block; width: 100%; max-height: 310px; height: auto; margin: 0 auto; }
+  
+  .sch-wire   { stroke: var(--text-dim); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .sch-comp   { stroke: #4fc3e8; stroke-width: 1.6; fill: rgba(79,195,232,0.12); }
+  .sch-node   { fill: var(--text); }
+  .sch-label  { fill: var(--text); font-size: 12px; font-weight: 600; }
+  .sch-label.r  { fill: var(--out-color); font-size: 13px; font-weight: bold; }
+  .sch-label.c  { fill: var(--ur-color); font-size: 13px; font-weight: bold; }
+  .sch-label.l  { fill: var(--in-color); font-size: 13px; font-weight: bold; }
+  .sch-label.rn { fill: #ef4444; font-size: 13px; font-weight: bold; }
+
+  .energy-card-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;
+  }
+  @media (max-width: 600px) { .energy-card-grid { grid-template-columns: 1fr; } }
+  .energy-stat {
+    background: #141c22; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 8px 12px; text-align: center;
+  }
+  .energy-stat .lbl { font-size: 11px; color: var(--text-dim); }
+  .energy-stat .val { font-family: var(--font-mono); font-size: 15px; font-weight: bold; margin-top: 2px; }
+
+  .btn-theory-toggle {
+    width: 100%; padding: 8px 12px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--accent); background: var(--panel-alt); border: 1px solid var(--line);
+    border-radius: var(--radius); cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-theory-toggle:hover { background: var(--line); border-color: var(--accent); }
+  .theory-container.hidden { display: none; }
+  .oscillo-panel.panel-collapsed { display: none; }
+  .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .theory-grid { grid-template-columns: 1fr; } }
+  .theory-card {
+    border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316;
+    padding: 12px 14px; font-size: 12px; line-height: 1.4; color: var(--text-dim);
+  }
+  .theory-card h3 { margin: 0 0 6px; font-size: 12.5px; color: var(--accent); }
+  .theory-card p { margin: 3px 0; }
+  .formula {
+    font-family: var(--font-mono); color: var(--text); background: var(--panel-alt);
+    padding: 3px 6px; border-radius: 3px; display: inline-block; margin: 3px 0;
+  }
+  .theory-wide { grid-column: 1 / -1; }
+  .theory-card ul { margin: 4px 0 6px; padding-left: 18px; }
+  .theory-card li { margin: 2px 0; }
+  .theory-card b { color: var(--text); }
+  .theory-card .live {
+    margin-top: 8px; padding: 6px 8px; border-left: 2px solid var(--accent);
+    background: var(--panel-alt); font-family: var(--font-mono); font-size: 11.5px; color: var(--text);
+  }
+
+  /* ===== Optimisation mobile ===== */
+  html { -webkit-text-size-adjust: 100%; }
+  .slider-line { display: block; }
+  .step-btn { display: none; }
+  .theory-card { overflow-x: auto; }
+  @media (hover: none) { .btn-pause small { display: none; } }
+  @media (max-width: 820px) {
+    body { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+    .rig { border-radius: 8px; }
+    .site-header { padding: 10px 12px; text-align: left; }
+    .site-header .site-title { font-size: 15px; line-height: 1.3; margin-bottom: 8px; }
+    .page-switcher { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+    .page-switcher select { font-size: 16px; min-height: 42px; width: 100%; }
+    .topbar { padding: 4px 12px; }
+    .topbar a { padding: 8px 0; }
+    .plate { padding: 12px; align-items: flex-start; }
+    .plate h1 { font-size: 15px; }
+    .fc-readout { text-align: left; }
+    .layout { display: flex; flex-direction: column; gap: 14px; padding: 12px; }
+    .controls { border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+    input[type=range] { height: 6px; margin: 12px 0; }
+    input[type=range]::-webkit-slider-thumb { width: 28px; height: 28px; margin-top: -11px; }
+    input[type=range]::-moz-range-thumb { width: 28px; height: 28px; }
+    .slider-line { display: flex; align-items: center; gap: 12px; }
+    .slider-line input { flex: 1; min-width: 0; }
+    .step-btn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px;
+      font-size: 20px; line-height: 1; color: var(--text); background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
+    .step-btn:active { background: #232d39; border-color: var(--accent); }
+    .ctrl-row .name, .ctrl-row .val { font-size: 14px; }
+    .readout-grid .item .k { font-size: 11px; }
+    .readout-grid .item .v { font-size: 13px; }
+    .signature { margin-top: 4px; padding: 0 12px 14px; font-size: 11px; line-height: 1.4; }
+    .scopes { display: contents; }
+    .scopes > .scope-block { order: 1; }
+    .scopes > .oscillo-panel { order: 2; }
+    .controls { order: 3; }
+    #toggleEnergyBtn { order: 4; }
+    #energyPanel { order: 5; }
+    #toggleTheoryBtn { order: 6; }
+    #theoryContainer { order: 7; }
+    .layout > .signature { order: 8; }
+    .oscillo-legend { flex-wrap: wrap; gap: 6px 12px; }
+    .top-screen-bar { flex-direction: column; align-items: stretch; }
+    .top-buttons { display: grid; grid-template-columns: 1fr 1fr; }
+    .btn-pause, .btn-reset { min-height: 44px; justify-content: center; text-align: center; font-size: 13px; }
+    .oscillo-toolbar { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 8px 10px; padding: 8px 10px; align-items: center; }
+    .oscillo-toolbar > * { min-width: 0; }
+    .oscillo-toolbar .control-group { margin-left: 0 !important; display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
+    .oscillo-toolbar .control-group:last-child { grid-column: 1 / -1; }
+    .oscillo-toolbar .control-group label { font-size: 11px; }
+    .oscillo-toolbar select { font-size: 16px; min-height: 40px; width: 100%; }
+    .toolbar-check { min-height: 40px; font-size: 13px; }
+    .toolbar-check input { width: 20px; height: 20px; }
+    .position-toolbar { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 8px 10px; }
+    .pos-group { display: grid; grid-template-columns: 112px minmax(0, 1fr) 58px; gap: 8px; white-space: nowrap; }
+    .pos-group input[type=range] { width: 100%; margin: 8px 0; }
+    .pos-group .pv { text-align: right; }
+    .energy-card-grid { grid-template-columns: 1fr; gap: 8px; }
+    .energy-stat { display: flex; justify-content: space-between; align-items: center; text-align: left; }
+    #autoMatchBtn { min-height: 44px; font-size: 13px; }
+    .btn-theory-toggle { padding: 12px; font-size: 12px; line-height: 1.4; }
+    .theory-grid { gap: 12px; }
+    .theory-card { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rig">
+  <div class="site-header">
+    <h1 class="site-title">CIRCUIT RLC - ENTRETIEN DES OSCILLATIONS</h1>
+    <div class="page-switcher">
+      <label for="pageSwitch">Choisir le TP :</label>
+      <select id="pageSwitch" onchange="if(this.value) window.location.href=this.value;">   
+        <option value="oscillations_libres.html">Oscillations libres amorties et non amorties</option>
+        <option value="oscillations_forcees.html">Oscillations forcées en régime sinusoïdal</option>
+        <option value="resistance_negative.html" selected>Entretien des oscillations par résistance négative</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <a href="index.html">← Retour à l'accueil</a>
+    <div class="regime-picker">
+      <label>TP :</label>
+      <span style="color:var(--text-dim); font-size:12.5px;">Générateur à résistance négative à Amplificateur Opérationnel (AOP)</span>
+    </div>
+  </div>
+
+  <div class="plate">
+    <div>
+      <h1>Entretien des Oscillations par Dipôle à Résistance Négative</h1>
+      <div class="sub">Compensation des pertes par effet Joule dans le circuit RLC série au moyen d'un montage convertisseur d'impédance négative (NIC).</div>
+    </div>
+    <div class="fc-readout">
+      <div class="label">RÉSISTANCE NETTE R<sub>tot</sub></div>
+      <div class="value" id="rtotHeaderValue">0.0 Ω</div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <div class="scopes">
+
+      <!-- MONTAGE SCHÉMATIQUE DU DIPÔLE A RÉSISTANCE NÉGATIVE -->
+      <div class="scope-block">
+        <div class="oscillo-header"><span class="oscillo-title">SCHÉMA ÉLECTRIQUE COMPLET DU MONTAGE D'ENTRETIEN</span></div>
+        <div class="montage-row">
+          <div class="schematic-wrap" style="flex:1;">
+            <svg viewBox="0 0 380 230" xmlns="http://www.w3.org/2000/svg">
+              <!-- Masse M de référence -->
+              <path d="M 20,200 L 360,200" class="sch-wire"/>
+              <path d="M 190,200 L 190,208" stroke="var(--text)" stroke-width="1.5"/>
+              <line x1="180" y1="208" x2="200" y2="208" stroke="var(--text)" stroke-width="1.8"/>
+              <line x1="183" y1="212" x2="197" y2="212" stroke="var(--text)" stroke-width="1.4"/>
+              <line x1="186" y1="216" x2="194" y2="216" stroke="var(--text)" stroke-width="1.2"/>
+              <line x1="189" y1="220" x2="191" y2="220" stroke="var(--text)" stroke-width="1.0"/>
+              <text x="195" y="218" class="sch-label">M</text>
+
+              <!-- CIRCUIT RLC SÉRIE (Partie Gauche) -->
+              <path d="M 40,200 L 40,165" class="sch-wire"/>
+              <!-- Condensateur C -->
+              <line x1="26" y1="165" x2="54" y2="165" stroke="var(--ur-color)" stroke-width="2"/>
+              <line x1="26" y1="157" x2="54" y2="157" stroke="var(--ur-color)" stroke-width="2"/>
+              <text x="10" y="164" class="sch-label c">C</text>
+              <path d="M 40,157 L 40,125" class="sch-wire"/>
+
+              <!-- Bobine (L, r) -->
+              <path d="M 40,125 C 28,125 28,115 40,115 C 28,115 28,105 40,105 C 28,105 28,95 40,95 C 28,95 28,85 40,85 C 28,85 28,75 40,75" stroke="var(--in-color)" stroke-width="2" fill="none"/>
+              <text x="10" y="103" class="sch-label l">(L,r)</text>
+              <path d="M 40,75 L 40,40" class="sch-wire"/>
+
+              <!-- Résistance de perte série Rs -->
+              <rect x="31" y="40" width="18" height="30" class="sch-comp"/>
+              <text x="8" y="58" class="sch-label r">R<sub>s</sub></text>
+              <path d="M 40,40 L 40,25 L 130,25" class="sch-wire"/>
+
+              <!-- Point A d'interconnexion -->
+              <circle cx="130" cy="25" r="3" class="sch-node"/>
+              <text x="125" y="15" class="sch-label" fill="var(--accent)">A</text>
+
+              <!-- DIPÔLE À RÉSISTANCE NÉGATIVE - AOP + R1 + R2 + R (Partie Droite) -->
+              <path d="M 130,25 L 210,25 L 210,55" class="sch-wire"/>
+              
+              <!-- Triangle AOP -->
+              <polygon points="200,55 260,85 200,115" fill="rgba(79,195,232,0.08)" stroke="var(--accent)" stroke-width="2"/>
+              <text x="207" y="73" font-size="14" font-weight="bold" fill="var(--text)">−</text>
+              <text x="206" y="104" font-size="14" font-weight="bold" fill="var(--text)">+</text>
+              <text x="220" y="88" font-size="11" font-weight="bold" fill="var(--accent)">AOP</text>
+
+              <!-- Entrée Non-Inverseuse (+ à 200,100) connectée au Point A -->
+              <path d="M 130,25 L 130,100 L 200,100" class="sch-wire"/>
+
+              <!-- Entrée Inverseuse (- à 200,70) connectée à R1 et R2 -->
+              <path d="M 200,70 L 170,70" class="sch-wire"/>
+              <circle cx="170" cy="70" r="2.5" class="sch-node"/>
+
+              <!-- Résistance R1 vers Masse -->
+              <path d="M 170,70 L 170,110" class="sch-wire"/>
+              <rect x="161" y="110" width="18" height="35" class="sch-comp"/>
+              <text x="138" y="132" class="sch-label">R₁</text>
+              <path d="M 170,145 L 170,200" class="sch-wire"/>
+
+              <!-- Résistance de Contre-Réaction R2 vers Sortie -->
+              <path d="M 170,70 L 170,40 L 290,40 L 290,85 L 260,85" class="sch-wire"/>
+              <rect x="210" y="31" width="35" height="18" class="sch-comp"/>
+              <text x="222" y="24" class="sch-label">R₂</text>
+
+              <!-- Résistance Variable R du dipôle NIC -->
+              <path d="M 130,25 L 130,165 L 290,165 L 290,85" class="sch-wire"/>
+              <rect x="190" y="156" width="40" height="18" class="sch-comp" stroke="#ef4444"/>
+              <!-- Flèche variabilité R -->
+              <path d="M 195,182 L 225,148" stroke="#ef4444" stroke-width="1.5"/>
+              <path d="M 220,148 L 227,146 L 224,153" fill="#ef4444"/>
+              <text x="202" y="192" class="sch-label rn">R</text>
+
+              <!-- Légende Résistance Négative (Boîte virtuelle) -->
+              <rect x="115" y="8" width="195" height="190" fill="none" stroke="#ef4444" stroke-width="1" stroke-dasharray="4 4" rx="6"/>
+              <text x="215" y="198" font-size="10" font-weight="bold" fill="#ef4444" text-anchor="middle">Dipôle R<sub>eq</sub> = −R (Si R₁ = R₂)</text>
+
+              <!-- Mesures Voies Y1 et Y2 -->
+              <path d="M 130,25 L 130,5" class="sch-wire"/>
+              <circle cx="130" cy="5" r="2.5" fill="var(--ur-color)"/>
+              <text x="140" y="10" font-size="12" font-weight="bold" fill="var(--ur-color)">Y1 (u<sub>C</sub>+u<sub>L</sub>)</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- OSCILLOSCOPE TENSIONS -->
+      <div class="oscillo-panel">
+        <div class="oscillo-header">
+          <span class="oscillo-title">OSCILLOSCOPE — RÉPONSE TEMPORELLE DE LA TENSION u<sub>C</sub>(t)</span>
+          <div class="oscillo-legend">
+            <span class="legend-item" id="legendCh1"><span class="color-dot purple"></span>Voie 1 (Y1) : Tension u<sub>C</sub>(t)</span>
+            <span class="legend-item" id="legendCh2"><span class="color-dot green"></span>Voie 2 (Y2) : Courant i(t) (Échelle relative)</span>
+          </div>
+        </div>
+
+        <div class="top-screen-bar">
+          <div class="ctrl-hint" style="margin-bottom:0;">Visualisation de la stabilisation, de l'amortissement ou de l'amplification des oscillations.</div>
+          <div class="top-buttons">
+            <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
+            <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
+          </div>
+        </div>
+
+        <!-- Toolbar Oscilloscope -->
+        <div class="oscillo-toolbar">
+          <div class="control-group">
+            <label class="label-ch1">CH1 (Y1):</label>
+            <select id="v1SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1">1 V/div</option>
+              <option value="2" selected>2 V/div</option>
+              <option value="5">5 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch1"><input type="checkbox" id="showChan1Check" checked> u<sub>C</sub>(t)</label>
+
+          <div class="control-group" style="margin-left: 15px;">
+            <label class="label-ch2">CH2 (i):</label>
+            <select id="v2SensSelect">
+              <option value="0.5">0.5 V/div</option>
+              <option value="1" selected>1 V/div</option>
+              <option value="2">2 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check ch2"><input type="checkbox" id="showChan2Check" checked> i(t)</label>
+
+          <div class="control-group" style="margin-left: 15px;">
+            <label class="label-time">Base de temps:</label>
+            <select id="hSensSelect">
+              <option value="0.0002">0.2 ms/div</option>
+              <option value="0.0005" selected>0.5 ms/div</option>
+              <option value="0.001">1 ms/div</option>
+              <option value="0.002">2 ms/div</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Position Toolbar -->
+        <div class="position-toolbar">
+          <div class="pos-group">↔ Position X<input type="range" id="posXSlider" min="-5" max="5" step="0.5" value="0"><span class="pv" id="posXVal">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--ur-color)">↕ Position Y1<input type="range" id="posY1Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY1Val">0.0 div</span></div>
+          <div class="pos-group" style="color:var(--out-color)">↕ Position Y2<input type="range" id="posY2Slider" min="-4" max="4" step="0.5" value="0"><span class="pv" id="posY2Val">0.0 div</span></div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="scopeCanvas" height="320"></canvas>
+          <div id="scopeTooltip" class="scope-tooltip"></div>
+        </div>
+      </div>
+
+      <!-- VISUALISATION DES ÉNERGIES -->
+      <button id="toggleEnergyBtn" class="btn-theory-toggle" aria-expanded="false" aria-controls="energyPanel">AFFICHER LE BILAN ÉNERGÉTIQUE</button>
+      <div class="oscillo-panel panel-collapsed" id="energyPanel">
+        <div class="oscillo-header">
+          <span class="oscillo-title">BILAN ÉNERGÉTIQUE — COMPENSATION DE L'EFFET JOULE</span>
+          <div class="oscillo-legend">
+            <span class="legend-item"><span class="color-dot blue"></span>Électrique E<sub>e</sub></span>
+            <span class="legend-item"><span class="color-dot yellow"></span>Magnétique E<sub>m</sub></span>
+            <span class="legend-item"><span class="color-dot red"></span>Totale E<sub>tot</sub></span>
+          </div>
+        </div>
+
+        <div class="energy-card-grid">
+          <div class="energy-stat" style="border-top: 3px solid var(--energy-e);">
+            <div class="lbl">Énergie Électrique E<sub>e</sub></div>
+            <div class="val" id="eeValNow" style="color: var(--energy-e);">0.00 µJ</div>
+          </div>
+          <div class="energy-stat" style="border-top: 3px solid var(--energy-m);">
+            <div class="lbl">Énergie Magnétique E<sub>m</sub></div>
+            <div class="val" id="emValNow" style="color: var(--energy-m);">0.00 µJ</div>
+          </div>
+          <div class="energy-stat" style="border-top: 3px solid var(--energy-tot);">
+            <div class="lbl">Énergie Totale E<sub>tot</sub></div>
+            <div class="val" id="etotValNow" style="color: var(--energy-tot);">0.00 µJ</div>
+          </div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="energyCanvas" height="220"></canvas>
+        </div>
+      </div>
+
+      <button id="toggleTheoryBtn" class="btn-theory-toggle">APERÇU THÉORIQUE — PRINCIPE DE LA RÉSISTANCE NÉGATIVE</button>
+
+      <div id="theoryContainer" class="theory-container hidden">
+        <div class="theory-grid">
+
+          <div class="theory-card theory-wide">
+            <h3>Entretien des Oscillations dans un Circuit RLC par Résistance Négative</h3>
+            <p>Dans un circuit RLC réel, l'énergie subit une dissipation continue par effet Joule à travers la résistance totale R<sub>s</sub> = r + R<sub>0</sub>. Pour entretenir des oscillations sinusoïdales permanentes d'amplitude constante, on insère en série un dipôle actif fournissant une résistance négative -R compensant exactement R<sub>s</sub>.</p>
+          </div>
+
+          <div class="theory-card">
+            <h3>1. Montages NIC (Convertisseur d'Impédance Négative)</h3>
+            <p>En considérant l'AOP en régime linéaire (V<sub>+</sub> = V<sub>−</sub>) et R₁ = R₂ :</p>
+            <div class="formula">i = (u<sub>A</sub> − u<sub>S</sub>) / R  et  u<sub>S</sub> = 2 · u<sub>A</sub></div>
+            <p>D'où la relation tension-courant du dipôle :</p>
+            <div class="formula">u<sub>A</sub> / i = −R  ⇒  R<sub>eq</sub> = −R</div>
+          </div>
+
+          <div class="theory-card">
+            <h3>2. Équation Différentielle Globale</h3>
+            <p>Loi des mailles du circuit bouclé :</p>
+            <div class="formula">u<sub>C</sub> + u<sub>L,r</sub> + u<sub>Rs</sub> + u<sub>dipôle</sub> = 0</div>
+            <div class="formula">L C · d²u<sub>C</sub>/dt² + (R<sub>s</sub> − R) C · du<sub>C</sub>/dt + u<sub>C</sub> = 0</div>
+            <p>La résistance équivalente totale devient : <span class="formula">R<sub>tot</sub> = R<sub>s</sub> − R</span></p>
+          </div>
+
+          <div class="theory-card">
+            <h3>3. Les 3 Cas de Fonctionnement</h3>
+            <ul>
+              <li><b>R &lt; R<sub>s</sub> (R<sub>tot</sub> &gt; 0) :</b> Amortissement. L'énergie dissipée l'emporte. Oscillations étouffées.</li>
+              <li><b>R = R<sub>s</sub> (R<sub>tot</sub> = 0) :</b> Entretien parfait. Oscillations sinusoïdales pures de fréquence propre <span class="formula">f₀ = 1 / (2π√(LC))</span>.</li>
+              <li><b>R &gt; R<sub>s</sub> (R<sub>tot</sub> &lt; 0) :</b> Amplification. Les oscillations grandissent jusqu'à la saturation de l'AOP (±V<sub>sat</sub>).</li>
+            </ul>
+          </div>
+
+          <div class="theory-card">
+            <h3>4. Bilan Énergétique</h3>
+            <p>Variation de l'énergie totale du circuit :</p>
+            <div class="formula">dE<sub>tot</sub>/dt = −(R<sub>s</sub> − R) · i²</div>
+            <p>Lorsque R = R<sub>s</sub>, dE<sub>tot</sub>/dt = 0 : la puissance fournie par le montage à AOP équivaut rigoureusement à la puissance thermique dissipée par effet Joule dans le circuit.</p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PANNEAU DE CONTRÔLE A DROITE -->
+    <div class="controls">
+      <div class="section-title">PARAMÈTRES RLC & DIPÔLE -R</div>
+
+      <!-- Tension initiale E -->
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Tension initiale E</span>
+          <span class="val in-tone" id="eVal">5.0 V</span>
+        </div>
+        <input type="range" id="eSlider" min="1" max="10" step="0.5" value="5">
+      </div>
+
+      <!-- Inductance L -->
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Inductance L</span>
+          <span class="val in-tone" id="lVal">100 mH</span>
+        </div>
+        <input type="range" id="lSlider" min="10" max="500" step="10" value="100">
+      </div>
+
+      <!-- Capacité C -->
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Capacité C</span>
+          <span class="val" id="cVal">1.0 µF</span>
+        </div>
+        <input type="range" id="cSlider" min="0.1" max="10" step="0.1" value="1.0">
+      </div>
+
+      <!-- Résistance interne/série Rs -->
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Résistance R<sub>s</sub> (RLC)</span>
+          <span class="val" id="rsVal">50 Ω</span>
+        </div>
+        <input type="range" id="rsSlider" min="0" max="200" step="5" value="50">
+      </div>
+
+      <div class="section-title">GÉNÉRATEUR DE RÉSISTANCE NÉGATIVE</div>
+
+      <!-- Résistance R du montage NIC -->
+      <div class="ctrl">
+        <div class="ctrl-row">
+          <span class="name">Résistance R (Dipôle -R)</span>
+          <span class="val" id="rNegVal" style="color:#ef4444;">50 Ω</span>
+        </div>
+        <input type="range" id="rNegSlider" min="0" max="200" step="1" value="50">
+      </div>
+
+      <div class="ctrl">
+        <button id="autoMatchBtn" class="btn-theory-toggle" style="color:var(--out-color); border-color:var(--out-color);">Ajuster R = R<sub>s</sub> (R<sub>tot</sub> = 0)</button>
+      </div>
+
+      <div class="section-title">VALEURS CALCULÉES</div>
+      <div class="readout-grid">
+        <div class="item">
+          <div class="k">Fréquence f₀</div>
+          <div class="v" id="f0Val">503 Hz</div>
+        </div>
+        <div class="item">
+          <div class="k">Période T₀</div>
+          <div class="v" id="t0Val">1.99 ms</div>
+        </div>
+        <div class="item">
+          <div class="k">R<sub>tot</sub> = R<sub>s</sub> − R</div>
+          <div class="v" id="rtotVal">0.0 Ω</div>
+        </div>
+        <div class="item">
+          <div class="k">Régime</div>
+          <div class="v" id="regimeStatus" style="color:var(--out-color);">Entretenu</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // État de la simulation
+  let running = true;
+  let t = 0;
+  const dt = 0.000005; // Pas de temps de simulation (5 µs)
+
+  // Composants
+  let E = 5.0;
+  let L = 0.100; // 100 mH
+  let C = 1.0e-6; // 1 µF
+  let Rs = 50; // Ohms
+  let Rneg = 50; // Ohms
+  let Vsat = 12.0; // Saturation de l'AOP
+
+  // Variables d'état RLC
+  let uc = E;
+  let i = 0.0;
+
+  // Réglages d'affichage oscilloscope
+  let sensY1 = 2.0; // V/div
+  let sensY2 = 1.0; 
+  let baseTime = 0.0005; // s/div
+  let posX = 0;
+  let posY1 = 0;
+  let posY2 = 0;
+
+  // Éléments du DOM
+  const eSlider = document.getElementById('eSlider');
+  const lSlider = document.getElementById('lSlider');
+  const cSlider = document.getElementById('cSlider');
+  const rsSlider = document.getElementById('rsSlider');
+  const rNegSlider = document.getElementById('rNegSlider');
+
+  const eVal = document.getElementById('eVal');
+  const lVal = document.getElementById('lVal');
+  const cVal = document.getElementById('cVal');
+  const rsVal = document.getElementById('rsVal');
+  const rNegVal = document.getElementById('rNegVal');
+
+  const f0Val = document.getElementById('f0Val');
+  const t0Val = document.getElementById('t0Val');
+  const rtotVal = document.getElementById('rtotVal');
+  const rtotHeaderValue = document.getElementById('rtotHeaderValue');
+  const regimeStatus = document.getElementById('regimeStatus');
+
+  const scopeCanvas = document.getElementById('scopeCanvas');
+  const ctxScope = scopeCanvas.getContext('2d');
+  const energyCanvas = document.getElementById('energyCanvas');
+  const ctxEnergy = energyCanvas.getContext('2d');
+
+  // Historique des données
+  const maxHistory = 1000;
+  let historyData = [];
+
+  function updateCalculations() {
+    E = parseFloat(eSlider.value);
+    L = parseFloat(lSlider.value) / 1000;
+    C = parseFloat(cSlider.value) * 1e-6;
+    Rs = parseFloat(rsSlider.value);
+    Rneg = parseFloat(rNegSlider.value);
+
+    eVal.textContent = E.toFixed(1) + " V";
+    lVal.textContent = (L * 1000).toFixed(0) + " mH";
+    cVal.textContent = (C * 1e6).toFixed(1) + " µF";
+    rsVal.textContent = Rs.toFixed(0) + " Ω";
+    rNegVal.textContent = Rneg.toFixed(0) + " Ω";
+
+    const Rtot = Rs - Rneg;
+    const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+    const T0 = 1 / f0;
+
+    f0Val.textContent = Math.round(f0) + " Hz";
+    t0Val.textContent = (T0 * 1000).toFixed(2) + " ms";
+    rtotVal.textContent = Rtot.toFixed(1) + " Ω";
+    rtotHeaderValue.textContent = Rtot.toFixed(1) + " Ω";
+
+    if (Math.abs(Rtot) < 0.5) {
+      regimeStatus.textContent = "Entretenu (Sinus)";
+      regimeStatus.style.color = "var(--out-color)";
+    } else if (Rtot > 0) {
+      regimeStatus.textContent = "Amorti";
+      regimeStatus.style.color = "var(--in-color)";
+    } else {
+      regimeStatus.textContent = "Amplifié / Saturation";
+      regimeStatus.style.color = "#ef4444";
+    }
+  }
+
+  // Événements sliders
+  [eSlider, lSlider, cSlider, rsSlider, rNegSlider].forEach(slider => {
+    slider.addEventListener('input', updateCalculations);
+  });
+
+  document.getElementById('autoMatchBtn').addEventListener('click', () => {
+    rNegSlider.value = rsSlider.value;
+    updateCalculations();
+  });
+
+  document.getElementById('playPauseBtn').addEventListener('click', function() {
+    running = !running;
+    this.innerHTML = running ? '<span class="pause-icon">||</span> Pause' : '▶ Reprendre';
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    uc = E;
+    i = 0;
+    t = 0;
+    historyData = [];
+  });
+
+  // Gestion des panneaux rétractables
+  document.getElementById('toggleTheoryBtn').addEventListener('click', function() {
+    document.getElementById('theoryContainer').classList.toggle('hidden');
+  });
+
+  document.getElementById('toggleEnergyBtn').addEventListener('click', function() {
+    document.getElementById('energyPanel').classList.toggle('panel-collapsed');
+  });
+
+  // Mises à jour des sensibilités oscilloscope
+  document.getElementById('v1SensSelect').addEventListener('change', e => sensY1 = parseFloat(e.target.value));
+  document.getElementById('v2SensSelect').addEventListener('change', e => sensY2 = parseFloat(e.target.value));
+  document.getElementById('hSensSelect').addEventListener('change', e => baseTime = parseFloat(e.target.value));
+
+  document.getElementById('posXSlider').addEventListener('input', e => {
+    posX = parseFloat(e.target.value);
+    document.getElementById('posXVal').textContent = posX.toFixed(1) + " div";
+  });
+  document.getElementById('posY1Slider').addEventListener('input', e => {
+    posY1 = parseFloat(e.target.value);
+    document.getElementById('posY1Val').textContent = posY1.toFixed(1) + " div";
+  });
+  document.getElementById('posY2Slider').addEventListener('input', e => {
+    posY2 = parseFloat(e.target.value);
+    document.getElementById('posY2Val').textContent = posY2.toFixed(1) + " div";
+  });
+
+  // Moteur de simulation numérique (Euler-Cromer)
+  function stepSimulation() {
+    if (!running) return;
+
+    const stepsPerFrame = 20;
+    for (let k = 0; k < stepsPerFrame; k++) {
+      let Rtot = Rs - Rneg;
+
+      // Limitation de l'AOP (Non-linéarité à la saturation Vsat)
+      let uAOP = Rneg * i;
+      if (uAOP > Vsat) uAOP = Vsat;
+      if (uAOP < -Vsat) uAOP = -Vsat;
+
+      // d2uc/dt2 + (Rtot/L) duc/dt + uc/(LC) = 0
+      let d2uc = (-uAOP/L) - (Rs/L)*i*C - (uc/(L*C)); // Équation exacte
+      
+      // Euler integration
+      let dI = (uc - Rs*i - (i * Rneg))/L; // Approximation 
+      i += dI * dt;
+      uc -= (i / C) * dt;
+
+      // Saturation physique de la tension du condensateur si besoin
+      if (uc > Vsat) uc = Vsat;
+      if (uc < -Vsat) uc = -Vsat;
+
+      t += dt;
+    }
+
+    // Enregistrement dans l'historique
+    historyData.push({ t: t, uc: uc, i: i });
+    if (historyData.length > maxHistory) {
+      historyData.shift();
+    }
+
+    // Mettre à jour les indicateurs énergétiques
+    const Ee = 0.5 * C * uc * uc * 1e6; // µJ
+    const Em = 0.5 * L * i * i * 1e6; // µJ
+    const Etot = Ee + Em;
+
+    document.getElementById('eeValNow').textContent = Ee.toFixed(2) + " µJ";
+    document.getElementById('emValNow').textContent = Em.toFixed(2) + " µJ";
+    document.getElementById('etotValNow').textContent = Etot.toFixed(2) + " µJ";
+  }
+
+  // Rendu de la grille d'oscilloscope
+  function drawGrid(ctx, width, height) {
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+
+    const numDivX = 10;
+    const numDivY = 8;
+    const dx = width / numDivX;
+    const dy = height / numDivY;
+
+    for (let i = 0; i <= numDivX; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * dx, 0);
+      ctx.lineTo(i * dx, height);
+      ctx.stroke();
+    }
+    for (let j = 0; j <= numDivY; j++) {
+      ctx.beginPath();
+      ctx.moveTo(0, j * dy);
+      ctx.lineTo(width, j * dy);
+      ctx.stroke();
+    }
+
+    // Axes centraux
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height);
+    ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2);
+    ctx.stroke();
+  }
+
+  // Rendu des traces de l'oscilloscope
+  function drawScope() {
+    const width = scopeCanvas.clientWidth;
+    const height = scopeCanvas.clientHeight;
+    scopeCanvas.width = width;
+    scopeCanvas.height = height;
+
+    drawGrid(ctxScope, width, height);
+
+    if (historyData.length < 2) return;
+
+    const centerY = height / 2;
+    const divY = height / 8;
+    const divX = width / 10;
+
+    const showCh1 = document.getElementById('showChan1Check').checked;
+    const showCh2 = document.getElementById('showChan2Check').checked;
+
+    // Tracé de Voie 1 : uC(t)
+    if (showCh1) {
+      ctxScope.strokeStyle = '#c792ea';
+      ctxScope.lineWidth = 2;
+      ctxScope.beginPath();
+
+      for (let k = 0; k < historyData.length; k++) {
+        const pt = historyData[k];
+        const x = width - (historyData.length - 1 - k) * (divX * (dt * 20 / baseTime)) + (posX * divX);
+        const y = centerY - ((pt.uc / sensY1) - posY1) * divY;
+
+        if (k === 0) ctxScope.moveTo(x, y);
+        else ctxScope.lineTo(x, y);
+      }
+      ctxScope.stroke();
+    }
+
+    // Tracé de Voie 2 : Courant i(t)
+    if (showCh2) {
+      ctxScope.strokeStyle = '#2bbd8e';
+      ctxScope.lineWidth = 1.8;
+      ctxScope.beginPath();
+
+      for (let k = 0; k < historyData.length; k++) {
+        const pt = historyData[k];
+        const x = width - (historyData.length - 1 - k) * (divX * (dt * 20 / baseTime)) + (posX * divX);
+        const y = centerY - (((pt.i * 10) / sensY2) - posY2) * divY; // Échelle de courant amplifiée ×10 pour lisibilité
+
+        if (k === 0) ctxScope.moveTo(x, y);
+        else ctxScope.lineTo(x, y);
+      }
+      ctxScope.stroke();
+    }
+  }
+
+  // Rendu du graphique des énergies
+  function drawEnergy() {
+    if (document.getElementById('energyPanel').classList.contains('panel-collapsed')) return;
+
+    const width = energyCanvas.clientWidth;
+    const height = energyCanvas.clientHeight;
+    energyCanvas.width = width;
+    energyCanvas.height = height;
+
+    drawGrid(ctxEnergy, width, height);
+
+    if (historyData.length < 2) return;
+
+    const divX = width / 10;
+    const maxE = 0.5 * C * E * E * 1e6 * 1.2; // Échelle auto ajustée
+    const scaleY = (height - 20) / (maxE || 1);
+
+    // Ee
+    ctxEnergy.strokeStyle = '#38bdf8';
+    ctxEnergy.lineWidth = 1.5;
+    ctxEnergy.beginPath();
+    for (let k = 0; k < historyData.length; k++) {
+      const pt = historyData[k];
+      const ee = 0.5 * C * pt.uc * pt.uc * 1e6;
+      const x = width - (historyData.length - 1 - k) * (divX * (dt * 20 / baseTime));
+      const y = height - 10 - ee * scaleY;
+      if (k === 0) ctxEnergy.moveTo(x, y); else ctxEnergy.lineTo(x, y);
+    }
+    ctxEnergy.stroke();
+
+    // Em
+    ctxEnergy.strokeStyle = '#f59e0b';
+    ctxEnergy.lineWidth = 1.5;
+    ctxEnergy.beginPath();
+    for (let k = 0; k < historyData.length; k++) {
+      const pt = historyData[k];
+      const em = 0.5 * L * pt.i * pt.i * 1e6;
+      const x = width - (historyData.length - 1 - k) * (divX * (dt * 20 / baseTime));
+      const y = height - 10 - em * scaleY;
+      if (k === 0) ctxEnergy.moveTo(x, y); else ctxEnergy.lineTo(x, y);
+    }
+    ctxEnergy.stroke();
+
+    // Etot
+    ctxEnergy.strokeStyle = '#ef4444';
+    ctxEnergy.lineWidth = 2;
+    ctxEnergy.beginPath();
+    for (let k = 0; k < historyData.length; k++) {
+      const pt = historyData[k];
+      const ee = 0.5 * C * pt.uc * pt.uc * 1e6;
+      const em = 0.5 * L * pt.i * pt.i * 1e6;
+      const x = width - (historyData.length - 1 - k) * (divX * (dt * 20 / baseTime));
+      const y = height - 10 - (ee + em) * scaleY;
+      if (k === 0) ctxEnergy.moveTo(x, y); else ctxEnergy.lineTo(x, y);
+    }
+    ctxEnergy.stroke();
+  }
+
+  // Boucle principale d'animation
+  function loop() {
+    stepSimulation();
+    drawScope();
+    drawEnergy();
+    requestAnimationFrame(loop);
+  }
+
+  // Initialisation
+  updateCalculations();
+  loop();
+
+  // Réglage fin sans clavier : boutons − / + autour des curseurs (visibles sur mobile uniquement)
+  document.querySelectorAll(".controls input[type=range]").forEach(inp => {
+    const line = document.createElement("div"); line.className = "slider-line";
+    inp.parentNode.insertBefore(line, inp);
+    const mk = (txt, dir, lab) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "step-btn"; b.textContent = txt; b.setAttribute("aria-label", lab);
+      b.addEventListener("click", () => { dir < 0 ? inp.stepDown() : inp.stepUp(); inp.dispatchEvent(new Event("input", { bubbles: true })); });
+      return b;
+    };
+    line.append(mk("−", -1, "Diminuer"), inp, mk("+", 1, "Augmenter"));
+  });
+</script>
+
+</body>
+</html>

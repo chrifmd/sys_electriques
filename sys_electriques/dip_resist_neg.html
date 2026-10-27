@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#11161a">
 <title>Entretien des Oscillations - Circuit RLC + AOP</title>
 <style>
-:root{--bg:#11161a;--panel:#161d22;--alt:#1c242a;--line:#2a353c;--text:#dbe4e8;--dim:#7c8a92;--faint:#52616a;--in:#e5a93b;--out:#2bbd8e;--ur:#92ddea;--accent:#4fc3e8;--mono:ui-monospace,"SF Mono",Consolas,monospace;--sans:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+:root{--bg:#11161a;--panel:#161d22;--alt:#1c242a;--line:#2a353c;--text:#dbe4e8;--dim:#7c8a92;--faint:#52616a;--in:#e5a93b;--out:#2bbd8e;--ur:#bfedf5;--accent:#4fc3e8;--mono:ui-monospace,"SF Mono",Consolas,monospace;--sans:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
 body{padding:18px}
@@ -92,6 +93,50 @@ color: rgb(170, 221, 241);
 margin-top: 30px;
 }
 
+
+/* ===== Optimisation mobile ===== */
+html{-webkit-text-size-adjust:100%}
+.slider-line{display:block}.step-btn{display:none}
+.theory-card{overflow-x:auto}
+@media(hover:none){.kbd-hide{display:none}}
+@media(max-width:850px){
+ body { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+ .rig{border-radius:8px}
+ .rig .rig{border:0;border-radius:0;background:none}
+ .btn-home{margin:0 0 8px;padding:.6rem .9rem}
+ .rig>a[href="index.html"]{display:inline-block;padding:10px 12px;color:var(--dim);font-size:13px;text-decoration:none}
+ .site-header{padding:10px 12px;text-align:left}
+ .site-header .site-title{font-size:15px;line-height:1.3;margin-bottom:8px}
+ .page-switcher{display:flex;flex-direction:column;align-items:stretch;gap:4px}
+ .page-switcher select{font-size:16px;min-height:42px;width:100%}
+ .plate{padding:12px;align-items:flex-start}.plate h1{font-size:15px}
+ .fc .l{text-align:left}
+ .layout{display:flex;flex-direction:column;gap:14px;padding:12px}
+ .scopes{display:contents}
+ .scopes>:nth-child(1){order:1}.scopes>:nth-child(2){order:2}
+ .controls{order:3;border:1px solid var(--line)!important;border-radius:6px;padding:14px}
+ .scopes>:nth-child(3){order:4}
+ .sw{padding:6px}
+ .tb{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:8px 10px}
+ .tb>*{min-width:0}
+ .tb>label{display:flex;flex-direction:column;gap:3px;font-size:11.5px}
+ .tb>label:has(input[type=checkbox]){flex-direction:row;align-items:center;gap:8px;min-height:40px;font-size:13px}
+ .tb input[type=checkbox]{width:20px;height:20px}
+ .tb select{font-size:16px;min-height:40px;width:100%}
+ .tb #kbtn{min-height:44px;font-size:14px!important}
+ .tb>label.ct{grid-column:1/-1}
+ .row{font-size:14px}
+ input[type=range]{height:6px;margin:12px 0}
+ input[type=range]::-webkit-slider-thumb{width:28px;height:28px;margin-top:-11px}
+ input[type=range]::-moz-range-thumb{width:28px;height:28px}
+ .slider-line{display:flex;align-items:center;gap:12px}.slider-line input{flex:1;min-width:0}
+ .step-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;font-size:20px;line-height:1;color:var(--text);background:#0e1318;border:1px solid #2a3644;border-radius:6px;cursor:pointer}
+ .step-btn:active{background:#232d39;border-color:var(--accent)}
+ .rg .k{font-size:11px}
+ .btn-theory-toggle{padding:12px;font-size:12px;line-height:1.4}
+ .theory-grid{gap:12px}.theory-card{padding:10px 12px}
+ .signature{margin-top:4px;padding:0 12px 14px;font-size:11px;line-height:1.4}
+}
 </style></head>
 <a class="btn-home" href="https://simphysique.blogspot.com/">← Retour au site SimPhysique</a>
 <body><div 
@@ -150,7 +195,7 @@ margin-top: 30px;
 <div class="tb"><label>Mode <select id="mode"><option value="yt">YT</option><option value="xy" selected>XY : u = f(u′)</option></select></label>
 <label>Voie Y1 / axe X <select id="xs"><option value="up">u′ (aux bornes de R′)</option><option value="i">i (courant du dipôle)</option></select></label><label class="c1"><select id="v1"></select></label><label class="c1" style="cursor:pointer"><input type="checkbox" id="inv" style="accent-color:#c792ea"> Inverse Y1</label><label style="cursor:pointer"><input type="checkbox" id="cur" checked> Curseurs</label><button id="kbtn" style="background:#0e1318;color:#fff;border:1px solid #2a3644;border-radius:4px;padding:4px 12px;font-size:12px;cursor:pointer"></button><label class="c2">Y2 (u) <select id="v2"></select></label>
 <label class="ct">Base de temps <select id="td"><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option></select> ms/div</label></div>
-<canvas id="cv" style="touch-action:none" width="800" height="520"></canvas></div>
+<canvas id="cv" style="touch-action:pan-y" width="800" height="520"></canvas></div>
 <div><button id="thb" class="btn-theory-toggle">APERÇU THÉORIQUE — RÉSISTANCE NÉGATIVE &amp; CARACTÉRISTIQUES</button>
 <div id="thd" class="theory-container hidden" style="margin-top:12px"><div class="theory-grid">
 <div class="theory-card theory-wide"><h3>Vue d'ensemble : dipôle (D) à résistance négative</h3>
@@ -203,11 +248,13 @@ const vd=[0.05,0.1,0.2,0.5,1,2,5];
 const C=[[-0.2,-0.2],[0.2,0.2]];let drag=-1;
 const cp=e=>{const c=$('cv'),r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
 const cpx=i=>[400+C[i][0]/+$('v1').value*80,260-C[i][1]/+$('v2').value*65];
+const c0=$('cv');
 $('cv').onpointerdown=e=>{if($('mode').value!=='xy'||!$('cur').checked)return;const[x,y]=cp(e);let best=-1,bd=1e9;
- [0,1].forEach(i=>{const p=cpx(i),d=Math.hypot(p[0]-x,p[1]-y);if(d<bd){bd=d;best=i}});if(bd<40){drag=best;$('cv').setPointerCapture(e.pointerId)}};
+ [0,1].forEach(i=>{const p=cpx(i),d=Math.hypot(p[0]-x,p[1]-y);if(d<bd){bd=d;best=i}});if(bd<40*Math.max(1,c0.width/c0.clientWidth/1.2)){drag=best;$('cv').setPointerCapture(e.pointerId)}};
 $('cv').onpointermove=e=>{if(drag<0)return;const[x,y]=cp(e);C[drag]=[(x-400)/80*+$('v1').value,-(y-260)/65*+$('v2').value];draw()};
 $('cv').onpointerup=()=>drag=-1;
-$('cur').onchange=()=>draw();
+const setTA=()=>{$('cv').style.touchAction=($('cur').checked&&$('mode').value==='xy')?'none':'pan-y'};
+$('cur').onchange=()=>{setTA();draw()};$('mode').addEventListener('change',setTA);setTA();
 $('xs').onchange=()=>{const x=$('xs').value==='i',L=x?[0.5,1,2,5,10,20]:vd,d=x?2:0.2;$('v1').innerHTML=L.map(v=>`<option ${v===d?'selected':''}>${v}</option>`).join('');C[0]=x?[4,-0.2]:[-0.2,-0.2];C[1]=x?[-4,0.2]:[0.2,0.2];draw()};
 let thOpen=false;
 $('thb').onclick=()=>{thOpen=!thOpen;$('thd').classList.toggle('hidden',!thOpen);draw()};
@@ -231,10 +278,10 @@ function draw(){const{A,N,R,Rp,R1,R2}=P,T=1/N;
  for(let i=-400;i<n;i++){const t=T*0.0+i/(n-1)*span,e=A/2*tri(((t*N)%1+1)%1),r=kOn?solve(e,s):{u:e,Vs:0,s};s=r.s;
   if(i>=0){const up=(xi?(e-r.u)/R*1e3:r.Vs*Rp/(R2+Rp))*sgn;pts.push([t,up,r.u]);m1=Math.max(m1,Math.abs(up));m2=Math.max(m2,Math.abs(r.u))}}
  $('o3').textContent=m1.toFixed(3)+(xi?' mA':' V');$('o4').textContent=m2.toFixed(3)+' V';
- const c=$('cv'),g=c.getContext('2d'),W=c.width,H=c.height,dx=W/10,dy=H/8;g.clearRect(0,0,W,H);
+ const c=$('cv'),g=c.getContext('2d'),W=c.width,H=c.height,dx=W/10,dy=H/8,sc=Math.max(1,W/(c.clientWidth||W)/1.2);g.clearRect(0,0,W,H);
  g.strokeStyle='#1d2a31';g.lineWidth=1;g.beginPath();for(let i=0;i<=10;i++){g.moveTo(i*dx,0);g.lineTo(i*dx,H)}for(let j=0;j<=8;j++){g.moveTo(0,j*dy);g.lineTo(W,j*dy)}g.stroke();
  g.strokeStyle='#33444d';g.beginPath();g.moveTo(W/2,0);g.lineTo(W/2,H);g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();
- const tr=(col,f)=>{g.strokeStyle=col;g.lineWidth=2;g.beginPath();pts.forEach((p,i)=>{const[x,y]=f(p);i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()};
+ const tr=(col,f)=>{g.strokeStyle=col;g.lineWidth=2*sc;g.beginPath();pts.forEach((p,i)=>{const[x,y]=f(p);i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()};
  if(mode==='xy')tr('#4fc3e8',p=>[W/2+p[1]/k1*dx,H/2-p[2]/k2*dy]);
  else{tr('#c792ea',p=>[p[0]/span*W,H/2-p[1]/k1*dy]);tr('#2bbd8e',p=>[p[0]/span*W,H/2-p[2]/k2*dy])}
  const sg=$('inv').checked?-1:1,X=v=>W/2+sg*v/k1*dx,Y=v=>H/2-v/k2*dy;
@@ -250,9 +297,22 @@ function draw(){const{A,N,R,Rp,R1,R2}=P,T=1/N;
  if(mode==='xy'&&$('cur').checked){const px=C.map(c=>[W/2+c[0]/k1*dx,H/2-c[1]/k2*dy]);g.lineWidth=1;g.setLineDash([5,4]);g.strokeStyle='#e5a93b';g.beginPath();
   px.forEach(p=>{g.moveTo(p[0],0);g.lineTo(p[0],H);g.moveTo(0,p[1]);g.lineTo(W,p[1])});g.stroke();g.setLineDash([]);
   g.strokeStyle='#fff';g.beginPath();g.moveTo(px[0][0],px[0][1]);g.lineTo(px[1][0],px[1][1]);g.stroke();
-  px.forEach((p,i)=>{g.fillStyle='#e5a93b';g.beginPath();g.arc(p[0],p[1],6,0,7);g.fill();g.fillStyle='#000';g.fillText(i+1,p[0]-3,p[1]+4)});
+  px.forEach((p,i)=>{g.fillStyle='#e5a93b';g.beginPath();g.arc(p[0],p[1],6*sc,0,7);g.fill();g.fillStyle='#000';g.font=(11*sc)+'px monospace';g.fillText(i+1,p[0]-3*sc,p[1]+4*sc)});
   const a=C[1][0]-C[0][0],b=C[1][1]-C[0][1];$('o5').textContent=a.toFixed(3)+' '+U1;$('o6').textContent=b.toFixed(3)+' V';$('o7').textContent=Math.abs(a)<1e-6?'∞':xi?(b/a*1e3).toFixed(1)+' Ω':(b/a).toFixed(3)}
  else{['o5','o6','o7'].forEach(i=>$(i).textContent='—')}
- g.fillStyle='#7c8a92';g.font='13px monospace';g.fillText(mode==='xy'?`X = ${xi?'i':'u′'} : ${k1} ${U1}/div   Y = u : ${k2} V/div`:`Y1 (${xi?'i':'u′'}) ${k1} ${U1}/div · Y2 (u) ${k2} V/div · ${$('td').value} ms/div`,10,18)}
+ g.fillStyle='#7c8a92';g.font=(13*sc)+'px monospace';g.fillText(mode==='xy'?`X = ${xi?'i':'u′'} : ${k1} ${U1}/div   Y = u : ${k2} V/div`:`Y1 (${xi?'i':'u′'}) ${k1} ${U1}/div · Y2 (u) ${k2} V/div · ${$('td').value} ms/div`,10,18*sc,W-20)}
+
+  // Réglage fin sans clavier : boutons − / + autour des curseurs (visibles sur mobile uniquement)
+  document.querySelectorAll(".controls input[type=range]").forEach(inp => {
+    const line = document.createElement("div"); line.className = "slider-line";
+    inp.parentNode.insertBefore(line, inp);
+    const mk = (txt, dir, lab) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "step-btn"; b.textContent = txt; b.setAttribute("aria-label", lab);
+      b.addEventListener("click", () => { dir < 0 ? inp.stepDown() : inp.stepUp(); inp.dispatchEvent(new Event("input", { bubbles: true })); });
+      return b;
+    };
+    line.append(mk("−", -1, "Diminuer"), inp, mk("+", 1, "Augmenter"));
+  });
 setK(true);
 </script></body></html>
