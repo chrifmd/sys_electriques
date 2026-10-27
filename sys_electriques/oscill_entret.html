@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#11161a">
 <title>Entretien des Oscillations - Circuit RLC + AOP</title>
 <style>
   :root{
@@ -270,6 +271,74 @@ font-weight: bold;
 color: rgb(170, 221, 241);
 margin-top: 30px;
 }
+
+  /* ===== Optimisation mobile ===== */
+  html { -webkit-text-size-adjust: 100%; }
+  .slider-line { display: block; }
+  .step-btn { display: none; }
+  .theory-card { overflow-x: auto; }
+  @media (hover: none) { .kbd-hide { display: none; } .btn-pause small { display: none; } }
+  @media (max-width: 850px) {
+    body { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+    .rig { border-radius: 8px; }
+    .site-header { padding: 10px 12px; text-align: left; }
+    .site-header .site-title { font-size: 15px; line-height: 1.3; margin-bottom: 8px; }
+    .page-switcher { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+    .page-switcher select { font-size: 16px; min-height: 42px; width: 100%; }
+    .topbar { padding: 4px 12px; }
+    .topbar a { padding: 8px 0; }
+    .plate { padding: 12px; align-items: flex-start; }
+    .plate h1 { font-size: 15px; }
+    .fc-readout { text-align: left; }
+    .layout { display: flex; flex-direction: column; gap: 14px; padding: 12px; }
+    .scopes { display: contents; }
+    .scopes > .scope-block { order: 1; }
+    .scopes > .oscillo-panel { order: 2; }
+    .controls { order: 3; border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+    .scopes > .theory-card { order: 4; }
+    #toggleTheoryBtn { order: 5; }
+    #theoryContainer { order: 6; }
+    .layout > .signature { order: 9; }
+    .oscillo-legend { flex-wrap: wrap; gap: 6px 12px; }
+    .top-screen-bar { flex-direction: column; align-items: stretch; }
+    .top-buttons { display: grid; grid-template-columns: 1fr 1fr; }
+    .btn-pause, .btn-reset, .sw-btn { min-height: 44px; justify-content: center; text-align: center; font-size: 13px; }
+    .oscillo-toolbar { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 8px 10px; padding: 8px 10px; align-items: center; }
+    .oscillo-toolbar > * { min-width: 0; }
+    .oscillo-toolbar .control-group { margin-left: 0 !important; display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
+    .oscillo-toolbar .control-group:last-child { grid-column: 1 / -1; }
+    .oscillo-toolbar .control-group label { font-size: 11px; }
+    .oscillo-toolbar select, .scope-block select { font-size: 16px; min-height: 40px; width: 100%; }
+    .toolbar-check { min-height: 40px; font-size: 13px; }
+    .toolbar-check input { width: 20px; height: 20px; }
+    .btn-inv { min-height: 40px; padding: 4px 10px; font-size: 12px; }
+    .position-toolbar { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 8px 10px; }
+    .pos-group { display: grid; grid-template-columns: 120px minmax(0, 1fr) 58px; gap: 8px; white-space: nowrap; }
+    .pos-group input[type=range] { width: 100%; margin: 8px 0; }
+    .pos-group .pv { text-align: right; }
+    .montage-row { gap: 12px; }
+    .btn-theory-toggle { padding: 12px; font-size: 12px; line-height: 1.4; }
+    .theory-grid { gap: 12px; }
+    .theory-card { padding: 10px 12px; }
+    input[type=range] { height: 6px; margin: 12px 0; }
+    input[type=range]::-webkit-slider-thumb { width: 28px; height: 28px; margin-top: -11px; }
+    input[type=range]::-moz-range-thumb { width: 28px; height: 28px; }
+    .slider-line { display: flex; align-items: center; gap: 12px; }
+    .slider-line > input, .slider-line > .rp-wrap { flex: 1; min-width: 0; }
+    .step-btn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px;
+      font-size: 20px; line-height: 1; color: var(--text); background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
+    .step-btn:active { background: #232d39; border-color: var(--accent); }
+    .ctrl-row .name, .ctrl-row .val { font-size: 14px; }
+    .readout-grid .item .k { font-size: 11px; }
+    .readout-grid .item .v { font-size: 13px; }
+    .signature { margin-top: 4px; padding: 0 12px 14px; font-size: 11px; line-height: 1.4; }
+    .rig .rig { border: 0; border-radius: 0; background: none; }
+    .rig > a[href="index.html"] { display: inline-block; padding: 10px 12px; color: var(--text-dim); font-size: 13px; text-decoration: none; }
+    .oscillo-toolbar { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+    .canvas-wrapper + .oscillo-toolbar { grid-template-columns: 1fr; }
+    .top-buttons .sw-btn { grid-column: 1 / -1; }
+    #curReadout { white-space: normal; }
+  }
 </style>
 </head>
 <a class="btn-home" href="https://simphysique.blogspot.com/">← Retour au site SimPhysique</a>
@@ -411,7 +480,7 @@ margin-top: 30px;
         </div>
 
         <div class="top-screen-bar">
-          <div class="ctrl-hint">Raccourcis : <kbd>K</kbd> / <kbd>Espace</kbd> ouvrir-fermer K · <kbd>P</kbd> pause · <kbd>R</kbd> réinitialiser</div>
+          <div class="ctrl-hint kbd-hide">Raccourcis : <kbd>K</kbd> / <kbd>Espace</kbd> ouvrir-fermer K · <kbd>P</kbd> pause · <kbd>R</kbd> réinitialiser</div>
           <div class="top-buttons">
             <button id="swToggleBtn" class="sw-btn">Fermer K (K)</button>
             <button id="playPauseBtn" class="btn-pause"><span class="pause-icon">||</span> Pause</button>
@@ -928,11 +997,12 @@ margin-top: 30px;
     const dt_ = Math.abs(cur.x2 - cur.x1) * W, dU = Math.abs(volt(cur.y1) - volt(cur.y2));
     curReadout.textContent = 'ΔT = ' + (dt_ * 1000).toFixed(2) + ' ms · N = 1/ΔT = ' + (dt_ > 0 ? (1 / dt_).toFixed(1) : '—') + ' Hz · U1 = ' + volt(cur.y1).toFixed(3) + ' V · U2 = ' + volt(cur.y2).toFixed(3) + ' V · ΔU = ' + dU.toFixed(3) + ' V';
   }
-  canvas.style.touchAction = 'none';
+  const setTA = () => { canvas.style.touchAction = curCheck.checked ? 'none' : 'pan-y'; };
+  curCheck.addEventListener('change', setTA); setTA();
   canvas.addEventListener('pointerdown', e => {
     if (!curCheck.checked) return;
     const r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-    let best = null, bd = 14;
+    let best = null, bd = window.matchMedia('(pointer: coarse)').matches ? 30 : 14;
     ['x1', 'x2'].forEach(k => { const d = Math.abs(x - cur[k] * r.width); if (d < bd) { bd = d; best = k; } });
     ['y1', 'y2'].forEach(k => { const d = Math.abs(y - cur[k] * r.height); if (d < bd) { bd = d; best = k; } });
     if (best) { curDrag = best; canvas.setPointerCapture(e.pointerId); }
@@ -982,6 +1052,25 @@ margin-top: 30px;
 
   updateParams();
   loop();
+
+  // Réglage fin sans clavier : boutons − / + autour des curseurs (visibles sur mobile uniquement)
+  document.querySelectorAll(".controls input[type=range]").forEach(inp => {
+    const host = inp.closest(".rp-wrap") || inp;
+    const line = document.createElement("div"); line.className = "slider-line";
+    host.parentNode.insertBefore(line, host);
+    const mk = (txt, dir, lab) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "step-btn"; b.textContent = txt; b.setAttribute("aria-label", lab);
+      b.addEventListener("click", () => {
+        const mn = +inp.min, mx = +inp.max, st = +inp.step || 1;
+        if (!inp.hasAttribute("step") && (mx - mn) / st > 200) inp.value = Math.max(mn, Math.min(mx, +inp.value + dir * (mx - mn) / 100));
+        else dir < 0 ? inp.stepDown() : inp.stepUp();
+        inp.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      return b;
+    };
+    line.append(mk("−", -1, "Diminuer"), host, mk("+", 1, "Augmenter"));
+  });
 
 </script>
 
