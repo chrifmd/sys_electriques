@@ -918,11 +918,17 @@
   }
 
   // Rendu des traces de l'oscilloscope
+  // Remet le canvas à zéro SANS le réallouer (réaffecter width/height à chaque image fait clignoter sur mobile)
+  function syncCanvas(cv, cx, w, h) {
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    else if (cx.reset) cx.reset();
+    else { cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, w, h); }
+  }
+
   function drawScope() {
     const width = scopeCanvas.clientWidth;
     const height = scopeCanvas.clientHeight;
-    scopeCanvas.width = width;
-    scopeCanvas.height = height;
+    syncCanvas(scopeCanvas, ctxScope, width, height);
 
     drawGrid(ctxScope, width, height);
 
@@ -976,8 +982,7 @@
 
     const width = energyCanvas.clientWidth;
     const height = energyCanvas.clientHeight;
-    energyCanvas.width = width;
-    energyCanvas.height = height;
+    syncCanvas(energyCanvas, ctxEnergy, width, height);
 
     drawGrid(ctxEnergy, width, height);
 

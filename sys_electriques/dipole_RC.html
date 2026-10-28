@@ -1300,8 +1300,10 @@ margin-top: 30px;
     const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
     const cssH = +canvas.getAttribute("height");
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
+    const bw = Math.round(cssW * dpr), bh = Math.round(cssH * dpr);
+    // Ne réaffecter width/height que si la taille change : le faire à chaque image réalloue le canvas et fait clignoter l'affichage sur mobile
+    if (canvas.width !== bw || canvas.height !== bh) { canvas.width = bw; canvas.height = bh; }
+    else { const c0 = canvas.getContext("2d"); if (c0.reset) c0.reset(); else { c0.setTransform(1, 0, 0, 1, 0, 0); c0.clearRect(0, 0, bw, bh); } }
     canvas.style.height = cssH + "px";
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
