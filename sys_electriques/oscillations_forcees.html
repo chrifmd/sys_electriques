@@ -989,9 +989,16 @@
     }
   }
 
+  // Remet le canvas à zéro SANS le réallouer (réaffecter width/height à chaque image fait clignoter sur mobile)
+  function syncCanvas(cv, cx, w, h) {
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    else if (cx.reset) cx.reset();
+    else { cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, w, h); }
+  }
+
   function drawScope() {
-    const w = scopeCanvas.width = scopeCanvas.clientWidth;
-    const h = scopeCanvas.height = scopeCanvas.clientHeight;
+    const w = scopeCanvas.clientWidth, h = scopeCanvas.clientHeight;
+    syncCanvas(scopeCanvas, sCtx, w, h);
     sCtx.clearRect(0, 0, w, h);
 
     // Grille
@@ -1094,8 +1101,8 @@
 
   function drawBode(N0, Rtotal) {
     if (document.getElementById('bodePanel').classList.contains('panel-collapsed')) return;
-    const w = bodeCanvas.width = bodeCanvas.clientWidth;
-    const h = bodeCanvas.height = bodeCanvas.clientHeight;
+    const w = bodeCanvas.clientWidth, h = bodeCanvas.clientHeight;
+    syncCanvas(bodeCanvas, bCtx, w, h);
     bCtx.clearRect(0, 0, w, h);
 
     const showBodeI = document.getElementById('showBodeI').checked;
@@ -1432,7 +1439,8 @@
     if (fresRot.checked) fresAng += 0.9 * (now - fresLast) / 1000;
     fresLast = now;
 
-    const w = fresCv.width = fresCv.clientWidth, h = fresCv.height = fresCv.clientHeight;
+    const w = fresCv.clientWidth, h = fresCv.clientHeight;
+    syncCanvas(fresCv, fCtx, w, h);
     fCtx.clearRect(0, 0, w, h);
     const k = circ(N), isU = fresMode.value === 'U', s = isU ? k.Im : 1, unit = isU ? 'V' : 'Ω';
     const vR = k.R * s, vL = L * k.w * s, vC = s / (C * k.w), vU = k.Z * s;
