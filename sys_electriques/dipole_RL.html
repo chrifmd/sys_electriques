@@ -1412,7 +1412,9 @@
 
   function fitCanvas(canvas){
     const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
-    const cssH = +canvas.getAttribute("height");
+    // Hauteur logique mémorisée une fois : canvas.height réécrit l'attribut HTML « height », qui serait sinon relu (×dpr) à chaque image
+    if (!canvas.dataset.cssH) canvas.dataset.cssH = canvas.getAttribute("height");
+    const cssH = +canvas.dataset.cssH;
     const dpr = window.devicePixelRatio || 1;
     const bw = Math.round(cssW * dpr), bh = Math.round(cssH * dpr);
     // Ne réaffecter width/height que si la taille change : le faire à chaque image réalloue le canvas et fait clignoter l'affichage sur mobile

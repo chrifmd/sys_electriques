@@ -942,7 +942,7 @@
       const padL = 44, padR = 10;
       const plotW = w - padL - padR;
       const windowDuration = state.hSens * 10;
-      const windowStart = tCursor - windowDuration;
+      const windowStart = trigStart();
       const divPixH = plotW / 10;
       const xOffset = state.posX * divPixH;
       state.tOrigin = windowStart + ((state.mouseX - padL - xOffset) / plotW) * windowDuration;
@@ -952,7 +952,9 @@
 
   function fitCanvas(canvas){
     const cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
-    const cssH = +canvas.getAttribute("height");
+    // Hauteur logique mémorisée une fois : canvas.height réécrit l'attribut HTML « height », qui serait sinon relu (×dpr) à chaque image
+    if (!canvas.dataset.cssH) canvas.dataset.cssH = canvas.getAttribute("height");
+    const cssH = +canvas.dataset.cssH;
     const dpr = window.devicePixelRatio || 1;
     const bw = Math.round(cssW * dpr), bh = Math.round(cssH * dpr);
     // Ne réaffecter width/height que si la taille change : le faire à chaque image réalloue le canvas et fait clignoter l'affichage sur mobile
@@ -966,6 +968,9 @@
 
   let tCursor = 0;
   let lastTs = null;
+  // Déclenchement logiciel : la trace est synchronisée sur la source (front montant), donc FIXE à l'écran quelle que soit la cadence d'images.
+  // Sans cela, le défilement en temps réel d'un signal périodique rapide « clignote » dès que la cadence d'images fluctue (cas des téléphones).
+  function trigStart(){ const T = 1 / state.freq; return Math.floor((tCursor - T / 4) / T) * T + T / 4 - state.hSens; }
 
   function drawScope(dtReal){
     const { ctx, w, h } = fitCanvas(el.scopeCanvas);
@@ -997,7 +1002,7 @@
     const divPixV = plotH / numVDivs, divPixH = plotW / numHDivs;
     function vToY(v, sens, posDiv){ return yZero - (v / sens) * divPixV - posDiv * divPixV; }
 
-    const windowStart = tCursor - windowDuration;
+    const windowStart = trigStart();
     const xOffset = state.posX * divPixH;
 
     ctx.save();
