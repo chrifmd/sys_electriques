@@ -223,6 +223,21 @@
   .top-buttons { display: flex; align-items: center; gap: 8px; }
 
   .canvas-wrapper { position: relative; width: 100%; }
+
+  /* Copie des commandes (N, N₀) à côté de l'écran de l'oscilloscope */
+  .scope-row { display: flex; gap: 10px; align-items: stretch; }
+  .scope-row .canvas-wrapper { flex: 1; min-width: 0; }
+  .scope-side { flex: 0 0 160px; box-sizing: border-box; border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--panel-alt); padding: 12px 10px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+  .scope-side .lbl { color: var(--text-dim); font-size: 10.5px; letter-spacing: .4px; margin-bottom: 2px; }
+  .scope-side .n0 { font-family: var(--font-mono); font-size: 20px; color: var(--accent); }
+  .scope-side .nval { font-family: var(--font-mono); font-size: 20px; color: var(--in-color); }
+  .scope-side input[type=range] { margin: 8px 0; }
+  .scope-side .mini-steps { display: flex; gap: 8px; }
+  .scope-side .mini-steps button { flex: 1; height: 32px; font-size: 18px; line-height: 1; color: var(--text);
+    background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
+  .scope-side .mini-steps button:hover { border-color: var(--accent); }
+  .scope-side .mini-steps button:active { background: #232d39; }
   canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; cursor: crosshair; }
 
   .montage-row { display: flex; gap: 12px; align-items: stretch; }
@@ -360,6 +375,11 @@
     .saved-item button { min-height: 32px; padding: 4px 10px; }
 
     #scopeCanvas { height: 260px; }
+    .scope-row { flex-direction: column; }
+    .scope-side { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 10px 12px; }
+    .scope-side .mini-slider, .scope-side .mini-steps { grid-column: 1 / -1; }
+    .scope-side .mini-steps button { height: 40px; }
+    .scope-side input[type=range] { margin: 12px 0 8px; }
     #bodeCanvas { height: 230px; }
 
     input[type=range] { height: 6px; margin: 12px 0; }
@@ -528,8 +548,27 @@
           <label class="toolbar-check chRC"><input type="checkbox" id="showChanRCCheck"> u<sub>RC</sub>(t) <small style="opacity:.7">R<sub>0</sub> + C</small></label>
         </div>
 
-        <div class="canvas-wrapper">
-          <canvas id="scopeCanvas" height="280"></canvas>
+        <div class="scope-row">
+          <div class="canvas-wrapper">
+            <canvas id="scopeCanvas" height="280"></canvas>
+          </div>
+          <div class="scope-side">
+            <div>
+              <div class="lbl">FRÉQUENCE PROPRE N₀</div>
+              <div class="n0" id="scopeN0">0.0 Hz</div>
+            </div>
+            <div>
+              <div class="lbl">FRÉQUENCE N (GBF)</div>
+              <div class="nval" id="scopeNVal">150 Hz</div>
+            </div>
+            <div class="mini-slider">
+              <input type="range" id="fSliderMini" min="20" max="600" step="1" value="150" aria-label="Fréquence N">
+            </div>
+            <div class="mini-steps">
+              <button type="button" id="fMiniDown" aria-label="Diminuer N">−</button>
+              <button type="button" id="fMiniUp" aria-label="Augmenter N">+</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -737,6 +776,7 @@
         <div class="item"><div class="k">φ<sub>uc</sub> - φ<sub>u</sub></div><div class="v" id="phiUcRead">0 rad</div></div>
         <div class="item"><div class="k">Facteur de surtension (ou de qualité) Q</div><div class="v" id="qRead">0</div></div>
       </div>
+      
     </div>
   </div> 
 
@@ -770,6 +810,8 @@
   const rSlider = document.getElementById('rSlider'), rVal = document.getElementById('rVal');
 
   const f0HeaderValue = document.getElementById('f0HeaderValue');
+  const fSliderMini = document.getElementById('fSliderMini');
+  const scopeNVal = document.getElementById('scopeNVal'), scopeN0 = document.getElementById('scopeN0');
   const zRead = document.getElementById('zRead'), imRead = document.getElementById('imRead');
   const ucmRead = document.getElementById('ucmRead'), nrRead = document.getElementById('nrRead');
   const phiIRead = document.getElementById('phiIRead'), phiUcRead = document.getElementById('phiUcRead');
@@ -939,6 +981,7 @@
 
   function updateParams() {
     N = parseFloat(fSlider.value); fVal.innerText = N + " Hz";
+    fSliderMini.value = fSlider.value; scopeNVal.innerText = N + " Hz";
     Um = parseFloat(uSlider.value); uVal.innerText = Um.toFixed(1) + " V";
     L = parseFloat(lSlider.value); lVal.innerText = L.toFixed(2) + " H";
     C = parseFloat(cSlider.value) * 1e-6; cVal.innerText = cSlider.value + " µF";
@@ -947,7 +990,7 @@
 
     const Rtotal = R0 + r;
     const N0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
-    f0HeaderValue.innerText = N0.toFixed(1) + " Hz";
+    f0HeaderValue.innerText = N0.toFixed(1) + " Hz"; scopeN0.innerText = N0.toFixed(1) + " Hz";
 
     const w = 2 * Math.PI * N;
     const X = L * w - 1 / (C * w);
@@ -1327,6 +1370,12 @@
     elem.addEventListener('input', updateParams);
     elem.addEventListener('change', updateParams);
   });
+
+  // Curseur de fréquence près de l'oscilloscope : recopie du curseur principal
+  fSliderMini.addEventListener('input', () => { fSlider.value = fSliderMini.value; updateParams(); });
+  const fStep = dir => { dir < 0 ? fSlider.stepDown() : fSlider.stepUp(); updateParams(); };
+  document.getElementById('fMiniDown').addEventListener('click', () => fStep(-1));
+  document.getElementById('fMiniUp').addEventListener('click', () => fStep(1));
 
   document.getElementById('playPauseBtn').addEventListener('click', function() {
     isRunning = !isRunning;
