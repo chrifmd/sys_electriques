@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation C.N.A. à 3 bits - Caractéristique us = f(N)</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --wire-off: #64748b;
+      --wire-on: #38bdf8;
+      --switch-on: #22c55e;
+      --switch-off: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* SVG Styling */
+    .circuit-container {
+      width: 100%;
+      background: #090d16;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 10px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .interactive-switch {
+      cursor: pointer;
+    }
+
+    .interactive-switch:hover rect {
+      filter: brightness(1.2);
+    }
+
+    /* Measurement Panel */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .metric-box {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .metric-value.highlight {
+      color: #4ade80;
+    }
+
+    /* Controls */
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      background: #090d16;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      background: var(--border);
+      color: var(--text-main);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: var(--accent);
+      color: #000;
+    }
+
+    button.active {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .param-inputs {
+      display: flex;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    .param-inputs label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+    }
+
+    .param-inputs input {
+      width: 55px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 4px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    /* Canvas Graph */
+    .graph-container {
+      width: 100%;
+      background: #090d16;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 10px;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 320px;
+      display: block;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: #090d16;
+      color: var(--accent);
+    }
+
+    .right-col { display: flex; flex-direction: column; gap: 20px; }
+    .hidden { display: none !important; }
+    .empty-row td { color: var(--text-muted); font-style: italic; padding: 16px; }
+    tr.new-row { animation: rowIn 0.5s ease-out; }
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(-8px); background: rgba(74,222,128,0.35); }
+      to   { opacity: 1; transform: none; }
+    }
+    .btn-small { padding: 6px 12px; font-size: 0.8rem; }
+    tr.selected {
+      background: rgba(56, 189, 248, 0.15);
+      font-weight: bold;
+    }
+      .table-container { max-height: 380px; overflow: auto; }
+    thead th { position: sticky; top: 0; z-index: 1; }
+    select {
+      background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main);
+      padding: 4px; border-radius: 4px;
+    }
+    svg sub, .card-header sub { font-size: 0.75em; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+    .n-select-row { margin-bottom: 12px; font-size: 0.95rem; color: var(--text-main); }
+    .n-select-row select { font-size: 1rem; padding: 4px 10px; margin-left: 6px; }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100;
+      display: none; align-items: flex-start; justify-content: center;
+      padding: 30px 16px; overflow-y: auto;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+      max-width: 780px; width: 100%; padding: 20px 24px; line-height: 1.55;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px; }
+    .modal h2 { color: var(--accent); font-size: 1.2rem; }
+    .modal h3 { color: #4ade80; font-size: 1rem; margin: 16px 0 6px; }
+    .modal p, .modal li { font-size: 0.92rem; color: var(--text-main); }
+    .modal ul { padding-left: 20px; }
+    .formula { background: #090d16; border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 12px; margin: 8px 0; text-align: center; font-size: 1rem; overflow-x: auto; }
+    .num { color: #4ade80; font-weight: 600; }
+    .note { color: var(--text-muted); font-size: 0.85rem; }
+    .signature{
+    text-align: center;
+    font-family: "Arial";
+    font-size: 12px;
+    font-weight: bold;
+    color: rgb(170, 221, 241);
+    margin-top: 30px;
+  }
+     .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #bcd6ff;
+            background: #252424;
+            border: 1px solid #4f5153;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0.45rem 0.9rem;
+            margin-bottom: 1.25rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-home:hover {
+            border-color: #7C9EF0;
+            color: #7C9EF0;
+        }
+  </style>
+</head>
+<body>
+<a class="btn-home" href="https://simphysique.tn/">← Retour au site SimPhysique</a>
+  <header>
+    <h1>Convertisseur Numérique-Analogique (C.N.A.) à <span id="n-title">3</span> bits</h1>
+    <p>Montage à résistances pondérées et AOP (741), montage inverseur — Caractéristique u<sub>s</sub> = f(N)</p>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- LEFT COLUMN: CIRCUIT SCHEMA -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Schéma Électrique Interactif</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Cliquez sur les interrupteurs K<sub>j</sub></span>
+      </div>
+
+      <div class="n-select-row">
+        <label>Nombre de bits n :
+          <select id="select-n" onchange="changeN()">
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="circuit-container">
+        <svg id="circuit-svg" viewBox="0 0 530 380"></svg>
+      </div>
+
+      <!-- MEASUREMENT DISPLAY -->
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label">Mot Binaire N</div>
+          <div class="metric-value" id="val-binary">(000)₂</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Décimal N</div>
+          <div class="metric-value" id="val-decimal">0</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Tension us</div>
+          <div class="metric-value highlight" id="val-us">0.00 V</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Quantum q</div>
+          <div class="metric-value" id="val-quantum">0.625 V</div>
+        </div>
+        
+        <div class="metric-box">
+          <div class="metric-label">Résolution relative r = 1/2ⁿ</div>
+          <div class="metric-value" id="val-res">1/8 = 12.5 %</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Pleine échelle P.E. = u<sub>s max</sub></div>
+          <div class="metric-value" id="val-pe">4.375 V</div>
+        </div>
+      </div>
+
+      <!-- CONTROLS & PARAMS -->
+      <div class="controls-row">
+        <div class="btn-group">
+          <button id="btn-scan" onclick="toggleAutoScan()">▶ Balayage Auto</button>
+          <button onclick="resetCircuit()">↺ RàZ</button>
+          <button onclick="openTheory()">📖 Étude théorique</button>
+        </div>
+        <div class="param-inputs">
+          <label>Uref: <input type="number" id="input-uref" value="5" step="0.5" min="1" max="15" onchange="updateParams()"/> V</label>
+          <label>R': <input type="number" id="input-rstar" value="10" step="1" min="1" max="100" onchange="updateParams()"/> kΩ</label>
+          <label>R: <input type="number" id="input-r" value="80" step="1" min="1" max="100" onchange="updateParams()"/> kΩ</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: TABLE THEN GRAPH -->
+    <div class="right-col">
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Tableau de mesures</span>
+          <button class="btn-small" onclick="clearMeasures()">🗑 Effacer les mesures</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Caractéristique de Transfert us = f(N)</span>
+          <button id="btn-curve" class="btn-small" onclick="toggleCurve()">📈 Afficher la courbe</button>
+        </div>
+        <div class="graph-container hidden" id="graph-container">
+          <canvas id="graphCanvas"></canvas>
+        </div>
+        <div id="curve-hint" style="font-size:0.85rem;color:var(--text-muted);">La courbe est masquée. Cliquez sur « Afficher la courbe » pour la tracer.</div>
+      </div>
+
+    </div>
+    
+  </div>
+   <div class="signature"> TP Simulation Physique - convertisseur CNA à n bits- (4ème Info.)-chrif.md@gmail.com - 2026 </div>
+  <div class="modal-overlay" id="theory-modal" onclick="if(event.target===this) closeTheory()">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Étude théorique du C.N.A. à résistances pondérées</h2>
+        <button class="btn-small" onclick="closeTheory()">✕ Fermer</button>
+      </div>
+      <div id="theory-content"></div>
+    </div>
+  
+  </div>
+
+  <script>
+    // ---------- State ----------
+    let n = 3;                 // nombre de bits
+    let bits = [0, 0, 0];      // bits[j] = a_j  (j=0 : LSB)
+    let Uref = 5.0, Rstar = 10.0, R = 80.0;
+    let autoScanInterval = null;
+    let measures = [];         // valeurs de N mesurées, dans l'ordre des mesures
+    let lastAdded = null;
+    let curveVisible = false;
+
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const SUB = '₀₁₂₃₄₅₆₇₈₉';
+    const sub = k => String(k).split('').map(d => SUB[d]).join('');
+    const nLevels = () => 2 ** n;
+    const nMax = () => 2 ** n - 1;
+
+    // ---------- Geometry of the schematic (depends on n) ----------
+    const SP = 60, Y0 = 80;
+    const branchY = j => Y0 + (n - 1 - j) * SP;   // MSB en haut
+
+    function gnd(x, y) {
+      return `<g transform="translate(${x}, ${y})">
+        <line x1="0" y1="0" x2="0" y2="10" stroke="#f8fafc" stroke-width="2"/>
+        <line x1="-12" y1="10" x2="12" y2="10" stroke="#f8fafc" stroke-width="2"/>
+        <line x1="-8" y1="14" x2="8" y2="14" stroke="#f8fafc" stroke-width="2"/>
+        <line x1="-4" y1="18" x2="4" y2="18" stroke="#f8fafc" stroke-width="2"/></g>`;
+    }
+    const W = (x1, y1, x2, y2, extra = '') =>
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#f8fafc" stroke-width="2" ${extra}/>`;
+
+    function buildCircuit() {
+      const yBot = Y0 + (n - 1) * SP;
+      const yMid = (Y0 + yBot) / 2;
+      const yG = yBot + 120;
+      const yOut = yMid + 20;
+      const yV = (yOut + yG) / 2;
+      let h = '';
+
+      // masse globale
+      h += `<line x1="30" y1="${yG}" x2="480" y2="${yG}" stroke="#475569" stroke-width="2" stroke-dasharray="4"/>`;
+      h += gnd(60, yG) + gnd(290, yG) + gnd(470, yG);
+
+      // Générateur inversé : borne + côté masse (trait long), borne − côté rail (trait court)
+      h += W(60, yG, 60, yG - 68);
+      h += `<line x1="40" y1="${yG - 68}" x2="80" y2="${yG - 68}" stroke="#f8fafc" stroke-width="1.5"/>`;
+      h += `<line x1="48" y1="${yG - 80}" x2="72" y2="${yG - 80}" stroke="#f8fafc" stroke-width="3"/>`;
+      h += `<text x="88" y="${yG - 56}" fill="#f8fafc" font-size="14">+</text>`;
+      h += `<text x="88" y="${yG - 74}" fill="#f8fafc" font-size="14">−</text>`;
+      h += W(60, yG - 80, 60, 60);
+
+      // Flèche Uref (du rail vers la masse)
+      h += `<line x1="30" y1="62" x2="30" y2="${yG - 6}" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow-blue)"/>`;
+      h += `<text transform="translate(18,${(62 + yG) / 2}) rotate(-90)" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Uref</text>`;
+
+      // Rail Uref
+      h += W(60, 60, 110, 60) + W(110, 60, 110, yBot);
+
+      // Branches
+      for (let j = n - 1; j >= 0; j--) {
+        const y = branchY(j);
+        const rlab = j === 0 ? 'R₀=R' : `R${sub(j)}=R/${2 ** j}`;
+        h += `<g id="branch-${j}">
+          ${W(110, y, 135, y)}
+          <g class="interactive-switch" onclick="toggleBit(${j})">
+            <circle cx="135" cy="${y}" r="3" fill="#f8fafc"/>
+            <circle cx="165" cy="${y}" r="3" fill="#f8fafc"/>
+            <line id="sw-line-${j}" x1="135" y1="${y}" x2="163" y2="${y - 10}" stroke="#ef4444" stroke-width="3"/>
+            <rect x="125" y="${y - 25}" width="45" height="40" fill="transparent"/>
+          </g>
+          <text x="150" y="${y - 18}" fill="#94a3b8" font-size="11" text-anchor="middle">K${sub(j)} (a${sub(j)})</text>
+          <line id="w-in-${j}" x1="165" y1="${y}" x2="190" y2="${y}" stroke="#64748b" stroke-width="2"/>
+          <rect x="190" y="${y - 10}" width="40" height="20" fill="#1e293b" stroke="#f8fafc" stroke-width="2"/>
+          <text x="210" y="${y + 4}" fill="#f8fafc" font-size="9" text-anchor="middle">${rlab}</text>
+          <line id="w-out-${j}" x1="230" y1="${y}" x2="270" y2="${y}" stroke="#64748b" stroke-width="2"/>
+        </g>`;
+      }
+
+      // Nœud sommateur et résistance de contre-réaction R'
+      h += W(270, Y0, 270, yBot) + W(270, yMid, 300, yMid);
+      h += `<circle cx="270" cy="${yMid}" r="3.5" fill="#f8fafc"/>`;
+      h += W(285, yMid, 285, 50) + `<circle cx="285" cy="${yMid}" r="3" fill="#f8fafc"/>`;
+      h += W(285, 50, 320, 50);
+      h += `<rect x="320" y="40" width="40" height="20" fill="#1e293b" stroke="#f8fafc" stroke-width="2"/>`;
+      h += `<text x="340" y="54" fill="#f8fafc" font-size="11" text-anchor="middle">R'</text>`;
+      h += W(360, 50, 425, 50) + W(425, 50, 425, yOut);
+
+      // AOP 741
+      h += `<polygon points="300,${yMid - 30} 300,${yMid + 70} 370,${yOut}" fill="#1e293b" stroke="#f8fafc" stroke-width="2"/>`;
+      h += `<text x="306" y="${yMid + 5}" fill="#f8fafc" font-size="16" font-weight="bold">-</text>`;
+      h += `<text x="306" y="${yMid + 45}" fill="#f8fafc" font-size="16" font-weight="bold">+</text>`;
+      h += `<text x="330" y="${yOut + 3}" fill="#94a3b8" font-size="10">741</text>`;
+      h += W(290, yMid + 40, 300, yMid + 40) + W(290, yMid + 40, 290, yG);
+
+      // Sortie + voltmètre
+      h += W(370, yOut, 470, yOut) + `<circle cx="425" cy="${yOut}" r="3" fill="#f8fafc"/>`;
+      h += W(470, yOut, 470, yV - 25);
+      h += `<circle cx="470" cy="${yV}" r="22" fill="#090d16" stroke="#38bdf8" stroke-width="2"/>`;
+      h += `<text x="470" y="${yV + 6}" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">V</text>`;
+      h += W(470, yV + 22, 470, yG);
+
+      // Flèche us
+      h += `<line x1="500" y1="${yG - 10}" x2="500" y2="${yOut + 15}" stroke="#4ade80" stroke-width="2" marker-end="url(#arrow-green)"/>`;
+      h += `<text x="510" y="${yV}" fill="#4ade80" font-size="14" font-weight="bold">us</text>`;
+
+      h += `<defs>
+        <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/></marker>
+        <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4ade80"/></marker>
+      </defs>`;
+
+      const svg = document.getElementById('circuit-svg');
+      svg.setAttribute('viewBox', `0 0 530 ${yG + 30}`);
+      svg.innerHTML = h;
+    }
+
+    function buildTableHeader() {
+      let h = '<tr><th>N (décimal)</th>';
+      for (let j = n - 1; j >= 0; j--) {
+        h += `<th>a${sub(j)}${j === n - 1 ? ' ' : j === 0 ? ' ' : ''}</th>`;
+      }
+      h += '<th>Tension Théorique us (V)</th><th>Mesure Voltmètre (V)</th></tr>';
+      document.getElementById('table-head').innerHTML = h;
+    }
+
+    // ---------- Init & controls ----------
+    function init() {
+      buildCircuit();
+      buildTableHeader();
+      resizeCanvas();
+      updateSimulation();
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = Math.max(rect.width - 20, 100);
+      canvas.height = 320;
+    }
+
+    function changeN() {
+      stopAutoScan();
+      n = parseInt(document.getElementById('select-n').value, 10);
+      bits = new Array(n).fill(0);
+      measures = []; lastAdded = null;
+      document.getElementById('n-title').innerText = n;
+      document.title = `Simulation C.N.A. à ${n} bits - Caractéristique us = f(N)`;
+      buildCircuit();
+      buildTableHeader();
+      updateSimulation();
+    }
+
+    function toggleBit(j) {
+      bits[j] = bits[j] === 0 ? 1 : 0;
+      recordMeasure();
+      updateSimulation();
+    }
+
+    function setDecimalN(v) {
+      for (let j = 0; j < n; j++) bits[j] = (v >> j) & 1;
+      recordMeasure();
+      updateSimulation();
+    }
+
+    function updateParams() {
+      Uref = parseFloat(document.getElementById('input-uref').value) || 5.0;
+      Rstar = parseFloat(document.getElementById('input-rstar').value) || 10.0;
+      R = parseFloat(document.getElementById('input-r').value) || 80.0;
+      measures = []; lastAdded = null; // les paramètres changent : anciennes mesures invalides
+      updateSimulation();
+    }
+
+    function resetCircuit() {
+      if (autoScanInterval) stopAutoScan();
+      bits = new Array(n).fill(0);
+      measures = []; lastAdded = null;
+      updateSimulation();
+    }
+
+    function recordMeasure() {
+      const v = getDecimalValue();
+      if (!measures.includes(v)) { measures.push(v); lastAdded = v; }
+      else lastAdded = null;
+    }
+
+    function clearMeasures() {
+      measures = []; lastAdded = null;
+      updateSimulation();
+    }
+
+    function toggleCurve() {
+      curveVisible = !curveVisible;
+      document.getElementById('graph-container').classList.toggle('hidden', !curveVisible);
+      document.getElementById('curve-hint').classList.toggle('hidden', curveVisible);
+      document.getElementById('btn-curve').innerText = curveVisible ? '🙈 Masquer la courbe' : '📈 Afficher la courbe';
+      document.getElementById('btn-curve').classList.toggle('active', curveVisible);
+      if (curveVisible) { resizeCanvas(); renderGraph(getDecimalValue()); }
+    }
+
+    function toggleAutoScan() {
+      if (autoScanInterval) {
+        stopAutoScan();
+      } else {
+        document.getElementById('btn-scan').classList.add('active');
+        document.getElementById('btn-scan').innerText = '⏸ Pause';
+        let current = getDecimalValue();
+        const delay = [1000, 700, 450, 250][n - 3] || 500;
+        autoScanInterval = setInterval(() => {
+          current = (current + 1) % nLevels();
+          setDecimalN(current);
+        }, delay);
+      }
+    }
+
+    function stopAutoScan() {
+      clearInterval(autoScanInterval);
+      autoScanInterval = null;
+      const b = document.getElementById('btn-scan');
+      b.classList.remove('active');
+      b.innerText = '▶ Balayage Auto';
+    }
+
+    function getDecimalValue() {
+      let v = 0;
+      for (let j = 0; j < n; j++) v += bits[j] * (2 ** j);
+      return v;
+    }
+
+    function quantum() { return Uref * (Rstar / R); }   // us = Uref·(R'/R)·N
+    function fullScale() { return quantum() * nMax(); }   // P.E. = us max = K·Nmax
+    const fmt = x => parseFloat(x.toFixed(3));
+    function calculateUs(v) { return v * quantum(); }
+
+    // ---------- Update ----------
+    function updateSimulation() {
+      const N = getDecimalValue();
+      const us = calculateUs(N);
+
+      for (let j = 0; j < n; j++) {
+        const y = branchY(j);
+        const line = document.getElementById(`sw-line-${j}`);
+        const win = document.getElementById(`w-in-${j}`);
+        const wout = document.getElementById(`w-out-${j}`);
+        if (bits[j] === 1) {
+          line.setAttribute('y2', y);
+          line.setAttribute('stroke', '#22c55e');
+          win.setAttribute('stroke', '#38bdf8');
+          wout.setAttribute('stroke', '#38bdf8');
+        } else {
+          line.setAttribute('y2', y - 10);
+          line.setAttribute('stroke', '#ef4444');
+          win.setAttribute('stroke', '#64748b');
+          wout.setAttribute('stroke', '#64748b');
+        }
+      }
+
+      let word = '';
+      for (let j = n - 1; j >= 0; j--) word += bits[j];
+      document.getElementById('val-binary').innerText = `(${word})₂`;
+      document.getElementById('val-decimal').innerText = N;
+      document.getElementById('val-quantum').innerText = `${quantum().toFixed(3)} V`;
+      document.getElementById('val-us').innerText = `${us.toFixed(3)} V`;
+      document.getElementById('val-res').innerText = `1/${nLevels()} = ${parseFloat((100 / nLevels()).toFixed(4))} %`;
+      document.getElementById('val-pe').innerText = `${fullScale().toFixed(3)} V`;
+      if (document.getElementById('theory-modal').classList.contains('open')) renderTheory();
+
+      renderTable(N);
+      if (curveVisible) renderGraph(N);
+    }
+
+    function renderTable(currentN) {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+
+      if (measures.length === 0) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="${n + 3}">Aucune mesure : actionnez les interrupteurs K₀ à K${sub(n - 1)} pour remplir le tableau ligne par ligne.</td></tr>`;
+        return;
+      }
+
+      measures.forEach(v => {
+        const valUs = calculateUs(v);
+        const tr = document.createElement('tr');
+        if (v === currentN) tr.classList.add('selected');
+        if (v === lastAdded) tr.classList.add('new-row');
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => setDecimalN(v);
+
+        let cells = `<td><strong>${v}</strong></td>`;
+        for (let j = n - 1; j >= 0; j--) cells += `<td>${(v >> j) & 1}</td>`;
+        cells += `<td>${valUs.toFixed(3)}</td><td><strong>${valUs.toFixed(3)}</strong></td>`;
+        tr.innerHTML = cells;
+        tbody.appendChild(tr);
+      });
+
+      if (lastAdded !== null) {
+        const c = tbody.closest('.table-container');
+        c.scrollTop = c.scrollHeight;
+      }
+    }
+
+    function renderGraph(currentN) {
+      const width = canvas.width;
+      const height = canvas.height;
+      const padding = { top: 30, right: 30, bottom: 40, left: 50 };
+      const NM = nMax();
+
+      ctx.clearRect(0, 0, width, height);
+
+      const maxUs = calculateUs(NM) * 1.15 || 5;
+      const graphW = width - padding.left - padding.right;
+      const graphH = height - padding.top - padding.bottom;
+
+      const getX = (v) => padding.left + (v / NM) * graphW;
+      const getY = (val) => height - padding.bottom - (val / maxUs) * graphH;
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Segoe UI';
+
+      const stepX = n <= 4 ? 1 : (n === 5 ? 2 : 4);
+      for (let v = 0; v <= NM; v += stepX) {
+        const x = getX(v);
+        ctx.beginPath();
+        ctx.moveTo(x, padding.top);
+        ctx.lineTo(x, height - padding.bottom);
+        ctx.stroke();
+        ctx.textAlign = 'center';
+        ctx.fillText(v, x, height - padding.bottom + 18);
+      }
+      ctx.textAlign = 'center';
+      ctx.fillText('N (Nombre binaire décimal)', padding.left + graphW / 2, height - 10);
+
+      const ySteps = 5;
+      for (let i = 0; i <= ySteps; i++) {
+        const val = (maxUs / ySteps) * i;
+        const y = getY(val);
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+        ctx.textAlign = 'right';
+        ctx.fillText(val.toFixed(2), padding.left - 8, y + 4);
+      }
+
+      ctx.save();
+      ctx.translate(15, padding.top + graphH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center';
+      ctx.fillText('us (V)', 0, 0);
+      ctx.restore();
+
+      // Escalier us = f(N)
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let v = 0; v <= NM; v++) {
+        const x1 = getX(v);
+        const x2 = v < NM ? getX(v + 1) : getX(NM) + (graphW / NM) * 0.5;
+        const y = getY(calculateUs(v));
+        if (v === 0) {
+          ctx.moveTo(x1, y);
+        } else {
+          ctx.lineTo(x1, getY(calculateUs(v - 1)));
+          ctx.lineTo(x1, y);
+        }
+        ctx.lineTo(x2, y);
+      }
+      ctx.stroke();
+
+      // Points mesurés
+      ctx.fillStyle = '#f8fafc';
+      measures.forEach(v => {
+        ctx.beginPath();
+        ctx.arc(getX(v), getY(calculateUs(v)), n <= 4 ? 4 : 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Point courant
+      const currX = getX(currentN);
+      const currY = getY(calculateUs(currentN));
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(currX, height - padding.bottom);
+      ctx.lineTo(currX, currY);
+      ctx.lineTo(padding.left, currY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#4ade80';
+      ctx.beginPath();
+      ctx.arc(currX, currY, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#090d16';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // ---------- Étude théorique ----------
+    function openTheory() {
+      renderTheory();
+      document.getElementById('theory-modal').classList.add('open');
+    }
+    function closeTheory() {
+      document.getElementById('theory-modal').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTheory(); });
+
+    function renderTheory() {
+      const q = quantum(), PE = fullScale();
+      const N = getDecimalValue(), us = calculateUs(N);
+      let word = '';
+      for (let j = n - 1; j >= 0; j--) word += bits[j];
+      const resistors = [];
+      for (let j = n - 1; j >= 0; j--) resistors.push(`R<sub>${j}</sub> = R/${2 ** j} = <span class="num">${fmt(R / 2 ** j)} kΩ</span>`);
+      const pct = parseFloat((100 / nLevels()).toFixed(4));
+
+      document.getElementById('theory-content').innerHTML = `
+        <h3>1. Principe</h3>
+        <p>Un C.N.A. à <b>${n} bits</b> convertit un nombre binaire N = a<sub>${n - 1}</sub>…a<sub>1</sub>a<sub>0</sub>
+        (N = Σ a<sub>j</sub>·2<sup>j</sup>, soit ${nLevels()} valeurs de 0 à ${nMax()}) en une tension u<sub>s</sub> proportionnelle à N.</p>
+
+        <h3>2. Montage</h3>
+        <p>Chaque bit a<sub>j</sub> commande un interrupteur K<sub>j</sub> relié à une résistance pondérée R<sub>j</sub> = R/2<sup>j</sup>.
+        Interrupteur fermé (a<sub>j</sub> = 1) : la branche est reliée au rail du générateur ; ouvert (a<sub>j</sub> = 0) : aucun courant. Résistances utilisées :</p>
+        <ul>${resistors.map(r => `<li>${r}</li>`).join('')}</ul>
+        <p>Le générateur est monté en sens inverse : le rail est au potentiel <b>−U<sub>ref</sub></b>, ce qui compense l'inversion de l'AOP.</p>
+
+        <h3>3. Hypothèses sur l'AOP</h3>
+        <p>AOP idéal en régime linéaire : courants d'entrée nuls (i<sup>+</sup> = i<sup>−</sup> = 0) et ε = V<sup>+</sup> − V<sup>−</sup> = 0.
+        Comme l'entrée (+) est à la masse, V<sup>−</sup> = 0 : c'est la <b>masse virtuelle</b>.</p>
+
+        <h3>4. Loi des nœuds en E<sup>−</sup></h3>
+        <p>Courant dans la branche j : i<sub>j</sub> = a<sub>j</sub>·(−U<sub>ref</sub> − 0)/R<sub>j</sub> = −a<sub>j</sub>·U<sub>ref</sub>·2<sup>j</sup>/R. Courant dans R' : (u<sub>s</sub> − 0)/R'. Aucun courant n'entre dans l'AOP :</p>
+        <div class="formula">Σ i<sub>j</sub> + u<sub>s</sub>/R' = 0 &nbsp;⇒&nbsp; u<sub>s</sub> = R'·(U<sub>ref</sub>/R)·Σ a<sub>j</sub>·2<sup>j</sup></div>
+        <div class="formula"><b>u<sub>s</sub> = (R'/R) · U<sub>ref</sub> · N = q · N</b> &nbsp; &gt; 0</div>
+        <p class="note">Avec un générateur dans le sens habituel (rail à +U<sub>ref</sub>), on trouverait u<sub>s</sub> = −(R'/R)·U<sub>ref</sub>·N < 0 : c'est l'effet inverseur.</p>
+
+        <h3>5. Grandeurs caractéristiques</h3>
+        <p>La caractéristique est une droite de pente K : u<sub>s</sub> = K·N, avec K = (R'/R)·U<sub>ref</sub>.
+        Le <b>quantum</b> q (variation de u<sub>s</sub> quand N augmente de 1.</p>
+        <ul>
+          <li><b>Pleine échelle</b> : P.E. = u<sub>s max</sub> = K·N<sub>max</sub> = K·(2<sup>n</sup> − 1) = ${fmt(q)}×${nMax()} = <span class="num">${fmt(PE)} V</span></li>
+          <li><b>Quantum</b> : q = u<sub>s max</sub>/(2<sup>n</sup> − 1) = P.E./(2<sup>n</sup> − 1) = P.E./N<sub>max</sub> = ${fmt(PE)}/${nMax()} = <span class="num">${fmt(q)} V</span>
+              &nbsp;(= U<sub>ref</sub>·R'/R = ${Uref}×${fmt(Rstar)}/${fmt(R)})</li>
+          <li><b>Résolution relative</b> : elle correspond à la variation d'une unité du mot binaire N ; c'est l'inverse du nombre de combinaisons que le convertisseur peut convertir :
+              r = 1/2<sup>n</sup> = 1/${nLevels()} = <span class="num">${pct} %</span></li>
+        </ul>
+        <p class="note">Remarque : si u<sub>s min</sub> ≠ 0, le quantum s'écrit q = (u<sub>s max</sub> − u<sub>s min</sub>)/2<sup>n</sup> (ici u<sub>s min</sub> = 0 pour N = 0).
+        Chaque bit ajouté double le nombre de combinaisons (2<sup>n</sup>) et divise r par 2.
+        Un AOP 741 réel sature vers ±15 V : la P.E. doit rester en dessous.</p>
+
+        <h3>6. Application à l'état actuel</h3>
+        <p>N = (${word})<sub>2</sub> = <span class="num">${N}</span> &nbsp;⇒&nbsp; u<sub>s</sub> = q·N = ${fmt(q)}×${N} = <span class="num">${fmt(us)} V</span>.</p>
+        <p>Réciproquement, pour obtenir une tension u<sub>s</sub> donnée, il faut N = u<sub>s</sub>/q (arrondi à l'entier le plus proche, erreur de quantification maximale ±q/2 = ±${fmt(q / 2)} V).</p>`;
+    }
+
+    window.addEventListener('resize', () => {
+      if (curveVisible) resizeCanvas();
+      updateSimulation();
+    });
+
+    window.onload = init;
+  </script>
+</body>
+</html>
