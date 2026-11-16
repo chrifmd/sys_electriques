@@ -238,6 +238,12 @@
     background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
   .scope-side .mini-steps button:hover { border-color: var(--accent); }
   .scope-side .mini-steps button:active { background: #232d39; }
+  .scope-side { gap: 10px; }
+  .scope-side .side-sep { border-top: 1px solid var(--line-soft); }
+  .scope-side .side-block { display: flex; flex-direction: column; gap: 4px; }
+  .scope-side .side-block select { background:#0e1318; color:#fff; border:1px solid #2a3644; border-radius:4px; padding:5px 6px; font-size:12px; width:100%; }
+  .scope-side .posval { float: right; font-family: var(--font-mono); color: var(--text); }
+  .scope-side .btn-reset { width: 100%; }
   canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; cursor: crosshair; }
 
   .montage-row { display: flex; gap: 12px; align-items: stretch; }
@@ -323,6 +329,7 @@
 
   /* ===== Optimisation mobile ===== */
   html { -webkit-text-size-adjust: 100%; }
+  #scopeCanvas { width: min(10cm, 100%); aspect-ratio: 1 / 1; height: auto; margin: 0 auto; }
   #scopeCanvas, #bodeCanvas { touch-action: pan-y; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
   #tooltip { max-width: 72vw; }
   .slider-line { display: block; }
@@ -374,10 +381,9 @@
     .saved-item { flex-wrap: wrap; font-size: 10.5px; }
     .saved-item button { min-height: 32px; padding: 4px 10px; }
 
-    #scopeCanvas { height: 260px; }
     .scope-row { flex-direction: column; }
     .scope-side { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 10px 12px; }
-    .scope-side .mini-slider, .scope-side .mini-steps { grid-column: 1 / -1; }
+    .scope-side .mini-slider, .scope-side .mini-steps, .scope-side .side-sep, .scope-side .btn-reset { grid-column: 1 / -1; }
     .scope-side .mini-steps button { height: 40px; }
     .scope-side input[type=range] { margin: 12px 0 8px; }
     #bodeCanvas { height: 230px; }
@@ -510,6 +516,7 @@
               <option value="0.5">0.5 V/div</option>
               <option value="1" selected>1 V/div</option>
               <option value="2">2 V/div</option>
+              <option value="5">5 V/div</option>
             </select>
           </div>
           <label class="toolbar-check ch2"><input type="checkbox" id="showChan2Check" checked> u<sub>R0</sub>(t)</label>
@@ -524,15 +531,6 @@
           </div>
           <label class="toolbar-check ch3"><input type="checkbox" id="showChan3Check"> u<sub>C</sub>(t)</label>
 
-          <div class="control-group" style="margin-left: auto;">
-            <label style="color:var(--time-color)">Base de temps:</label>
-            <select id="hSensSelect">
-              <option value="0.0005">0.5 ms/div</option>
-              <option value="0.001" selected>1 ms/div</option>
-              <option value="0.002">2 ms/div</option>
-              <option value="0.005">5 ms/div</option>
-            </select>
-          </div>
         </div>
 
         <div class="oscillo-toolbar">
@@ -568,6 +566,43 @@
               <button type="button" id="fMiniDown" aria-label="Diminuer N">−</button>
               <button type="button" id="fMiniUp" aria-label="Augmenter N">+</button>
             </div>
+
+            <div class="side-sep"></div>
+            <div class="side-block">
+              <div class="lbl" style="color:var(--time-color)">BASE DE TEMPS</div>
+              <select id="hSensSelect">
+                <option value="0.0005">0.5 ms/div</option>
+                <option value="0.001" selected>1 ms/div</option>
+                <option value="0.002">2 ms/div</option>
+                <option value="0.005">5 ms/div</option>
+              </select>
+            </div>
+
+            <div class="side-block">
+              <div class="lbl">POSITION HORIZONTALE <span class="posval" id="posXVal">0.0 div</span></div>
+              <div class="mini-steps">
+                <button type="button" id="posXLeft" aria-label="Décaler vers la gauche" title="Décaler les courbes vers la gauche">◄</button>
+                <button type="button" id="posXRight" aria-label="Décaler vers la droite" title="Décaler les courbes vers la droite">►</button>
+              </div>
+            </div>
+
+            <div class="side-block">
+              <div class="lbl" style="color:var(--in-color)">POSITION VERT. CH2 (u) <span class="posval" id="posY1Val">0.0 div</span></div>
+              <div class="mini-steps">
+                <button type="button" id="posY1Up" aria-label="CH2 vers le haut">▲</button>
+                <button type="button" id="posY1Down" aria-label="CH2 vers le bas">▼</button>
+              </div>
+            </div>
+
+            <div class="side-block">
+              <div class="lbl" style="color:var(--out-color)">POSITION VERT. CH1 <span class="posval" id="posY2Val">0.0 div</span></div>
+              <div class="mini-steps">
+                <button type="button" id="posY2Up" aria-label="CH1 vers le haut">▲</button>
+                <button type="button" id="posY2Down" aria-label="CH1 vers le bas">▼</button>
+              </div>
+            </div>
+
+            <button type="button" id="posResetBtn" class="btn-reset" title="Recentrer les courbes">⌖ Centrer</button>
           </div>
         </div>
       </div>
@@ -798,6 +833,7 @@
 
   // Mouse Tracking
   let mouseScope = { x: -1, y: -1, active: false };
+  let posX = 0, posY1 = 0, posY2 = 0;   // positions (en divisions) : horizontale, CH2 (u), CH1
   let originFrac = null;   // 2e curseur (origine t′ fixée au clic), en fraction de la largeur de l'écran
   let mouseBode = { x: -1, y: -1, active: false };
 
@@ -1046,11 +1082,23 @@
 
     // Grille
     sCtx.strokeStyle = "#202a30"; sCtx.lineWidth = 1;
-    for (let x = 0; x < w; x += w / 10) { sCtx.beginPath(); sCtx.moveTo(x, 0); sCtx.lineTo(x, h); sCtx.stroke(); }
-    for (let y = 0; y < h; y += h / 8) { sCtx.beginPath(); sCtx.moveTo(0, y); sCtx.lineTo(w, y); sCtx.stroke(); }
+    for (let i = 0; i <= 10; i++) { const x = i * w / 10; sCtx.beginPath(); sCtx.moveTo(x, 0); sCtx.lineTo(x, h); sCtx.stroke(); }
+    for (let i = 0; i <= 10; i++) { const y = i * h / 10; sCtx.beginPath(); sCtx.moveTo(0, y); sCtx.lineTo(w, y); sCtx.stroke(); }
 
-    sCtx.strokeStyle = "#2a353c";
+    // Axes centraux
+    sCtx.strokeStyle = "#3a4a54";
     sCtx.beginPath(); sCtx.moveTo(0, h/2); sCtx.lineTo(w, h/2); sCtx.stroke();
+    sCtx.beginPath(); sCtx.moveTo(w/2, 0); sCtx.lineTo(w/2, h); sCtx.stroke();
+
+    // Sous-divisions : 5 graduations par division (2 mm) sur les deux axes centraux
+    sCtx.strokeStyle = "#6f818c"; sCtx.lineWidth = 1; sCtx.beginPath();
+    for (let i = 0; i <= 50; i++) {
+      const len = (i % 5 === 0) ? 6 : 3.5;
+      const x = i * w / 50, y = i * h / 50;
+      sCtx.moveTo(x, h/2 - len); sCtx.lineTo(x, h/2 + len);
+      sCtx.moveTo(w/2 - len, y); sCtx.lineTo(w/2 + len, y);
+    }
+    sCtx.stroke();
 
     const hSens = parseFloat(document.getElementById('hSensSelect').value);
     const tSpan = 10 * hSens;
@@ -1067,14 +1115,15 @@
     const ch = activeY1();
     const chSens = ch ? parseFloat(ch.selEl.value) : 1;
     const chV = t => ph[ch.key].amp * Math.sin(2 * Math.PI * N * t + ph[ch.key].ph);
-    const yOf = (v, sens) => h / 2 - (v / sens) * (h / 8);
+    const yOf = (v, sens, off) => h / 2 - (v / sens + (off || 0)) * (h / 10);
+    const tShift = posX * hSens;     // décalage horizontal : un décalage vers la droite montre des instants plus anciens
 
     // u(t)
     if (show1) {
       sCtx.strokeStyle = "#e5a93b"; sCtx.lineWidth = 2; sCtx.beginPath();
       for (let px = 0; px < w; px++) {
-        const t = time + (px / w) * tSpan;
-        const py = yOf(Um * Math.sin(2 * Math.PI * N * t), v1Sens);
+        const t = time + (px / w) * tSpan - tShift;
+        const py = yOf(Um * Math.sin(2 * Math.PI * N * t), v1Sens, posY1);
         if (px === 0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
       }
       sCtx.stroke();
@@ -1084,11 +1133,20 @@
     if (ch) {
       sCtx.strokeStyle = ch.color; sCtx.lineWidth = ch.lw; sCtx.beginPath();
       for (let px = 0; px < w; px++) {
-        const py = yOf(chV(time + (px / w) * tSpan), chSens);
+        const py = yOf(chV(time + (px / w) * tSpan - tShift), chSens, posY2);
         if (px === 0) sCtx.moveTo(px, py); else sCtx.lineTo(px, py);
       }
       sCtx.stroke();
     }
+
+    // Repères de niveau 0 V de chaque voie (triangle sur le bord gauche)
+    const marker = (y, color, txt) => {
+      sCtx.fillStyle = color;
+      sCtx.beginPath(); sCtx.moveTo(0, y - 6); sCtx.lineTo(10, y); sCtx.lineTo(0, y + 6); sCtx.closePath(); sCtx.fill();
+      sCtx.fillStyle = "#0d1316"; sCtx.font = "bold 8px sans-serif"; sCtx.fillText(txt, 1, y + 3);
+    };
+    if (show1) marker(yOf(0, v1Sens, posY1), "#e5a93b", "2");
+    if (ch) marker(yOf(0, chSens, posY2), ch.color, "1");
 
     // 2e curseur : origine des temps t′ définie au clic
     if (originFrac !== null) {
@@ -1111,17 +1169,17 @@
       sCtx.setLineDash([]);
 
       const tRel = (mx / w) * tSpan;
-      const tAbs = time + tRel;
+      const tAbs = time + tRel - tShift;
       const eVal = Um * Math.sin(2 * Math.PI * N * tAbs);
 
       let html = `<strong>t :</strong> ${(tRel * 1000).toFixed(2)} ms<br/>`;
       if (show1) {
-        sCtx.fillStyle = "#e5a93b"; sCtx.beginPath(); sCtx.arc(mx, yOf(eVal, v1Sens), 4, 0, Math.PI * 2); sCtx.fill();
+        sCtx.fillStyle = "#e5a93b"; sCtx.beginPath(); sCtx.arc(mx, yOf(eVal, v1Sens, posY1), 4, 0, Math.PI * 2); sCtx.fill();
         html += `<span style="color:var(--in-color)">u(t) : ${eVal.toFixed(2)} V</span><br/>`;
       }
       if (ch) {
         const v = chV(tAbs);
-        sCtx.fillStyle = ch.color; sCtx.beginPath(); sCtx.arc(mx, yOf(v, chSens), 4, 0, Math.PI * 2); sCtx.fill();
+        sCtx.fillStyle = ch.color; sCtx.beginPath(); sCtx.arc(mx, yOf(v, chSens, posY2), 4, 0, Math.PI * 2); sCtx.fill();
         html += `<span style="color:${ch.color}">${ch.lab}(t) : ${v.toFixed(2)} V</span><br/>`;
       }
       html += `<span style="color:var(--text-dim)">──────────</span><br/>`;
@@ -1386,6 +1444,24 @@
       drawBode(N0, R0 + r);
     }
   });
+
+  // Positions horizontale / verticale (pas de 0,5 div, limite ±5 div)
+  const POS_STEP = 0.5, POS_MAX = 5;
+  const clampPos = v => Math.max(-POS_MAX, Math.min(POS_MAX, Math.round(v * 2) / 2));
+  function refreshPos() {
+    document.getElementById('posXVal').textContent = posX.toFixed(1) + ' div';
+    document.getElementById('posY1Val').textContent = posY1.toFixed(1) + ' div';
+    document.getElementById('posY2Val').textContent = posY2.toFixed(1) + ' div';
+    if (!isRunning) drawScope();
+  }
+  const bindPos = (id, fn) => document.getElementById(id).addEventListener('click', () => { fn(); refreshPos(); });
+  bindPos('posXLeft',  () => { posX = clampPos(posX - POS_STEP); });
+  bindPos('posXRight', () => { posX = clampPos(posX + POS_STEP); });
+  bindPos('posY1Up',   () => { posY1 = clampPos(posY1 + POS_STEP); });
+  bindPos('posY1Down', () => { posY1 = clampPos(posY1 - POS_STEP); });
+  bindPos('posY2Up',   () => { posY2 = clampPos(posY2 + POS_STEP); });
+  bindPos('posY2Down', () => { posY2 = clampPos(posY2 - POS_STEP); });
+  bindPos('posResetBtn', () => { posX = posY1 = posY2 = 0; });
 
   document.getElementById('resetBtn').addEventListener('click', () => {
     time = 0;
