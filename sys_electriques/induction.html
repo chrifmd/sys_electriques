@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Induction électromagnétique — étude qualitative</title>
+<style>
+:root{--navy:#10243b;--blue:#1769aa;--cyan:#36b8d8;--ink:#17283b;--muted:#607286;--paper:#f4f7fb;--line:#dce5ef;--green:#17845b;--red:#c74646}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+header{background:linear-gradient(120deg,#10243b,#1769aa);color:#fff;padding:28px max(18px,calc((100% - 1180px)/2))}
+header h1{font-size:clamp(1.7rem,4vw,2.6rem);line-height:1.15;margin:0 0 8px}header p{margin:0;color:#e4f1fb;max-width:850px}
+nav{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);display:flex;gap:7px;overflow-x:auto;padding:9px max(12px,calc((100% - 1180px)/2))}
+nav a{white-space:nowrap;text-decoration:none;color:#29445f;padding:8px 12px;border-radius:20px;font-size:.9rem}nav a:hover{background:#e8f2fb;color:#075b9c}
+main{max-width:1180px;margin:22px auto;padding:0 16px 60px}section{scroll-margin-top:75px;margin:22px 0}
+.st{display:flex;align-items:center;gap:12px;margin:0 0 14px}.st .num{background:#dceefa;color:#075b9c;border-radius:12px;padding:5px 11px;font-weight:800}.st h2{font-size:1.45rem;margin:0;color:var(--navy)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 5px 18px #173a5b0a}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.callout{border-left:4px solid var(--cyan);background:#eaf7fb;padding:12px 15px;border-radius:8px;margin:12px 0}
+.law{background:#10243b;color:#fff;border-radius:12px;padding:14px 18px;margin:12px 0;font-size:1.08rem}
+label{display:block;font-weight:650;font-size:.92rem;margin:10px 0 4px}.muted{color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--blue)}
+button{border:0;border-radius:9px;padding:10px 14px;background:var(--blue);color:#fff;font:600 .94rem system-ui;cursor:pointer}button:hover{filter:brightness(1.08)}button.s{background:#e8eef5;color:#243e58}button.g{background:#b97908}
+canvas{display:block;width:100%;height:auto;border:1px solid #d8e2ed;border-radius:12px;background:#fafdff;touch-action:none}
+.cw{position:relative}.cl{position:absolute;top:10px;left:12px;background:#ffffffd9;border:1px solid var(--line);border-radius:7px;padding:4px 8px;font-size:.8rem;color:#29445f}
+.tb{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px}.v{float:right;color:var(--blue)}
+.ro{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.ro div{background:#f0f5fa;padding:10px;border-radius:10px;text-align:center}.ro b{display:block;color:#075b9c;font-size:1.15rem}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.95rem}td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left}th{background:#f1f5f9}
+details{border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:8px 0}summary{font-weight:700;cursor:pointer}
+.q{padding:12px 0;border-bottom:1px solid var(--line)}.q p{font-weight:650;margin:0 0 6px}.q label{font-weight:400;display:flex;gap:8px;margin:5px 0}.fb{margin-top:6px;font-weight:700}
+.pal{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.pal button{background:#e7eef6;color:#213c57}
+footer{text-align:center;color:var(--muted);padding:20px}
+@media(max-width:760px){.grid,.controls{grid-template-columns:1fr}.ro{grid-template-columns:1fr 1fr}main{padding:0 11px 40px}}
+ .page-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;   
+    margin-left: 8rem;       
+           
+  }
+  .page-switcher label {
+    font-size: 16px;
+    color: var(--text-dim);
+     justify-content: center;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;   
+      margin-left: 18rem; 
+  }
+  .page-switcher select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 14px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    outline: none;
+     justify-content: center;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;  
+      margin-left: 1rem; 
+  }
+</style>
+</head>
+<body>
+   <div class="page-switcher">
+      <label for="pageSwitch">Choisir :</label>
+      <select id="pageSwitch" onchange="if(this.value) window.location.href=this.value;">   
+       
+        <option value="induction.html"selected>Cours: Induction électromagnétique - Auto-induction</option>
+        <option value="inductance.html">TP: Inductance d'une bobine</option>
+        <option value="dipole_RL.html">TP: Réponse d'un dipôle RL à un échelon de tension</option>
+       
+      </select>
+    </div>
+<header><h1>Induction électromagnétique</h1><p>Cours interactif et laboratoire virtuel — étude qualitative adaptée au programme tunisien : mettre en évidence le phénomène, énoncer les lois de Lenz et de Faraday, puis expérimenter.</p></header>
+<nav><a href="#decouverte">Mise en évidence</a><a href="#cause">Cause</a><a href="#lenz">Loi de Lenz</a><a href="#faraday">Loi de Faraday</a><a href="#solenoide">Expérience 2</a><a href="#simulation">Simulation 2D/3D</a><a href="#autoinduction">Auto-induction</a><a href="#applications">Applications</a><a href="#laboratoire">Laboratoire</a><a href="#exercices">Exercices</a></nav>
+<main>
+
+<section id="decouverte"><div class="st"><span class="num">01</span><h2>Mise en évidence du phénomène</h2></div>
+<div class="card">
+<p>Relions une <b>bobine</b> à un galvanomètre, sans aucun générateur dans le circuit. Approchons ou éloignons un aimant. L’aimant crée un champ magnétique : c’est l’<b>inducteur</b>. La bobine, où apparaît le courant, est le <b>circuit induit</b>.</p>
+<table><tr><th>Expérience</th><th>Observation</th></tr>
+<tr><td>Aimant immobile près de la bobine</td><td>Aucune déviation : pas de courant.</td></tr>
+<tr><td>On approche l’aimant</td><td>L’aiguille dévie dans un sens.</td></tr>
+<tr><td>On éloigne l’aimant</td><td>L’aiguille dévie en sens contraire.</td></tr>
+<tr><td>On va plus vite</td><td>La déviation est plus grande.</td></tr>
+<tr><td>Circuit ouvert</td><td>Aucun courant, même si l’aimant bouge.</td></tr></table>
+<div class="callout"><b>Conclusion :</b> un courant, dit <b>courant induit</b>, apparaît dans le circuit induit lorsque l’aimant <b>se déplace</b> par rapport à la bobine. C’est le <b>phénomène d’induction électromagnétique</b>. La présence de l’aimant seule ne suffit pas.</div>
+<details><summary>Question : l’aimant est immobile devant la bobine, que se passe-t-il ?</summary>Le champ magnétique qui traverse la bobine ne change pas : il n’y a pas de courant induit.</details>
+</div></section>
+
+<section id="cause"><div class="st"><span class="num">02</span><h2>Cause de l’induction</h2></div>
+<div class="card">
+<p>Le champ magnétique créé par l’inducteur traverse le circuit induit. Le courant apparaît <b>quand ce champ varie</b> à travers le circuit induit. Cette variation peut s’obtenir de plusieurs façons :</p>
+<div class="grid"><ul><li>on déplace l’aimant devant la bobine ;</li><li>on déplace la bobine devant l’aimant ;</li><li>on fait tourner l’aimant ou la bobine.</li></ul>
+<ul><li>on remplace l’aimant par une 2ᵉ bobine parcourue par un courant ;</li><li>on ferme ou on ouvre l’interrupteur de cette bobine inductrice ;</li><li>on fait varier son courant avec un rhéostat.</li></ul></div>
+<div class="callout"><b>À retenir :</b> la cause de l’induction est la <b>variation du champ magnétique</b> à travers le circuit induit. Si le circuit induit est ouvert, il n’y a pas de courant mais une <b>force électromotrice (f.é.m.) induite</b> peut exister à ses bornes.</div>
+</div></section>
+
+<section id="lenz"><div class="st"><span class="num">03</span><h2>Loi de Lenz : le sens du courant induit</h2></div>
+<div class="card">
+<div class="law"><b>Loi de Lenz.</b> Le sens du courant induit est tel que ses effets <b>s’opposent à la cause</b> qui lui donne naissance.</div>
+<div class="grid">
+<div><div class="cw"><canvas id="lenzC" width="900" height="400"></canvas><span class="cl">Bobine fermée sur un galvanomètre</span></div></div>
+<div>
+<label>Situation étudiée</label><select id="lenzMode" style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option value="nIn">Pôle Nord qui s’approche</option><option value="nOut">Pôle Nord qui s’éloigne</option><option value="sIn">Pôle Sud qui s’approche</option><option value="sOut">Pôle Sud qui s’éloigne</option><option value="still">Aimant immobile</option></select>
+<div class="tb"><button id="lenzReplay">↻ Rejouer</button></div>
+<div id="lenzText" class="callout"></div>
+</div></div>
+<table><tr><th>Mouvement de l’aimant</th><th>Face de la bobine tournée vers l’aimant</th><th>Effet</th></tr>
+<tr><td>Pôle Nord s’approche</td><td>Face Nord</td><td>Répulsion</td></tr><tr><td>Pôle Nord s’éloigne</td><td>Face Sud</td><td>Attraction</td></tr>
+<tr><td>Pôle Sud s’approche</td><td>Face Sud</td><td>Répulsion</td></tr><tr><td>Pôle Sud s’éloigne</td><td>Face Nord</td><td>Attraction</td></tr></table>
+<div class="callout"><b>Méthode :</b> 1) la cause est un rapprochement ou un éloignement de l’aimant ; 2) la bobine s’y oppose : elle <b>repousse</b> l’aimant qui s’approche et l’<b>attire</b> quand il s’éloigne ; 3) on en déduit la face Nord ou Sud de la bobine ; 4) la règle de la main droite (ou le bonhomme d’Ampère) donne le sens du courant. Vue de face, une <b>face Nord</b> correspond à un courant dans le sens <b>anti-horaire</b>, une face Sud au sens horaire. Dans la simulation, ⊙ désigne un courant qui sort de la page et ⊗ un courant qui y entre.</div>
+</div></section>
+
+<section id="faraday"><div class="st"><span class="num">04</span><h2>Loi de Faraday (étude qualitative)</h2></div>
+<div class="card">
+<div class="law"><b>Loi de Faraday.</b> Toute variation du champ magnétique à travers un circuit induit y fait apparaître une f.é.m. induite. La f.é.m. induite est <b>d’autant plus grande que la variation est rapide</b>.</div>
+<p>Elle augmente aussi avec le <b>nombre de spires</b> de la bobine et avec l’<b>intensité du champ</b> de l’aimant. Si le circuit est fermé, le courant induit est d’autant plus intense que la f.é.m. est grande. À vérifier dans la simulation ci-dessous :</p>
+<table><tr><th>Modification</th><th>Effet sur la f.é.m. induite</th></tr><tr><td>Aimant déplacé plus vite</td><td>Augmente</td></tr><tr><td>Bobine à plus de spires</td><td>Augmente</td></tr><tr><td>Aimant plus puissant</td><td>Augmente</td></tr><tr><td>Aimant immobile</td><td>Nulle</td></tr></table>
+</div></section>
+
+<section id="solenoide"><div class="st"><span class="num">05</span><h2>Expérience 2 : bobine de Faraday dans un solénoïde</h2></div>
+<div class="card">
+<p>Un <b>solénoïde</b> (bobine 1, l’inducteur) est alimenté par un générateur basse fréquence (GBF) qui impose une tension alternative <i>u</i><sub>1</sub>. On place à l’intérieur une petite <b>bobine de Faraday</b> (bobine 2, le circuit induit), reliée à aucun générateur. Un oscilloscope visualise <i>u</i><sub>1</sub> (voie Y1, en jaune) et la tension <i>u</i><sub>2</sub> aux bornes de la bobine de Faraday (voie Y2, en cyan).</p>
+<div class="grid"><div><canvas id="solSch" width="900" height="420"></canvas></div><div><canvas id="solOsc" width="900" height="420"></canvas></div></div>
+<div class="controls">
+<div><label>Fréquence du GBF <span class="v" id="sFv">200 Hz</span></label><input id="sF" type="range" min="50" max="1000" step="10" value="200"></div>
+<div><label>Amplitude de <i>u</i><sub>1</sub> <span class="v" id="sUv">4 V</span></label><input id="sU" type="range" min="1" max="10" step="1" value="4"></div>
+<div><label>Forme du signal</label><select id="sForm" style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option value="sin">Sinusoïdale</option><option value="tri">Triangulaire</option></select></div>
+<div><label>Spires de la bobine de Faraday</label><select id="sN" style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option>100</option><option selected>200</option><option>400</option><option>800</option></select></div>
+<div><label>Noyau de fer doux dans le solénoïde</label><select id="sCore" style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option value="0">Sans noyau</option><option value="1">Avec noyau</option></select></div>
+<div><label>Sensibilités : Y1 / Y2 (V/div)</label><div style="display:flex;gap:8px"><select id="sY1" style="width:50%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option>1</option><option selected>2</option><option>5</option></select><select id="sY2" style="width:50%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option>0.1</option><option selected>0.2</option><option>0.5</option><option>1</option><option>2</option><option>5</option></select></div></div></div>
+<div class="ro" style="grid-template-columns:repeat(3,1fr)"><div><small>Amplitude de u₁</small><b id="sR1">—</b></div><div><small>Amplitude de u₂</small><b id="sR2">—</b></div><div><small>Balayage</small><b id="sR3">—</b></div></div>
+<table><tr><th>Observation</th><th>Interprétation</th></tr>
+<tr><td>Une tension <i>u</i><sub>2</sub> apparaît aux bornes de la bobine de Faraday, sans générateur.</td><td>Le courant variable dans le solénoïde crée un champ magnétique <b>variable</b> à travers la bobine 2 : c’est la cause de l’induction.</td></tr>
+<tr><td><i>u</i><sub>2</sub> a la même fréquence que <i>u</i><sub>1</sub>.</td><td>Le champ varie à la fréquence du courant inducteur.</td></tr>
+<tr><td>En augmentant la fréquence ou l’amplitude de <i>u</i><sub>1</sub>, l’amplitude de <i>u</i><sub>2</sub> augmente.</td><td>Le champ varie plus vite (ou plus fort) : loi de Faraday. Adaptez la sensibilité Y2 pour garder le signal visible.</td></tr>
+<tr><td>Avec plus de spires ou avec le noyau de fer, <i>u</i><sub>2</sub> augmente.</td><td>Plus de spires pour la bobine 2 ; le noyau renforce le champ.</td></tr>
+<tr><td>Signal triangulaire : <i>u</i><sub>2</sub> est rectangulaire et change de signe quand <i>u</i><sub>1</sub> passe de croissant à décroissant.</td><td><i>u</i><sub>2</sub> ne dépend pas de la valeur de <i>u</i><sub>1</sub>, mais de sa <b>rapidité de variation</b>. Son signe s’inverse quand la cause s’inverse (loi de Lenz).</td></tr></table>
+<div class="callout"><b>À retenir :</b> la tension induite aux bornes de la bobine de Faraday est d’autant plus grande que le courant inducteur varie plus vite et que la bobine a plus de spires. Elle est nulle si le courant inducteur est constant. <small>(Modèle simplifié : la forme et les amplitudes illustrent les lois qualitatives.)</small></div>
+</div></section>
+
+<section id="simulation"><div class="st"><span class="num">06</span><h2>Simulation en 2D et en 3D</h2></div>
+<div class="card">
+<p>Faites glisser l’aimant (souris ou doigt) ou lancez le mouvement automatique : l’aimant traverse la bobine. En 3D, faites glisser <b>en dehors de l’aimant</b> pour tourner autour de la scène.</p>
+<div class="tb"><button id="playBtn">▶ Mouvement automatique</button><button class="s" id="revBtn">Inverser les pôles</button><button class="s" id="resetBtn">Réinitialiser</button><button class="g" id="viewBtn">Passer en vue 3D</button></div>
+<div class="controls">
+<div><label>Vitesse de l’aimant <span class="v" id="spV">3 cm/s</span></label><input id="speed" type="range" min=".5" max="15" step=".5" value="3"></div>
+<div><label>Nombre de spires <span class="v" id="nV">200</span></label><input id="turns" type="range" min="50" max="1000" step="50" value="200"></div>
+<div><label>Champ de l’aimant <span class="v" id="bV">0,50 T</span></label><input id="magB" type="range" min=".1" max="1.5" step=".05" value=".5"></div>
+<div><label>Section de la bobine <span class="v" id="aV">20 cm²</span></label><input id="area" type="range" min="5" max="80" value="20"></div></div>
+<div class="cw" style="margin-top:12px"><canvas id="mainC" width="900" height="400"></canvas><span class="cl" id="vLabel">Vue 2D — faites glisser l’aimant</span></div>
+<div class="ro"><div><small>Vitesse de l’aimant</small><b id="rV">0</b></div><div><small>f.é.m. induite |e|</small><b id="rE">0</b></div><div><small>Courant (R = 10 Ω)</small><b id="rI">0</b></div><div><small>Face tournée vers l’aimant</small><b id="rF">—</b></div></div>
+<p class="muted" id="sStat"></p>
+<details><summary>Modèle utilisé</summary>Le champ de l’aimant à l’intérieur de la bobine est d’autant plus fort que l’aimant est proche ; il change donc quand l’aimant bouge. La f.é.m. est calculée à partir de la rapidité de cette variation, du nombre de spires et de l’aimant, puis le courant par la loi d’Ohm (R = 10 Ω). Le modèle est simplifié : il illustre les lois qualitatives sans remplacer une mesure réelle.</details>
+</div></section>
+
+<section id="autoinduction"><div class="st"><span class="num">07</span><h2>Auto-induction (étude qualitative)</h2></div>
+<div class="card">
+<p>Jusqu’ici, l’inducteur (un aimant) était distinct du circuit induit (la bobine). Que se passe-t-il lorsqu’une bobine est parcourue par un courant dont l’intensité <b>varie</b> ? Réalisons l’expérience.</p>
+<div class="grid">
+<div>
+<div class="cw"><canvas id="autoC" width="900" height="440"></canvas><span class="cl" id="autoLbl">Circuit en parallèle : lampe + résistor vs lampe + bobine</span></div>
+<div class="tb">
+<button id="autoSw">⚡ Fermer l’interrupteur K</button>
+<button class="s" id="autoRst">Réinitialiser</button>
+</div>
+<div class="controls">
+<div><label>Inductance de la bobine (L) <span class="v" id="lVal">Moyenne (L)</span></label><input id="indL" type="range" min="1" max="3" step="1" value="2"></div>
+<div><label>Noyau de fer doux <span class="v" id="coreVal">Sans noyau</span></label><input id="ironCore" type="range" min="0" max="1" step="1" value="0"></div>
+</div>
+</div>
+<div>
+<h3>Expérience des deux lampes identiques</h3>
+<p>On monte en parallèle deux branches alimentées par le même générateur de tension continue :</p>
+<ul>
+<li><b>Branche 1 (témoin) :</b> une lampe L<sub>1</sub> en série avec un conducteur ohmique de même résistance <i>r</i> que la bobine.</li>
+<li><b>Branche 2 (inductive) :</b> une lampe identique L<sub>2</sub> en série avec une bobine d’inductance <i>L</i> et de résistance interne <i>r</i>.</li>
+</ul>
+<div id="autoExpText" class="callout"><b>État initial :</b> l’interrupteur K est ouvert. Aucun courant ne circule dans les deux branches ; les lampes L<sub>1</sub> et L<sub>2</sub> sont éteintes. Cliquez sur <b>« Fermer l’interrupteur K »</b> pour observer l’établissement du courant.</div>
+<table>
+<tr><th>Étape</th><th>Observation</th><th>Interprétation (Loi de Lenz)</th></tr>
+<tr><td>Fermeture de K</td><td>L<sub>1</sub> brille instantanément ; L<sub>2</sub> s’allume avec un <b>retard</b>.</td><td>Le courant augmente : la bobine crée une f.é.m. auto-induite qui s’oppose à l’établissement du courant.</td></tr>
+<tr><td>Régime permanent</td><td>L<sub>1</sub> et L<sub>2</sub> ont le <b>même éclat</b>.</td><td>Le courant est constant : le champ propre ne varie plus, la bobine se comporte comme un simple conducteur ohmique de résistance <i>r</i>.</td></tr>
+<tr><td>Ouverture de K</td><td>L<sub>2</sub> ne s’éteint pas instantanément (un flash ou une étincelle peut apparaître).</td><td>Le courant diminue brutalement : la bobine s’oppose à cette annulation en prolongeant brièvement le courant dans la boucle fermée par les deux branches.</td></tr>
+</table>
+</div>
+</div>
+<h3>Interprétation</h3>
+<p>À la fermeture de K, l’intensité <i>i</i> croît dans la bobine : son champ magnétique propre varie à travers ses propres spires. La bobine est à la fois <b>inducteur et circuit induit</b>. D’après la loi de Lenz, l’effet induit (la f.é.m. auto-induite) <b>s’oppose à la cause</b>, c’est-à-dire à l’augmentation de <i>i</i> : le courant s’établit donc avec retard. À l’ouverture, <i>i</i> diminue et la bobine tend à maintenir le courant : L<sub>2</sub> ne s’éteint pas instantanément. En régime permanent, <i>i</i> est constant : plus de variation, plus de f.é.m. auto-induite.</p>
+<div class="law"><b>Phénomène d’auto-induction.</b> Toute variation de l’intensité du courant traversant une bobine fait varier son champ magnétique propre et y fait apparaître une <b>f.é.m. auto-induite</b> <i>e</i> qui <b>s’oppose à la variation du courant</b> (loi de Lenz).</div>
+<h3>Modèle de la bobine : le dipôle AB</h3>
+<p>Une bobine se modélise par un dipôle AB formé d’une <b>inductance pure <i>L</i></b> (en henry, H) en série avec un <b>résistor de résistance <i>r</i></b> (résistance interne des spires). En convention récepteur, le courant <i>i</i> entre par A.</p>
+<svg viewBox="0 0 560 150" style="width:100%;max-width:560px;display:block;margin:6px auto" role="img" aria-label="Dipôle AB : inductance L en série avec le résistor r"><g fill="none" stroke="#45617b" stroke-width="2.5"><path d="M40 80H110"/><path d="M110 80c0-34 20-34 20 0c0-34 20-34 20 0c0-34 20-34 20 0c0-34 20-34 20 0"/><path d="M190 80H250"/><rect x="250" y="66" width="70" height="28"/><path d="M320 80H390"/><path d="M40 122H385"/><path d="M60 40H120" stroke="#17845b"/></g><path d="M385 122l-10-5v10z" fill="#45617b"/><path d="M120 40l-9-5v10z" fill="#17845b"/><g fill="#243e58" font-family="system-ui" font-size="15" text-anchor="middle"><text x="30" y="85" font-weight="bold">A</text><text x="402" y="85" font-weight="bold">B</text><text x="150" y="38">L</text><text x="285" y="58">r</text><text x="212" y="142">u<tspan font-size="11" dy="3">AB</tspan></text><text x="90" y="32" fill="#17845b">i</text></g></svg>
+<div class="law"><i>e</i> = −<i>L</i>·<i>di</i>/<i>dt</i><br><i>u</i><sub>AB</sub> = <i>r</i>·<i>i</i> − <i>e</i> = <i>r</i>·<i>i</i> + <i>L</i>·<i>di</i>/<i>dt</i><br><span style="font-size:.95rem;color:#d8ecff">Régime permanent (<i>di</i>/<i>dt</i> = 0) : <i>u</i><sub>AB</sub> = <i>r</i>·<i>i</i>, la bobine se comporte comme un résistor.</span></div>
+<div class="callout"><b>À retenir :</b> une bobine <b>s’oppose aux variations brusques de l’intensité du courant</b> qui la traverse (ni établissement instantané, ni coupure instantanée). Cet effet est d’autant plus marqué que la bobine possède beaucoup de spires ou contient un <b>noyau de fer doux</b> (qui renforce le champ magnétique propre).</div>
+</div></section>
+
+<section id="applications"><div class="st"><span class="num">08</span><h2>Applications</h2></div>
+<div class="grid">
+<div class="card"><h3>Alternateur</h3><p>Un aimant ou une bobine tourne : le champ à travers la bobine varie sans cesse et produit un courant induit alternatif (centrales, dynamo de vélo).</p></div>
+<div class="card"><h3>Transformateur</h3><p>Un courant variable dans une première bobine crée un champ variable qui induit une f.é.m. dans une seconde bobine.</p></div>
+<div class="card"><h3>Recharge sans fil</h3><p>Une bobine émettrice parcourue par un courant variable induit un courant dans une bobine réceptrice.</p></div>
+<div class="card"><h3>Plaque à induction</h3><p>Le champ variable induit des courants dans le fond métallique de la casserole, qui s’échauffe par effet Joule.</p></div></div>
+</section>
+
+<section id="laboratoire"><div class="st"><span class="num">09</span><h2>Laboratoire : construire le circuit</h2></div>
+<div class="card">
+<p>Ajoutez des composants, déplacez-les, puis <b>reliez leurs bornes</b> : cliquez sur une borne (●), puis sur une autre borne pour tracer un fil. Cliquez sur un fil pour le sélectionner. Le courant n’apparaît que si le circuit induit est <b>fermé</b> et si l’aimant <b>bouge</b>.</p>
+<div class="pal"><button data-add="magnet">＋ Aimant</button><button data-add="coil">＋ Bobine</button><button data-add="meter">＋ Galvanomètre</button><button data-add="lamp">＋ Lampe</button><button data-add="switch">＋ Interrupteur</button><button class="g" id="preset">Charger un montage correct</button></div>
+<div class="grid"><div><canvas id="labC" width="760" height="360"></canvas></div>
+<div><h3>Élément sélectionné</h3><div id="labProps" class="callout">Cliquez sur un composant ou sur un fil.</div>
+<button class="s" id="rmBtn">Supprimer la sélection</button> <button class="s" id="clrBtn">Tout vider</button>
+<h3>Test du montage</h3><button id="labAuto">▶ Aimant en va-et-vient</button> <span class="muted">ou faites glisser l’aimant.</span>
+<p id="labRes" style="font-weight:600"></p></div></div>
+</div></section>
+
+<section id="exercices"><div class="st"><span class="num">10</span><h2>Exercices et auto-évaluation</h2></div>
+<div class="card"><div id="quiz">
+<div class="q" data-a="b"><p>1. Un courant induit apparaît dans une bobine fermée lorsque :</p><label><input type="radio" name="q1" value="a"> un aimant est immobile près d’elle.</label><label><input type="radio" name="q1" value="b"> le champ magnétique qui la traverse varie.</label><label><input type="radio" name="q1" value="c"> la bobine est loin de tout aimant.</label></div>
+<div class="q" data-a="a"><p>2. Si l’aimant s’immobilise devant la bobine :</p><label><input type="radio" name="q2" value="a"> le courant induit s’annule.</label><label><input type="radio" name="q2" value="b"> le courant induit est maximal.</label><label><input type="radio" name="q2" value="c"> le courant change de sens en permanence.</label></div>
+<div class="q" data-a="a"><p>3. Un pôle Nord s’approche d’une bobine fermée. La face de la bobine tournée vers l’aimant est :</p><label><input type="radio" name="q3" value="a"> une face Nord.</label><label><input type="radio" name="q3" value="b"> une face Sud.</label><label><input type="radio" name="q3" value="c"> ni Nord ni Sud.</label></div>
+<div class="q" data-a="b"><p>4. Quand un pôle Nord s’éloigne de la bobine, la bobine :</p><label><input type="radio" name="q4" value="a"> repousse l’aimant.</label><label><input type="radio" name="q4" value="b"> attire l’aimant.</label><label><input type="radio" name="q4" value="c"> n’agit pas sur l’aimant.</label></div>
+<div class="q" data-a="c"><p>5. Pour augmenter la f.é.m. induite on peut :</p><label><input type="radio" name="q5" value="a"> diminuer le nombre de spires.</label><label><input type="radio" name="q5" value="b"> déplacer l’aimant plus lentement.</label><label><input type="radio" name="q5" value="c"> déplacer l’aimant plus vite ou prendre plus de spires.</label></div>
+<div class="q" data-a="b"><p>6. La loi de Lenz affirme que :</p><label><input type="radio" name="q6" value="a"> le courant induit est toujours dans le même sens.</label><label><input type="radio" name="q6" value="b"> les effets du courant induit s’opposent à la cause qui lui donne naissance.</label><label><input type="radio" name="q6" value="c"> la f.é.m. ne dépend pas de la vitesse.</label></div>
+<div class="q" data-a="b"><p>7. Lors de l’auto-induction dans une bobine, l’inducteur est :</p><label><input type="radio" name="q7" value="a"> un aimant permanent placé à proximité.</label><label><input type="radio" name="q7" value="b"> la bobine elle-même, parcourue par un courant d’intensité variable.</label><label><input type="radio" name="q7" value="c"> un générateur de tension constante uniquement.</label></div>
+<div class="q" data-a="c"><p>8. Lorsqu’on ferme l’interrupteur d’un circuit contenant une bobine en série avec une lampe, la bobine :</p><label><input type="radio" name="q8" value="a"> accélère l’allumage de la lampe.</label><label><input type="radio" name="q8" value="b"> empêche définitivement le passage du courant.</label><label><input type="radio" name="q8" value="c"> retarde l’établissement du courant en s’opposant à son augmentation.</label></div>
+</div><button id="gradeQ">Corriger mes réponses</button><div id="qScore" class="fb"></div></div>
+<div class="card" style="margin-top:14px"><h3>Exercice d’application</h3><p>On éloigne le pôle Sud d’un aimant d’une bobine fermée sur un galvanomètre. 1) Quelle est la cause du courant induit ? 2) Quelle face présente la bobine à l’aimant ? 3) Y a-t-il attraction ou répulsion ? 4) Que devient le courant si on éloigne l’aimant deux fois plus vite ?</p>
+<button class="s" onclick="document.getElementById('ans').hidden=false">Voir la correction</button>
+<div id="ans" hidden class="callout">1) La variation (diminution) du champ magnétique à travers la bobine. 2) Une face <b>Nord</b> : elle attire le pôle Sud pour s’opposer à l’éloignement (loi de Lenz). 3) <b>Attraction</b>. 4) La f.é.m. induite et le courant sont plus grands, mais le sens ne change pas (loi de Faraday).</div></div>
+</section>
+<footer>Laboratoire virtuel de physique — Induction électromagnétique · fichier autonome utilisable hors ligne</footer>
+</main>
+<script>
+const $=i=>document.getElementById(i),fmt=(x,d=1)=>Number(x).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}),G=x=>Math.pow(1+x*x/9,-1.5),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),NC='#d94b4b',SC='#2469b4',TH=.004;
+function mkInd(){let p=null,e=0;return(q,N,dt)=>{if(p===null)p=q;e+=(-N*(q-p)/dt-e)*(1-Math.exp(-dt/.06));p=q;return e}}
+function gauge(x,cx,cy,e,em){x.fillStyle='#fff';x.strokeStyle='#45617b';x.lineWidth=3;x.beginPath();x.arc(cx,cy,34,Math.PI,0);x.lineTo(cx+34,cy+8);x.lineTo(cx-34,cy+8);x.closePath();x.fill();x.stroke();let a=cl(e/em,-1,1);x.strokeStyle='#c74646';x.beginPath();x.moveTo(cx,cy+4);x.lineTo(cx+Math.sin(a)*28,cy+4-Math.cos(a)*28);x.stroke();x.fillStyle='#233e58';x.font='bold 13px system-ui';x.textAlign='center';x.fillText('G',cx,cy+24)}
+function badge(x,px,py,P){x.fillStyle=P==='N'?NC:SC;x.beginPath();x.arc(px,py,13,0,7);x.fill();x.fillStyle='#fff';x.font='bold 15px system-ui';x.textAlign='center';x.fillText(P,px,py+5)}
+function symb(x,px,py,out){x.strokeStyle='#17845b';x.fillStyle='#17845b';x.lineWidth=2.5;x.beginPath();x.arc(px,py,9,0,7);x.stroke();if(out){x.beginPath();x.arc(px,py,3.5,0,7);x.fill()}else{x.beginPath();x.moveTo(px-5,py-5);x.lineTo(px+5,py+5);x.moveTo(px+5,py-5);x.lineTo(px-5,py+5);x.stroke()}}
+function scene2D(c,xm,rev,e,em){let x=c.getContext('2d'),X0=450,Y=165,mx=X0+xm*30,on=Math.abs(e)>TH,s=rev?-1:1;x.setTransform(c.width/900,0,0,c.width/900,0,0);x.clearRect(0,0,900,400);x.fillStyle='#fafdff';x.fillRect(0,0,900,400);
+x.lineWidth=1.6;[70,110,160].forEach(L=>[1,-1].forEach(v=>{x.strokeStyle='rgba(23,105,170,.4)';x.beginPath();for(let t=.25;t<Math.PI-.2;t+=.08){let r=L*Math.sin(t)**2,px=mx+r*Math.cos(t)*1.3,py=Y-v*r*Math.sin(t)*.8;t<.3?x.moveTo(px,py):x.lineTo(px,py)}x.stroke();let ax=mx,ay=Y-v*L*.8,d=-s*7;x.fillStyle='#1769aa';x.beginPath();x.moveTo(ax+d*1.6,ay);x.lineTo(ax-d,ay-5);x.lineTo(ax-d,ay+5);x.fill()}));
+x.strokeStyle='#d49a38';x.lineWidth=4;[[X0-17,Y+68,X0-60,Y+68,X0-60,353,X0-34,353],[X0+17,Y+68,X0+60,Y+68,X0+60,353,X0+34,353]].forEach(w=>{x.beginPath();x.moveTo(w[0],w[1]);for(let i=2;i<8;i+=2)x.lineTo(w[i],w[i+1]);x.stroke()});gauge(x,X0,330,e,em);
+for(let i=0;i<8;i++){x.beginPath();x.ellipse(X0-17.5+i*5,Y,9,68,0,0,7);x.strokeStyle=i%2?'#a36d24':'#d49a38';x.lineWidth=3;x.stroke()}
+x.fillStyle=rev?NC:SC;x.fillRect(mx-50,Y-18,50,36);x.fillStyle=rev?SC:NC;x.fillRect(mx,Y-18,50,36);x.strokeStyle='#26384a';x.lineWidth=2;x.strokeRect(mx-50,Y-18,100,36);x.fillStyle='#fff';x.font='bold 18px system-ui';x.textAlign='center';x.fillText(rev?'N':'S',mx-25,Y+6);x.fillText(rev?'S':'N',mx+25,Y+6);
+x.fillStyle='#344e67';x.font='14px system-ui';x.fillText('Aimant (inducteur)',mx,Y+45);x.fillText('Bobine (induit)',X0,Y+95);
+if(on){badge(x,X0-40,Y-105,e>0?'S':'N');badge(x,X0+40,Y-105,e>0?'N':'S');symb(x,X0,Y-68,e>0);symb(x,X0,Y+68,e<=0);x.fillStyle='#17845b';x.font='13px system-ui';x.fillText('faces induites',X0,Y-128)}}
+// Lenz
+const LZ={nIn:['Pôle Nord qui s’approche : le champ à travers la bobine augmente. La bobine présente une face Nord à l’aimant : répulsion, elle s’oppose au rapprochement.'],nOut:['Pôle Nord qui s’éloigne : le champ diminue. La bobine présente une face Sud : attraction, elle s’oppose à l’éloignement.'],sIn:['Pôle Sud qui s’approche : la bobine présente une face Sud : répulsion.'],sOut:['Pôle Sud qui s’éloigne : la bobine présente une face Nord : attraction.'],still:['Aimant immobile : le champ ne varie pas, donc aucune f.é.m. et aucun courant induit.']};
+let lz={t0:performance.now(),ind:mkInd()};function lzStart(){lz={t0:performance.now(),ind:mkInd()};$('lenzText').textContent=LZ[$('lenzMode').value][0]}
+$('lenzMode').onchange=lzStart;$('lenzReplay').onclick=lzStart;lzStart();
+// Main simulation
+let st={xm:-10,rev:false,auto:false,dir:1,v3:false,drag:null,e:0,ind:mkInd(),ph:0,v:0,px:-10,last:performance.now(),lp:[0,0]},cam={y:-.55,p:.3};
+function pr(p){let cy=Math.cos(cam.y),sy=Math.sin(cam.y),cp=Math.cos(cam.p),sp=Math.sin(cam.p),a=p[0]*cy+p[2]*sy,z=-p[0]*sy+p[2]*cy,b=p[1]*cp-z*sp,z2=p[1]*sp+z*cp,f=26*40/(40-z2);return[450+a*f,190-b*f,z2,f]}
+function scene3D(c,xm,rev,e,ph){let x=c.getContext('2d'),on=Math.abs(e)>TH,it=[],P=pr;x.setTransform(c.width/900,0,0,c.width/900,0,0);x.clearRect(0,0,900,400);x.fillStyle='#f5f9fd';x.fillRect(0,0,900,400);
+let tb=[[-15,-5.2,-7],[15,-5.2,-7],[15,-5.2,7],[-15,-5.2,7]].map(P);x.fillStyle='#e3ecf5';x.strokeStyle='#a9bdcf';x.beginPath();tb.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.closePath();x.fill();x.stroke();
+let s=rev?-1:1;[3.4,5.4].forEach(L=>[0,1,2,3].forEach(k=>{let f=k*Math.PI/2,pts=[];for(let t=.25;t<Math.PI-.2;t+=.12){let r=L*Math.sin(t)**2;pts.push(P([xm+r*Math.cos(t)*1.4,r*Math.sin(t)*Math.cos(f),r*Math.sin(t)*Math.sin(f)]))}it.push({d:pts[Math.floor(pts.length/2)][2]-.5,f(){x.strokeStyle='rgba(23,105,170,.45)';x.lineWidth=1.4;x.beginPath();pts.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke()}})}));
+for(let i=0;i<8;i++){let cx=(i-3.5)*.45,R=4.2;[0,1].forEach(h=>{let pts=[];for(let t=h*Math.PI;t<=(h+1)*Math.PI+.01;t+=.15)pts.push(P([cx,R*Math.cos(t),R*Math.sin(t)]));let m=pts[Math.floor(pts.length/2)];it.push({d:m[2],f(){x.strokeStyle=i%2?'#a36d24':'#d49a38';x.lineWidth=3;x.beginPath();pts.forEach((q,k)=>k?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke()}})});
+if(on&&(i===0||i===3||i===7))for(let j=0;j<3;j++){let t=(e>0?1:-1)*ph+j*2.094,q=P([cx,R*Math.cos(t),R*Math.sin(t)]);it.push({d:q[2]+.05,f(){x.fillStyle='#17845b';x.beginPath();x.arc(q[0],q[1],5,0,7);x.fill()}})}}
+[[xm-1.7,xm,rev?NC:SC,rev?'N':'S'],[xm,xm+1.7,rev?SC:NC,rev?'S':'N']].forEach(([a,b,col,lt])=>{let h=.9,V=[[a,-h,-h],[b,-h,-h],[b,h,-h],[a,h,-h],[a,-h,h],[b,-h,h],[b,h,h],[a,h,h]].map(P);[[0,1,2,3],[4,5,6,7],[0,1,5,4],[3,2,6,7],[0,3,7,4],[1,2,6,5]].forEach((F,n)=>{let d=F.reduce((u,i)=>u+V[i][2],0)/4;it.push({d,f(){x.fillStyle=col;x.strokeStyle='#26384a';x.lineWidth=1.5;x.beginPath();F.forEach((i,k)=>k?x.lineTo(V[i][0],V[i][1]):x.moveTo(V[i][0],V[i][1]));x.closePath();x.fill();x.stroke();if(n===3){x.fillStyle='rgba(255,255,255,.22)';x.fill()}}})});let q=P([(a+b)/2,h,0]);it.push({d:q[2]+.3,f(){x.fillStyle='#fff';x.font='bold 20px system-ui';x.textAlign='center';x.fillText(lt,q[0],q[1]+7)}})});
+it.sort((u,v)=>u.d-v.d).forEach(o=>o.f());gauge(x,790,330,e,.3);x.fillStyle='#344e67';x.font='14px system-ui';x.textAlign='center';x.fillText('Galvanomètre',790,372);if(on){x.fillStyle='#17845b';x.fillText('● courant induit',790,50)}}
+const mc=$('mainC'),mp=e=>{let r=mc.getBoundingClientRect();return[(e.clientX-r.left)*900/r.width,(e.clientY-r.top)*400/r.height]};
+mc.onpointerdown=e=>{let[px,py]=mp(e),m=st.v3?pr([st.xm,0,0]):[450+st.xm*30,165];st.auto=false;$('playBtn').textContent='▶ Mouvement automatique';st.drag=Math.abs(px-m[0])<68&&Math.abs(py-m[1])<60?'m':(st.v3?'c':null);st.lp=[px,py];mc.setPointerCapture(e.pointerId)};
+mc.onpointermove=e=>{if(!st.drag)return;let[px,py]=mp(e),dx=px-st.lp[0],dy=py-st.lp[1];st.lp=[px,py];if(st.drag==='m')st.xm=cl(st.xm+dx/(st.v3?26*Math.max(.35,Math.abs(Math.cos(cam.y))):30),-13,13);else{cam.y+=dx*.008;cam.p=cl(cam.p+dy*.006,-.2,1.2)}};
+mc.onpointerup=mc.onpointercancel=()=>st.drag=null;
+$('playBtn').onclick=()=>{st.auto=!st.auto;$('playBtn').textContent=st.auto?'Ⅱ Pause':'▶ Mouvement automatique'};
+$('revBtn').onclick=()=>{st.rev=!st.rev;st.ind=mkInd()};
+$('resetBtn').onclick=()=>{st.xm=-10;st.rev=false;st.auto=false;cam={y:-.55,p:.3};st.ind=mkInd();$('playBtn').textContent='▶ Mouvement automatique'};
+$('viewBtn').onclick=()=>{st.v3=!st.v3;$('viewBtn').textContent=st.v3?'Passer en vue 2D':'Passer en vue 3D';$('vLabel').textContent=st.v3?'Vue 3D — aimant : déplacer ; ailleurs : tourner':'Vue 2D — faites glisser l’aimant'};
+const sl=(id,o,f)=>$(id).oninput=()=>$(o).textContent=f($(id).value);sl('speed','spV',v=>fmt(v,1)+' cm/s');sl('turns','nV',v=>v);sl('magB','bV',v=>fmt(v,2)+' T');sl('area','aV',v=>v+' cm²');
+// Lab
+const LT={magnet:'Aimant',coil:'Bobine',meter:'Galvanomètre',lamp:'Lampe',switch:'Interrupteur'},TM={magnet:[],coil:[[-26,52],[26,52]],meter:[[-34,12],[34,12]],lamp:[[-34,0],[34,0]],switch:[[-34,0],[34,0]]};
+let L={c:[],w:[],sel:-1,sw:-1,pend:null,auto:false,t:0,drag:null,ind:mkInd(),e:0,an:null};const lc=$('labC'),lx=lc.getContext('2d');
+const tp=(i,t)=>[L.c[i].x+TM[L.c[i].type][t][0],L.c[i].y+TM[L.c[i].type][t][1]];
+function addC(type,x,y){L.c.push({type,x,y,n:200,closed:true,rev:false,bx:x});L.sel=L.c.length-1;L.sw=-1;props();return L.c.length-1}
+function wire(a,b){if(!L.w.some(w=>(w.a+''==a+''&&w.b+''==b+'')||(w.a+''==b+''&&w.b+''==a+'')))L.w.push({a,b})}
+function analyse(){let cs=L.c,par={},f=a=>par[a]===a?a:(par[a]=f(par[a])),id=(i,t)=>i*2+t;cs.forEach((c,i)=>TM[c.type].forEach((_,t)=>par[id(i,t)]=id(i,t)));L.w.forEach(w=>par[f(id(...w.a))]=f(id(...w.b)));
+let ci=cs.findIndex(c=>c.type==='coil'),mi=cs.findIndex(c=>c.type==='magnet');if(ci<0||mi<0)return{ci,mi,closed:false,vis:new Set()};
+let A=f(id(ci,0)),B=f(id(ci,1)),ed=[];cs.forEach((c,j)=>{if(j!==ci&&TM[c.type].length&&(c.type!=='switch'||c.closed))ed.push([f(id(j,0)),f(id(j,1))])});
+let vis=new Set([A]),q=[A];while(q.length){let u=q.pop();ed.forEach(([p,r])=>{[[p,r],[r,p]].forEach(([s,t])=>{if(s===u&&!vis.has(t)){vis.add(t);q.push(t)}})})}
+return{ci,mi,closed:A!==B&&vis.has(B),short:A===B,vis,f,id}}
+function labStep(dt){let an=L.an=analyse(),m=L.c[an.mi],c=L.c[an.ci];if(m&&L.auto&&!L.drag){L.t+=dt;m.x=cl(m.bx+85*Math.sin(L.t*2.2),30,730)}
+if(m&&c){let d=Math.hypot((m.x-c.x)/30,(m.y-c.y)/15);L.e=L.ind((m.rev?-1:1)*G(d)*1e-3,c.n,dt)}else{L.e=0;L.ind=mkInd()}
+let on=Math.abs(L.e)>TH,r='';if(!c||!m)r='Ajoutez au moins une bobine et un aimant.';else if(an.short)r='La bobine est court-circuitée par un fil : reliez-la à un galvanomètre ou à une lampe.';else if(!an.closed)r='Circuit induit ouvert (fil manquant ou interrupteur ouvert) : aucun courant ne circule, même si l’aimant bouge.';else if(!on)r='Circuit fermé, mais le champ ne varie pas à travers la bobine : pas de courant. Déplacez l’aimant !';else{let left=m.x<c.x,N=left?L.e<0:L.e>0;r='Circuit fermé et champ variable : courant induit. La face de la bobine tournée vers l’aimant est une face '+(N?'Nord':'Sud')+'.'}
+if($('labRes').textContent!==r)$('labRes').textContent=r;drawLab(an,on)}
+function drawLab(an,on){let x=lx,live=an.closed&&on,E=an.closed?L.e:0;x.setTransform(lc.width/760,0,0,lc.width/760,0,0);x.clearRect(0,0,760,360);x.fillStyle='#fbfdff';x.fillRect(0,0,760,360);x.strokeStyle='#edf1f5';x.lineWidth=1;for(let i=0;i<760;i+=40){x.beginPath();x.moveTo(i,0);x.lineTo(i,360);x.stroke()}for(let j=0;j<360;j+=40){x.beginPath();x.moveTo(0,j);x.lineTo(760,j);x.stroke()}
+L.w.forEach((w,k)=>{let a=tp(...w.a),b=tp(...w.b);x.strokeStyle=k===L.sw?'#e03a3a':live?'#e0a21b':'#7b8da1';x.lineWidth=k===L.sw?5:3.5;x.beginPath();x.moveTo(...a);x.lineTo(...b);x.stroke()});
+L.c.forEach((o,i)=>{x.save();x.translate(o.x,o.y);x.textAlign='center';if(i===L.sel){x.strokeStyle='#e29b1b';x.lineWidth=2;x.setLineDash([5,4]);x.strokeRect(-48,-55,96,120);x.setLineDash([])}x.strokeStyle='#45617b';x.lineWidth=2.5;
+if(o.type==='magnet'){x.fillStyle=o.rev?NC:SC;x.fillRect(-40,-18,40,36);x.fillStyle=o.rev?SC:NC;x.fillRect(0,-18,40,36);x.strokeRect(-40,-18,80,36);x.fillStyle='#fff';x.font='bold 17px system-ui';x.fillText(o.rev?'N':'S',-20,6);x.fillText(o.rev?'S':'N',20,6)}
+else if(o.type==='coil'){for(let k=0;k<8;k++){x.beginPath();x.ellipse(-17.5+k*5,0,9,40,0,0,7);x.strokeStyle=k%2?'#a36d24':'#d49a38';x.lineWidth=3;x.stroke()}x.strokeStyle='#45617b';x.lineWidth=2.5;x.beginPath();x.moveTo(-17.5,40);x.lineTo(-26,52);x.moveTo(17.5,40);x.lineTo(26,52);x.stroke();if(live){let n=L.e>0;[[-34,n?'S':'N'],[34,n?'N':'S']].forEach(([bx,P])=>{x.fillStyle=P==='N'?NC:SC;x.beginPath();x.arc(bx,-55,11,0,7);x.fill();x.fillStyle='#fff';x.font='bold 13px system-ui';x.fillText(P,bx,-50)})}}
+else if(o.type==='meter'){gauge(x,0,0,E,.3);x.strokeStyle='#45617b';x.beginPath();x.moveTo(-34,8);x.lineTo(-34,12);x.moveTo(34,8);x.lineTo(34,12);x.stroke()}
+else if(o.type==='lamp'){let lit=an.closed&&an.vis&&an.vis.has(an.f(an.id(i,0)))?cl(Math.abs(L.e)/.12,0,1):0;x.fillStyle='rgba(255,214,70,'+(.1+.9*lit)+')';x.beginPath();x.arc(0,0,22,0,7);x.fill();x.stroke();x.beginPath();x.moveTo(-15,-15);x.lineTo(15,15);x.moveTo(15,-15);x.lineTo(-15,15);x.moveTo(-34,0);x.lineTo(-22,0);x.moveTo(22,0);x.lineTo(34,0);x.stroke()}
+else{x.beginPath();x.moveTo(-34,0);x.lineTo(-10,0);x.lineTo(o.closed?10:8,o.closed?0:-20);x.moveTo(10,0);x.lineTo(34,0);x.stroke();x.fillStyle='#263e58';x.font='12px system-ui';x.fillText(o.closed?'fermé':'ouvert',0,-26)}
+x.fillStyle='#263e58';x.font='12px system-ui';x.fillText(LT[o.type],0,o.type==='coil'?76:o.type==='magnet'?36:34+(o.type==='meter'?10:0));
+TM[o.type].forEach((t,k)=>{x.fillStyle=L.pend&&L.pend[0]===i&&L.pend[1]===k?'#17845b':'#fff';x.strokeStyle='#26384a';x.lineWidth=2;x.beginPath();x.arc(t[0],t[1],6,0,7);x.fill();x.stroke()});x.restore()})}
+function props(){let o=L.c[L.sel],p=$('labProps');if(!o){p.textContent=L.sw>=0?'Fil sélectionné : cliquez sur « Supprimer » pour l’enlever.':'Cliquez sur un composant ou sur un fil.';return}p.innerHTML='<b>'+LT[o.type]+'</b><br>'+(o.type==='coil'?'<label>Nombre de spires : <b id="nn">'+o.n+'</b></label><input id="nr" type="range" min="50" max="1000" step="50" value="'+o.n+'">':o.type==='switch'?'<button id="tg" class="s">Basculer (actuellement '+(o.closed?'fermé':'ouvert')+')</button>':o.type==='magnet'?'<button id="tg" class="s">Inverser les pôles</button>':'<span class="muted">Déplacez-le sur la paillasse et reliez ses bornes.</span>');if($('nr'))$('nr').oninput=e=>{o.n=+e.target.value;$('nn').textContent=o.n};if($('tg'))$('tg').onclick=()=>{o.type==='magnet'?o.rev=!o.rev:o.closed=!o.closed;props()}}
+const lpos=e=>{let r=lc.getBoundingClientRect();return[(e.clientX-r.left)*760/r.width,(e.clientY-r.top)*360/r.height]};
+lc.onpointerdown=e=>{let[px,py]=lpos(e);for(let i=L.c.length-1;i>=0;i--)for(let t=0;t<TM[L.c[i].type].length;t++){let q=tp(i,t);if(Math.hypot(px-q[0],py-q[1])<12){if(!L.pend)L.pend=[i,t];else{if(L.pend[0]!==i||L.pend[1]!==t)wire(L.pend,[i,t]);L.pend=null}return}}
+let best=-1,bd=1e9;L.c.forEach((o,i)=>{let d=Math.hypot(o.x-px,o.y-py);if(d<bd){bd=d;best=i}});if(bd<46){L.sel=best;L.sw=-1;L.pend=null;L.drag={i:best,dx:px-L.c[best].x,dy:py-L.c[best].y};lc.setPointerCapture(e.pointerId);props();return}
+let kw=L.w.findIndex(w=>{let a=tp(...w.a),b=tp(...w.b),l=Math.hypot(b[0]-a[0],b[1]-a[1])||1,u=cl(((px-a[0])*(b[0]-a[0])+(py-a[1])*(b[1]-a[1]))/(l*l),0,1);return Math.hypot(px-a[0]-u*(b[0]-a[0]),py-a[1]-u*(b[1]-a[1]))<8});L.sw=kw;L.sel=-1;L.pend=null;props()};
+lc.onpointermove=e=>{if(!L.drag)return;let[px,py]=lpos(e),o=L.c[L.drag.i];o.x=cl(px-L.drag.dx,45,715);o.y=cl(py-L.drag.dy,60,285);o.bx=o.x};lc.onpointerup=lc.onpointercancel=()=>L.drag=null;
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{let n=L.c.length;addC(b.dataset.add,90+(n%5)*145,85+Math.floor(n/5)*130)});
+$('rmBtn').onclick=()=>{if(L.sw>=0){L.w.splice(L.sw,1);L.sw=-1}else if(L.sel>=0){let r=L.sel;L.w=L.w.filter(w=>w.a[0]!==r&&w.b[0]!==r);L.w.forEach(w=>{if(w.a[0]>r)w.a[0]--;if(w.b[0]>r)w.b[0]--});L.c.splice(r,1);L.sel=-1}props()};
+$('clrBtn').onclick=()=>{L.c=[];L.w=[];L.sel=L.sw=-1;L.pend=null;props()};
+$('labAuto').onclick=()=>{L.auto=!L.auto;let m=L.c.find(o=>o.type==='magnet');if(m)m.bx=m.x;$('labAuto').textContent=L.auto?'Ⅱ Arrêter le va-et-vient':'▶ Aimant en va-et-vient'};
+$('preset').onclick=()=>{L.c=[];L.w=[];L.ind=mkInd();let m=addC('magnet',110,130),c=addC('coil',330,120),s=addC('switch',470,265),g=addC('meter',620,150);L.c[m].x=L.c[m].bx=110;wire([c,0],[g,0]);wire([c,1],[s,0]);wire([s,1],[g,1]);L.sel=-1;props()};
+// Auto-induction simulation
+let au={closed:false,i1:0,i2:0,tHist:[],i1Hist:[],i2Hist:[],t:0,spark:0};
+function auFactor(){return (+$('indL').value)*(+$('ironCore').value?2.4:1)}
+$('indL').oninput=()=>{$('lVal').textContent=['Faible (L₁)','Moyenne (L₂)','Forte (L₃)'][+$('indL').value-1]};
+$('ironCore').oninput=()=>{$('coreVal').textContent=+$('ironCore').value?'Avec noyau de fer doux':'Sans noyau'};
+function updateAutoText(){
+  let el=$('autoExpText');
+  if(au.closed){
+    el.innerHTML='<b>Interrupteur K fermé :</b> le courant s’établit instantanément dans la branche 1 (lampe L<sub>1</sub> brillante dès t = 0), tandis que dans la branche 2 la bobine s’oppose à l’augmentation du courant : L<sub>2</sub> s’allume progressivement jusqu’à atteindre le même éclat en régime permanent.';
+  }else if(au.t>0){
+    el.innerHTML='<b>Interrupteur K ouvert :</b> la source est déconnectée. L’intensité dans la bobine ne s’annule pas brusquement : la bobine entretient brièvement un courant auto-induit dans la boucle fermée par les deux lampes (L<sub>2</sub> s’éteint progressivement et une brève étincelle peut apparaître à l’interrupteur).';
+  }else{
+    el.innerHTML='<b>État initial :</b> l’interrupteur K est ouvert. Aucun courant ne circule dans les deux branches ; les lampes L<sub>1</sub> et L<sub>2</sub> sont éteintes. Cliquez sur <b>« Fermer l’interrupteur K »</b> pour observer l’établissement du courant.';
+  }
+}
+$('autoSw').onclick=()=>{
+  au.closed=!au.closed;
+  if(!au.closed&&au.i2>0.2)au.spark=0.45;
+  $('autoSw').textContent=au.closed?'⚡ Ouvrir l’interrupteur K':'⚡ Fermer l’interrupteur K';
+  updateAutoText();
+};
+$('autoRst').onclick=()=>{
+  au={closed:false,i1:0,i2:0,tHist:[],i1Hist:[],i2Hist:[],t:0,spark:0};
+  $('autoSw').textContent='⚡ Fermer l’interrupteur K';
+  updateAutoText();
+};
+function stepAuto(dt){
+  let tau=0.42*auFactor();
+  if(au.closed){
+    au.t+=dt;
+    au.i1+=(1-au.i1)*(1-Math.exp(-dt/0.02));
+    au.i2+=(1-au.i2)*(1-Math.exp(-dt/tau));
+  }else{
+    if(au.t>0)au.t+=dt;
+    au.i1=au.i2*Math.exp(-dt/(tau*0.75));
+    au.i2*=Math.exp(-dt/(tau*0.75));
+  }
+  if(au.spark>0)au.spark=Math.max(0,au.spark-dt);
+  if(au.t>0){
+    au.tHist.push(au.t);au.i1Hist.push(au.i1);au.i2Hist.push(au.i2);
+    if(au.tHist.length>260){au.tHist.shift();au.i1Hist.shift();au.i2Hist.shift();}
+  }
+  drawAuto();
+}
+function drawAuto(){
+  let c=$('autoC');if(!c)return;
+  let x=c.getContext('2d');
+  x.setTransform(c.width/900,0,0,c.width/900,0,0);
+  x.clearRect(0,0,900,440);
+  x.fillStyle='#fafdff';x.fillRect(0,0,900,440);
+
+  // Partie gauche : schéma électrique
+  x.strokeStyle='#344e67';x.lineWidth=3;
+  // Générateur à gauche (x=70, y=130..250)
+  x.beginPath();x.moveTo(70,90);x.lineTo(70,175);x.moveTo(70,205);x.lineTo(70,290);x.stroke();
+  x.lineWidth=4;x.beginPath();x.moveTo(50,175);x.lineTo(90,175);x.stroke();
+  x.lineWidth=6;x.beginPath();x.moveTo(58,205);x.lineTo(82,205);x.stroke();
+  x.fillStyle='#10243b';x.font='bold 14px system-ui';x.textAlign='center';
+  x.fillText('+',42,172);x.fillText('−',42,212);x.fillText('Générateur',70,312);
+
+  // Fil supérieur + interrupteur K (x=115..165, y=90)
+  x.lineWidth=3;x.strokeStyle='#344e67';
+  x.beginPath();x.moveTo(70,90);x.lineTo(115,90);x.moveTo(165,90);x.lineTo(210,90);x.stroke();
+  x.beginPath();x.moveTo(115,90);
+  if(au.closed)x.lineTo(165,90);else x.lineTo(158,64);
+  x.stroke();
+  x.fillStyle='#10243b';x.fillText('K',140,56);
+  if(au.spark>0){
+    x.fillStyle='rgba(255,165,0,'+(au.spark*2)+')';
+    x.beginPath();x.arc(162,86,10+12*au.spark,0,7);x.fill();
+  }
+
+  // Nœuds A (210,90) et B (210,290) + fil retour bas
+  x.beginPath();x.moveTo(70,290);x.lineTo(440,290);x.moveTo(210,90);x.lineTo(440,90);x.stroke();
+  // Branche 1 (x=210, y=90..290) : Résistor R + Lampe L1
+  x.beginPath();x.moveTo(210,90);x.lineTo(210,125);x.moveTo(210,175);x.lineTo(210,210);x.moveTo(210,254);x.lineTo(210,290);x.stroke();
+  // Résistor R
+  x.fillStyle='#eef4fa';x.fillRect(196,125,28,50);x.strokeRect(196,125,28,50);
+  x.fillStyle='#10243b';x.fillText('r',182,155);
+  // Lampe L1
+  let b1=cl(au.i1,0,1);
+  if(b1>0.05){x.fillStyle='rgba(255,210,50,'+(0.35*b1)+')';x.beginPath();x.arc(210,232,34,0,7);x.fill();}
+  x.fillStyle='rgba(255,220,70,'+(0.12+0.88*b1)+')';x.beginPath();x.arc(210,232,21,0,7);x.fill();x.stroke();
+  x.beginPath();x.moveTo(196,218);x.lineTo(224,246);x.moveTo(224,218);x.lineTo(196,246);x.stroke();
+  x.fillStyle='#10243b';x.fillText('L₁',176,237);
+
+  // Branche 2 (x=440, y=90..290) : Bobine (L,r) + Lampe L2
+  x.beginPath();x.moveTo(440,90);x.lineTo(440,118);x.moveTo(440,182);x.lineTo(440,210);x.moveTo(440,254);x.lineTo(440,290);x.stroke();
+  // Noyau de fer doux éventuel
+  if(+$('ironCore').value){
+    x.fillStyle='#64748b';x.fillRect(435,114,10,72);
+  }
+  // Spires de la bobine
+  for(let k=0;k<6;k++){
+    x.beginPath();x.ellipse(440,124+k*10,22,6,0,0,7);
+    x.strokeStyle=k%2?'#a36d24':'#d49a38';x.lineWidth=3;x.stroke();
+  }
+  x.strokeStyle='#344e67';x.lineWidth=3;
+  x.fillStyle='#10243b';x.fillText('(L, r)',396,155);
+
+  // Champ magnétique propre B dans la bobine
+  if(au.i2>0.06){
+    x.strokeStyle='rgba(23,105,170,'+cl(au.i2,0.15,0.95)+')';x.lineWidth=2;
+    [432,440,448].forEach(bx=>{
+      x.beginPath();x.moveTo(bx,112);x.lineTo(bx,188);x.stroke();
+      x.beginPath();x.moveTo(bx,188);x.lineTo(bx-4,180);x.lineTo(bx+4,180);x.closePath();x.fillStyle='rgba(23,105,170,'+cl(au.i2,0.15,0.95)+')';x.fill();
+    });
+    x.fillStyle='#1769aa';x.font='bold 12px system-ui';x.fillText('B propre',485,154);
+  }
+
+  // Lampe L2
+  let b2=cl(au.i2,0,1);
+  if(b2>0.05){x.fillStyle='rgba(255,210,50,'+(0.35*b2)+')';x.beginPath();x.arc(440,232,34,0,7);x.fill();}
+  x.fillStyle='rgba(255,220,70,'+(0.12+0.88*b2)+')';x.beginPath();x.arc(440,232,21,0,7);x.fill();x.stroke();
+  x.beginPath();x.moveTo(426,218);x.lineTo(454,246);x.moveTo(454,218);x.lineTo(426,246);x.stroke();
+  x.fillStyle='#10243b';x.font='bold 14px system-ui';x.fillText('L₂',404,237);
+
+  // Flèches de courant i1 et i2
+  if(au.i1>0.05){
+    x.fillStyle='#17845b';x.font='bold 13px system-ui';
+    x.fillText(au.closed?'↓ i₁':'↑ i₁',238,112);
+  }
+  if(au.i2>0.05){
+    x.fillStyle='#c74646';x.font='bold 13px system-ui';
+    x.fillText('↓ i₂',468,112);
+  }
+
+  // Partie droite : oscillogramme qualitatif i(t)
+  let gx=545,gy=70,gw=320,gh=240;
+  x.fillStyle='#ffffff';x.strokeStyle='#cbd7e4';x.lineWidth=1.5;
+  x.fillRect(gx,gy,gw,gh);x.strokeRect(gx,gy,gw,gh);
+  // Grille
+  x.strokeStyle='#edf2f7';x.lineWidth=1;
+  for(let k=1;k<4;k++){x.beginPath();x.moveTo(gx,gy+k*gh/4);x.lineTo(gx+gw,gy+k*gh/4);x.stroke();}
+  for(let k=1;k<5;k++){x.beginPath();x.moveTo(gx+k*gw/5,gy);x.lineTo(gx+k*gw/5,gy+gh);x.stroke();}
+  // Axes
+  x.strokeStyle='#45617b';x.lineWidth=2;
+  x.beginPath();x.moveTo(gx,gy+gh-20);x.lineTo(gx+gw,gy+gh-20);x.moveTo(gx+20,gy);x.lineTo(gx+20,gy+gh);x.stroke();
+  x.fillStyle='#263e58';x.font='12px system-ui';x.textAlign='left';
+  x.fillText('Intensité i',gx+26,gy+16);x.fillText('temps t',gx+gw-48,gy+gh-6);
+
+  // Courbes i1 (vert) et i2 (rouge)
+  if(au.i1Hist.length>1){
+    let n=au.i1Hist.length,dx=(gw-35)/260,y0=gy+gh-20,amp=gh-55;
+    x.strokeStyle='#17845b';x.lineWidth=2.5;x.beginPath();
+    au.i1Hist.forEach((v,idx)=>{let px=gx+20+idx*dx,py=y0-v*amp;idx?x.lineTo(px,py):x.moveTo(px,py);});
+    x.stroke();
+    x.strokeStyle='#c74646';x.lineWidth=3;x.beginPath();
+    au.i2Hist.forEach((v,idx)=>{let px=gx+20+idx*dx,py=y0-v*amp;idx?x.lineTo(px,py):x.moveTo(px,py);});
+    x.stroke();
+  }
+  // Légende du graphe
+  x.fillStyle='#17845b';x.fillRect(gx+24,gy+gh+16,16,4);
+  x.fillStyle='#10243b';x.font='12px system-ui';x.fillText('Branche 1 (L₁ + r) : variation instantanée',gx+46,gy+gh+22);
+  x.fillStyle='#c74646';x.fillRect(gx+24,gy+gh+36,16,4);
+  x.fillStyle='#10243b';x.fillText('Branche 2 (L₂ + bobine) : retard dû à l’auto-induction',gx+46,gy+gh+42);
+
+  // Bandeau d'état en bas
+  x.fillStyle='#10243b';x.font='bold 14px system-ui';x.textAlign='center';
+  let status=!au.closed&&au.t===0?'Interrupteur K ouvert : i₁ = 0 et i₂ = 0':
+             au.closed&&Math.abs(1-au.i2)>0.04?'Régime transitoire (fermeture) : la bobine s’oppose à l’augmentation de i₂ (retard de L₂)':
+             au.closed?'Régime permanent : i₂ est constant → plus d’auto-induction, L₁ et L₂ brillent pareil':
+             au.i2>0.03?'Régime transitoire (ouverture) : la bobine prolonge le courant dans la boucle L₁-L₂':
+             'Courants annulés : i₁ = 0 et i₂ = 0';
+  x.fillText(status,450,415);
+}
+
+
+$('autoC').style.cursor='pointer';
+$('autoC').onclick=e=>{
+  let r=$('autoC').getBoundingClientRect();
+  let px=(e.clientX-r.left)*900/r.width, py=(e.clientY-r.top)*440/r.height;
+  if(px>95 && px<190 && py>40 && py<120){ $('autoSw').click(); }
+};
+
+// Loop
+function frame(now){let dt=cl((now-st.last)/1000,.004,.1);st.last=now;
+if(st.auto&&!st.drag){st.xm+=st.dir*(+$('speed').value)*dt;if(Math.abs(st.xm)>12){st.xm=cl(st.xm,-12,12);st.dir=-Math.sign(st.xm)}}
+let N=+$('turns').value,B=+$('magB').value,S=+$('area').value*1e-4;st.e=st.ind((st.rev?-1:1)*G(st.xm)*B*S,N,dt);st.v+=((st.xm-st.px)/dt-st.v)*.25;st.px=st.xm;st.ph+=dt*3;
+let e=st.e,on=Math.abs(e)>TH,s=st.rev?-1:1;if(st.v3)scene3D(mc,st.xm,st.rev,e,st.ph);else scene2D(mc,st.xm,st.rev,e,.3);
+let fc=!on?'—':(st.xm<0?e<0:e>0)?'Nord':'Sud';$('rV').textContent=fmt(Math.abs(st.v),1)+' cm/s';$('rE').textContent=fmt(Math.abs(e)*1000,0)+' mV';$('rI').textContent=fmt(Math.abs(e)*100,1)+' mA';$('rF').textContent=fc;
+$('sStat').textContent=!on?'Champ constant à travers la bobine : pas de f.é.m. induite, pas de courant.':'Le champ de l’aimant au niveau de la bobine '+(e*s<0?'augmente : la bobine présente la même polarité que le pôle en face, donc répulsion.':'diminue : la bobine présente la polarité opposée, donc attraction.')+' Elle s’oppose ainsi à la cause (loi de Lenz).';
+let t=(now-lz.t0)/1000,m=$('lenzMode').value,u=Math.min(1,t/3),lx0=m==='still'?-6:m.endsWith('In')?-12+8*u:-4-8*u,lr=m[0]==='s',le=lz.ind((lr?-1:1)*G(lx0)*1e-3,200,dt);scene2D($('lenzC'),lx0,lr,le,.15);
+
+labStep(dt);stepAuto(dt);requestAnimationFrame(frame)}
+document.getElementById('preset').click();requestAnimationFrame(frame);
+$('gradeQ').onclick=()=>{let sc=0;document.querySelectorAll('.q').forEach(q=>{let c=q.querySelector('input:checked'),o=q.querySelector('.fb'),f=document.createElement('div');if(o)o.remove();f.className='fb';if(c&&c.value===q.dataset.a){sc++;f.style.color='var(--green)';f.textContent='✓ Bonne réponse'}else{f.style.color=c?'var(--red)':'var(--muted)';f.textContent=c?'✗ Réponse incorrecte':'Non répondu'}q.appendChild(f)});$('qScore').textContent='Résultat : '+sc+'/8'};
+
+// Expérience 2 : solénoïde + bobine de Faraday + oscilloscope
+const sS=$('solSch'),sO=$('solOsc'),SC0=5e-7;
+const u1f=p=>{p-=Math.floor(p);return p<.25?4*p:p<.75?2-4*p:4*p-4},du1f=p=>{p-=Math.floor(p);return p<.25||p>=.75?4:-4};
+function drawSol(now){let f=+$('sF').value,Um=+$('sU').value,N2=+$('sN').value,kc=$('sCore').value==='1'?5:1,fm=$('sForm').value,y1=+$('sY1').value,y2=+$('sY2').value,sin=fm==='sin';
+$('sFv').textContent=f+' Hz';$('sUv').textContent=Um+' V';
+let U2=SC0*N2*kc*Um*f*(sin?2*Math.PI:4),tdiv=3/(f*10);$('sR1').textContent=fmt(Um,1)+' V';$('sR2').textContent=U2<1?fmt(U2*1000,0)+' mV':fmt(U2,2)+' V';$('sR3').textContent=fmt(tdiv*1000,2)+' ms/div';
+let x=sO.getContext('2d');x.setTransform(sO.width/900,0,0,sO.width/900,0,0);x.fillStyle='#0b1d2a';x.fillRect(0,0,900,420);
+let X0=40,Y0=30,W=820,H=360,dx=W/10,dy=H/8;x.strokeStyle='#1f4a3a';x.lineWidth=1;for(let i=0;i<=10;i++){x.beginPath();x.moveTo(X0+i*dx,Y0);x.lineTo(X0+i*dx,Y0+H);x.stroke()}for(let j=0;j<=8;j++){x.beginPath();x.moveTo(X0,Y0+j*dy);x.lineTo(X0+W,Y0+j*dy);x.stroke()}
+x.save();x.beginPath();x.rect(X0,Y0,W,H);x.clip();
+[[1,Y0+H/2-2*dy,y1,'#f2d03b'],[2,Y0+H/2+2*dy,y2,'#36d6e8']].forEach(([ch,cy,sv,col])=>{x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();for(let k=0;k<=400;k++){let ph=3*k/400,u=ch===1?(sin?Um*Math.sin(2*Math.PI*ph):Um*u1f(ph)):SC0*N2*kc*Um*f*(sin?2*Math.PI*Math.cos(2*Math.PI*ph):du1f(ph)),yy=cy-u/sv*dy;k?x.lineTo(X0+k*W/400,yy):x.moveTo(X0,yy)}x.stroke()});x.restore();
+x.font='14px system-ui';x.textAlign='left';x.fillStyle='#f2d03b';x.fillText('1',14,Y0+H/2-2*dy+5);x.fillStyle='#36d6e8';x.fillText('2',14,Y0+H/2+2*dy+5);x.fillText('Y2 : '+y2+' V/div',X0+300,412);x.fillStyle='#f2d03b';x.fillText('Y1 : '+y1+' V/div',X0,412);x.fillStyle='#9fc4b6';x.fillText('Balayage : '+fmt(tdiv*1000,2)+' ms/div',X0+560,412);
+// schéma
+let c=sS.getContext('2d');c.setTransform(sS.width/900,0,0,sS.width/900,0,0);c.fillStyle='#fafdff';c.fillRect(0,0,900,420);
+c.strokeStyle='#d49a38';c.lineWidth=3.5;c.beginPath();c.moveTo(210,230);c.lineTo(150,370);c.lineTo(150,400);c.moveTo(690,230);c.lineTo(690,380);c.lineTo(250,380);c.lineTo(250,400);c.stroke();
+c.fillStyle='#e8eef5';c.strokeStyle='#45617b';c.fillRect(110,390,180,26);c.strokeRect(110,390,180,26);c.fillStyle='#243e58';c.font='bold 15px system-ui';c.textAlign='center';c.fillText('GBF  ~',200,408);
+for(let i=0;i<12;i++){c.beginPath();c.ellipse(210+i*40,150,16,80,0,0,7);c.strokeStyle=i%2?'#a36d24':'#d49a38';c.lineWidth=3.5;c.stroke()}
+for(let i=0;i<7;i++){c.beginPath();c.ellipse(390+i*20,150,9,42,0,0,7);c.strokeStyle=i%2?'#1f7a5a':'#2fa57a';c.lineWidth=3;c.stroke()}
+let up=Math.sin(now/600)>0;c.fillStyle='#1769aa';c.font='15px system-ui';c.fillText('Solénoïde (inducteur)',450,265);c.fillStyle='#17845b';c.fillText('Bobine de Faraday (induit)',450,70);
+c.strokeStyle='#1769aa';c.fillStyle='#1769aa';c.lineWidth=2.5;let d=up?1:-1;c.beginPath();c.moveTo(300,125);c.lineTo(300+d*120,125);c.stroke();c.beginPath();c.moveTo(300+d*135,125);c.lineTo(300+d*118,117);c.lineTo(300+d*118,133);c.fill();c.fillText('B variable',320,110);
+c.fillStyle='#243e58';c.fillText('Y1 ← u₁ (GBF)',770,300);c.fillText('Y2 ← u₂',760,360);
+c.strokeStyle='#f2d03b';c.lineWidth=2.5;c.setLineDash([6,4]);c.beginPath();c.moveTo(290,403);c.lineTo(720,403);c.lineTo(720,310);c.stroke();c.setLineDash([]);
+c.strokeStyle='#36d6e8';c.setLineDash([6,4]);c.beginPath();c.moveTo(690,380);c.lineTo(690,345);c.stroke();c.setLineDash([])}
+function loopSol(t){drawSol(t);requestAnimationFrame(loopSol)}requestAnimationFrame(loopSol);
+</script>
+</body>
+</html>
