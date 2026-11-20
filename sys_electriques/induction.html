@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Induction électromagnétique — étude qualitative</title>
 <style>
 :root{--navy:#10243b;--blue:#1769aa;--cyan:#36b8d8;--ink:#17283b;--muted:#607286;--paper:#f4f7fb;--line:#dce5ef;--green:#17845b;--red:#c74646}
@@ -30,52 +30,61 @@ details{border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin
 .pal{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.pal button{background:#e7eef6;color:#213c57}
 footer{text-align:center;color:var(--muted);padding:20px}
 @media(max-width:760px){.grid,.controls{grid-template-columns:1fr}.ro{grid-template-columns:1fr 1fr}main{padding:0 11px 40px}}
- .page-switcher {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 1.25rem;
-    margin-bottom: 1.25rem;   
-    margin-left: 8rem;       
-           
-  }
-  .page-switcher label {
-    font-size: 16px;
-    color: var(--text-dim);
-     justify-content: center;
-    margin-top: 1.25rem;
-    margin-bottom: 1.25rem;   
-      margin-left: 18rem; 
-  }
-  .page-switcher select {
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 6px 10px;
-    font-size: 14px;
-    font-family: var(--font-sans);
-    cursor: pointer;
-    outline: none;
-     justify-content: center;
-    margin-top: 1.25rem;
-    margin-bottom: 1.25rem;  
-      margin-left: 1rem; 
-  }
+
+.topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-bottom:1px solid var(--line);padding:10px max(14px,calc((100% - 1180px)/2))}
+.back-btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;background:#013e69;color:#fff;padding:10px 16px;border-radius:24px;font-weight:650;font-size:.92rem;min-height:44px;white-space:nowrap}
+.back-btn:hover{background:var(--blue)}
+.page-switcher{display:flex;align-items:center;gap:8px;flex:1 1 280px;justify-content:flex-end;min-width:0}
+.page-switcher label{display:inline;margin:0;font-size:.92rem;color:var(--muted);white-space:nowrap}
+.page-switcher select{flex:1 1 auto;min-width:0;max-width:520px;min-height:44px;background:#fff;color:var(--ink);border:1px solid #cbd7e4;border-radius:10px;padding:8px 10px;font:inherit;font-size:.92rem;cursor:pointer}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0}.tw table{margin:0;min-width:480px}
+#toTop{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:48px;height:48px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;background:var(--blue);color:#fff;box-shadow:0 6px 18px #10243b55;opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .25s,transform .25s,visibility .25s;z-index:20}
+#toTop.show{opacity:1;visibility:visible;transform:none}
+#toTop svg{width:22px;height:22px}
+img,svg{max-width:100%}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media(max-width:760px){
+body{font-size:15px}
+header{padding:20px 14px}
+header p{font-size:.92rem}
+.topbar{padding:8px 12px}
+.back-btn{flex:1 1 100%;justify-content:center}
+.page-switcher{flex:1 1 100%;justify-content:stretch}
+.page-switcher select{max-width:none}
+nav{padding:8px 10px;scroll-snap-type:x proximity}nav a{padding:10px 13px;scroll-snap-align:start}
+section{scroll-margin-top:64px;margin:18px 0}
+.st h2{font-size:1.2rem}.st .num{padding:4px 9px}
+.card{padding:13px;border-radius:13px}
+.law{font-size:1rem;padding:12px 14px;overflow-x:auto}
+.ro,.ro[style]{grid-template-columns:1fr 1fr!important}
+.ro div{padding:8px}.ro b{font-size:1rem}
+button{min-height:44px;padding:10px 14px}
+.tb{gap:7px}.tb button{flex:1 1 calc(50% - 7px)}
+.pal button{flex:1 1 calc(33% - 8px)}
+input[type=range]{height:34px}
+select{min-height:44px;font-size:16px!important}
+.q label{padding:4px 0;min-height:36px;align-items:center}
+.cl{font-size:.7rem;top:6px;left:6px}
+table{font-size:.85rem}td,th{padding:7px 6px}
+#toTop{width:46px;height:46px}
+}
+@media(max-width:380px){.tb button,.pal button{flex:1 1 100%}.ro,.ro[style]{grid-template-columns:1fr!important}}
 </style>
 </head>
 <body>
-   <div class="page-switcher">
+   <div class="topbar">
+<a class="back-btn" href="https://simphysique.tn" aria-label="Retour vers simphysique.tn">← Retour à simphysique.tn</a>
+<div class="page-switcher">
       <label for="pageSwitch">Choisir :</label>
       <select id="pageSwitch" onchange="if(this.value) window.location.href=this.value;">   
        
-        <option value="induction.html"selected>Cours: Induction électromagnétique - Auto-induction</option>
+        <option value="induction.html" selected>Cours: Induction électromagnétique - Auto-induction</option>
         <option value="inductance.html">TP: Inductance d'une bobine</option>
         <option value="dipole_RL.html">TP: Réponse d'un dipôle RL à un échelon de tension</option>
        
       </select>
     </div>
+</div>
 <header><h1>Induction électromagnétique</h1><p>Cours interactif et laboratoire virtuel — étude qualitative adaptée au programme tunisien : mettre en évidence le phénomène, énoncer les lois de Lenz et de Faraday, puis expérimenter.</p></header>
 <nav><a href="#decouverte">Mise en évidence</a><a href="#cause">Cause</a><a href="#lenz">Loi de Lenz</a><a href="#faraday">Loi de Faraday</a><a href="#solenoide">Expérience 2</a><a href="#simulation">Simulation 2D/3D</a><a href="#autoinduction">Auto-induction</a><a href="#applications">Applications</a><a href="#laboratoire">Laboratoire</a><a href="#exercices">Exercices</a></nav>
 <main>
@@ -83,12 +92,12 @@ footer{text-align:center;color:var(--muted);padding:20px}
 <section id="decouverte"><div class="st"><span class="num">01</span><h2>Mise en évidence du phénomène</h2></div>
 <div class="card">
 <p>Relions une <b>bobine</b> à un galvanomètre, sans aucun générateur dans le circuit. Approchons ou éloignons un aimant. L’aimant crée un champ magnétique : c’est l’<b>inducteur</b>. La bobine, où apparaît le courant, est le <b>circuit induit</b>.</p>
-<table><tr><th>Expérience</th><th>Observation</th></tr>
+<div class="tw"><table><tr><th>Expérience</th><th>Observation</th></tr>
 <tr><td>Aimant immobile près de la bobine</td><td>Aucune déviation : pas de courant.</td></tr>
 <tr><td>On approche l’aimant</td><td>L’aiguille dévie dans un sens.</td></tr>
 <tr><td>On éloigne l’aimant</td><td>L’aiguille dévie en sens contraire.</td></tr>
 <tr><td>On va plus vite</td><td>La déviation est plus grande.</td></tr>
-<tr><td>Circuit ouvert</td><td>Aucun courant, même si l’aimant bouge.</td></tr></table>
+<tr><td>Circuit ouvert</td><td>Aucun courant, même si l’aimant bouge.</td></tr></table></div>
 <div class="callout"><b>Conclusion :</b> un courant, dit <b>courant induit</b>, apparaît dans le circuit induit lorsque l’aimant <b>se déplace</b> par rapport à la bobine. C’est le <b>phénomène d’induction électromagnétique</b>. La présence de l’aimant seule ne suffit pas.</div>
 <details><summary>Question : l’aimant est immobile devant la bobine, que se passe-t-il ?</summary>Le champ magnétique qui traverse la bobine ne change pas : il n’y a pas de courant induit.</details>
 </div></section>
@@ -111,9 +120,9 @@ footer{text-align:center;color:var(--muted);padding:20px}
 <div class="tb"><button id="lenzReplay">↻ Rejouer</button></div>
 <div id="lenzText" class="callout"></div>
 </div></div>
-<table><tr><th>Mouvement de l’aimant</th><th>Face de la bobine tournée vers l’aimant</th><th>Effet</th></tr>
+<div class="tw"><table><tr><th>Mouvement de l’aimant</th><th>Face de la bobine tournée vers l’aimant</th><th>Effet</th></tr>
 <tr><td>Pôle Nord s’approche</td><td>Face Nord</td><td>Répulsion</td></tr><tr><td>Pôle Nord s’éloigne</td><td>Face Sud</td><td>Attraction</td></tr>
-<tr><td>Pôle Sud s’approche</td><td>Face Sud</td><td>Répulsion</td></tr><tr><td>Pôle Sud s’éloigne</td><td>Face Nord</td><td>Attraction</td></tr></table>
+<tr><td>Pôle Sud s’approche</td><td>Face Sud</td><td>Répulsion</td></tr><tr><td>Pôle Sud s’éloigne</td><td>Face Nord</td><td>Attraction</td></tr></table></div>
 <div class="callout"><b>Méthode :</b> 1) la cause est un rapprochement ou un éloignement de l’aimant ; 2) la bobine s’y oppose : elle <b>repousse</b> l’aimant qui s’approche et l’<b>attire</b> quand il s’éloigne ; 3) on en déduit la face Nord ou Sud de la bobine ; 4) la règle de la main droite (ou le bonhomme d’Ampère) donne le sens du courant. Vue de face, une <b>face Nord</b> correspond à un courant dans le sens <b>anti-horaire</b>, une face Sud au sens horaire. Dans la simulation, ⊙ désigne un courant qui sort de la page et ⊗ un courant qui y entre.</div>
 </div></section>
 
@@ -121,7 +130,7 @@ footer{text-align:center;color:var(--muted);padding:20px}
 <div class="card">
 <div class="law"><b>Loi de Faraday.</b> Toute variation du champ magnétique à travers un circuit induit y fait apparaître une f.é.m. induite. La f.é.m. induite est <b>d’autant plus grande que la variation est rapide</b>.</div>
 <p>Elle augmente aussi avec le <b>nombre de spires</b> de la bobine et avec l’<b>intensité du champ</b> de l’aimant. Si le circuit est fermé, le courant induit est d’autant plus intense que la f.é.m. est grande. À vérifier dans la simulation ci-dessous :</p>
-<table><tr><th>Modification</th><th>Effet sur la f.é.m. induite</th></tr><tr><td>Aimant déplacé plus vite</td><td>Augmente</td></tr><tr><td>Bobine à plus de spires</td><td>Augmente</td></tr><tr><td>Aimant plus puissant</td><td>Augmente</td></tr><tr><td>Aimant immobile</td><td>Nulle</td></tr></table>
+<div class="tw"><table><tr><th>Modification</th><th>Effet sur la f.é.m. induite</th></tr><tr><td>Aimant déplacé plus vite</td><td>Augmente</td></tr><tr><td>Bobine à plus de spires</td><td>Augmente</td></tr><tr><td>Aimant plus puissant</td><td>Augmente</td></tr><tr><td>Aimant immobile</td><td>Nulle</td></tr></table></div>
 </div></section>
 
 <section id="solenoide"><div class="st"><span class="num">05</span><h2>Expérience 2 : bobine de Faraday dans un solénoïde</h2></div>
@@ -136,12 +145,12 @@ footer{text-align:center;color:var(--muted);padding:20px}
 <div><label>Noyau de fer doux dans le solénoïde</label><select id="sCore" style="width:100%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option value="0">Sans noyau</option><option value="1">Avec noyau</option></select></div>
 <div><label>Sensibilités : Y1 / Y2 (V/div)</label><div style="display:flex;gap:8px"><select id="sY1" style="width:50%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option>1</option><option selected>2</option><option>5</option></select><select id="sY2" style="width:50%;padding:8px;border-radius:8px;border:1px solid #cbd7e4;font:inherit"><option>0.1</option><option selected>0.2</option><option>0.5</option><option>1</option><option>2</option><option>5</option></select></div></div></div>
 <div class="ro" style="grid-template-columns:repeat(3,1fr)"><div><small>Amplitude de u₁</small><b id="sR1">—</b></div><div><small>Amplitude de u₂</small><b id="sR2">—</b></div><div><small>Balayage</small><b id="sR3">—</b></div></div>
-<table><tr><th>Observation</th><th>Interprétation</th></tr>
+<div class="tw"><table><tr><th>Observation</th><th>Interprétation</th></tr>
 <tr><td>Une tension <i>u</i><sub>2</sub> apparaît aux bornes de la bobine de Faraday, sans générateur.</td><td>Le courant variable dans le solénoïde crée un champ magnétique <b>variable</b> à travers la bobine 2 : c’est la cause de l’induction.</td></tr>
 <tr><td><i>u</i><sub>2</sub> a la même fréquence que <i>u</i><sub>1</sub>.</td><td>Le champ varie à la fréquence du courant inducteur.</td></tr>
 <tr><td>En augmentant la fréquence ou l’amplitude de <i>u</i><sub>1</sub>, l’amplitude de <i>u</i><sub>2</sub> augmente.</td><td>Le champ varie plus vite (ou plus fort) : loi de Faraday. Adaptez la sensibilité Y2 pour garder le signal visible.</td></tr>
 <tr><td>Avec plus de spires ou avec le noyau de fer, <i>u</i><sub>2</sub> augmente.</td><td>Plus de spires pour la bobine 2 ; le noyau renforce le champ.</td></tr>
-<tr><td>Signal triangulaire : <i>u</i><sub>2</sub> est rectangulaire et change de signe quand <i>u</i><sub>1</sub> passe de croissant à décroissant.</td><td><i>u</i><sub>2</sub> ne dépend pas de la valeur de <i>u</i><sub>1</sub>, mais de sa <b>rapidité de variation</b>. Son signe s’inverse quand la cause s’inverse (loi de Lenz).</td></tr></table>
+<tr><td>Signal triangulaire : <i>u</i><sub>2</sub> est rectangulaire et change de signe quand <i>u</i><sub>1</sub> passe de croissant à décroissant.</td><td><i>u</i><sub>2</sub> ne dépend pas de la valeur de <i>u</i><sub>1</sub>, mais de sa <b>rapidité de variation</b>. Son signe s’inverse quand la cause s’inverse (loi de Lenz).</td></tr></table></div>
 <div class="callout"><b>À retenir :</b> la tension induite aux bornes de la bobine de Faraday est d’autant plus grande que le courant inducteur varie plus vite et que la bobine a plus de spires. Elle est nulle si le courant inducteur est constant. <small>(Modèle simplifié : la forme et les amplitudes illustrent les lois qualitatives.)</small></div>
 </div></section>
 
@@ -183,12 +192,12 @@ footer{text-align:center;color:var(--muted);padding:20px}
 <li><b>Branche 2 (inductive) :</b> une lampe identique L<sub>2</sub> en série avec une bobine d’inductance <i>L</i> et de résistance interne <i>r</i>.</li>
 </ul>
 <div id="autoExpText" class="callout"><b>État initial :</b> l’interrupteur K est ouvert. Aucun courant ne circule dans les deux branches ; les lampes L<sub>1</sub> et L<sub>2</sub> sont éteintes. Cliquez sur <b>« Fermer l’interrupteur K »</b> pour observer l’établissement du courant.</div>
-<table>
+<div class="tw"><table>
 <tr><th>Étape</th><th>Observation</th><th>Interprétation (Loi de Lenz)</th></tr>
 <tr><td>Fermeture de K</td><td>L<sub>1</sub> brille instantanément ; L<sub>2</sub> s’allume avec un <b>retard</b>.</td><td>Le courant augmente : la bobine crée une f.é.m. auto-induite qui s’oppose à l’établissement du courant.</td></tr>
 <tr><td>Régime permanent</td><td>L<sub>1</sub> et L<sub>2</sub> ont le <b>même éclat</b>.</td><td>Le courant est constant : le champ propre ne varie plus, la bobine se comporte comme un simple conducteur ohmique de résistance <i>r</i>.</td></tr>
 <tr><td>Ouverture de K</td><td>L<sub>2</sub> ne s’éteint pas instantanément (un flash ou une étincelle peut apparaître).</td><td>Le courant diminue brutalement : la bobine s’oppose à cette annulation en prolongeant brièvement le courant dans la boucle fermée par les deux branches.</td></tr>
-</table>
+</table></div>
 </div>
 </div>
 <h3>Interprétation</h3>
@@ -520,6 +529,12 @@ c.fillStyle='#243e58';c.fillText('Y1 ← u₁ (GBF)',770,300);c.fillText('Y2 ←
 c.strokeStyle='#f2d03b';c.lineWidth=2.5;c.setLineDash([6,4]);c.beginPath();c.moveTo(290,403);c.lineTo(720,403);c.lineTo(720,310);c.stroke();c.setLineDash([]);
 c.strokeStyle='#36d6e8';c.setLineDash([6,4]);c.beginPath();c.moveTo(690,380);c.lineTo(690,345);c.stroke();c.setLineDash([])}
 function loopSol(t){drawSol(t);requestAnimationFrame(loopSol)}requestAnimationFrame(loopSol);
+</script>
+<button id="toTop" type="button" aria-label="Retour en haut de la page" title="Haut de page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+<script>
+(function(){var b=document.getElementById('toTop');function u(){b.classList.toggle('show',(window.pageYOffset||document.documentElement.scrollTop)>300)}
+window.addEventListener('scroll',u,{passive:true});u();
+b.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'})})})();
 </script>
 </body>
 </html>
