@@ -32,7 +32,7 @@ footer{text-align:center;color:var(--muted);padding:20px}
 @media(max-width:760px){.grid,.controls{grid-template-columns:1fr}.ro{grid-template-columns:1fr 1fr}main{padding:0 11px 40px}}
 
 .topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-bottom:1px solid var(--line);padding:10px max(14px,calc((100% - 1180px)/2))}
-.back-btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;background:#013e69;color:#fff;padding:10px 16px;border-radius:24px;font-weight:650;font-size:.92rem;min-height:44px;white-space:nowrap}
+.back-btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;background:var(--navy);color:#fff;padding:10px 16px;border-radius:24px;font-weight:650;font-size:.92rem;min-height:44px;white-space:nowrap}
 .back-btn:hover{background:var(--blue)}
 .page-switcher{display:flex;align-items:center;gap:8px;flex:1 1 280px;justify-content:flex-end;min-width:0}
 .page-switcher label{display:inline;margin:0;font-size:.92rem;color:var(--muted);white-space:nowrap}
@@ -208,6 +208,18 @@ table{font-size:.85rem}td,th{padding:7px 6px}
 <svg viewBox="0 0 560 150" style="width:100%;max-width:560px;display:block;margin:6px auto" role="img" aria-label="Dipôle AB : inductance L en série avec le résistor r"><g fill="none" stroke="#45617b" stroke-width="2.5"><path d="M40 80H110"/><path d="M110 80c0-34 20-34 20 0c0-34 20-34 20 0c0-34 20-34 20 0c0-34 20-34 20 0"/><path d="M190 80H250"/><rect x="250" y="66" width="70" height="28"/><path d="M320 80H390"/><path d="M40 122H385"/><path d="M60 40H120" stroke="#17845b"/></g><path d="M385 122l-10-5v10z" fill="#45617b"/><path d="M120 40l-9-5v10z" fill="#17845b"/><g fill="#243e58" font-family="system-ui" font-size="15" text-anchor="middle"><text x="30" y="85" font-weight="bold">A</text><text x="402" y="85" font-weight="bold">B</text><text x="150" y="38">L</text><text x="285" y="58">r</text><text x="212" y="142">u<tspan font-size="11" dy="3">AB</tspan></text><text x="90" y="32" fill="#17845b">i</text></g></svg>
 <div class="law"><i>e</i> = −<i>L</i>·<i>di</i>/<i>dt</i><br><i>u</i><sub>AB</sub> = <i>r</i>·<i>i</i> − <i>e</i> = <i>r</i>·<i>i</i> + <i>L</i>·<i>di</i>/<i>dt</i><br><span style="font-size:.95rem;color:#d8ecff">Régime permanent (<i>di</i>/<i>dt</i> = 0) : <i>u</i><sub>AB</sub> = <i>r</i>·<i>i</i>, la bobine se comporte comme un résistor.</span></div>
 <div class="callout"><b>À retenir :</b> une bobine <b>s’oppose aux variations brusques de l’intensité du courant</b> qui la traverse (ni établissement instantané, ni coupure instantanée). Cet effet est d’autant plus marqué que la bobine possède beaucoup de spires ou contient un <b>noyau de fer doux</b> (qui renforce le champ magnétique propre).</div>
+
+<h3>Énergie magnétique emmagasinée dans une bobine</h3>
+<p>Quand le courant s’établit dans une bobine, le générateur doit « lutter » contre la f.é.m. auto-induite qui s’oppose à l’augmentation de <i>i</i>. Le travail fourni n’est pas perdu : il est <b>emmagasiné par la bobine sous forme d’énergie magnétique</b>, liée au champ magnétique créé dans et autour de la bobine. Cette énergie est restituée au circuit lorsque le courant diminue ou lorsqu’on ouvre le circuit (d’où l’étincelle à l’ouverture d’un interrupteur en série avec une bobine).</p>
+<p>La puissance reçue par l’inductance pure <i>L</i> est <i>p</i> = <i>u</i><sub>L</sub>·<i>i</i> = <i>L</i>·<i>i</i>·<i>di</i>/<i>dt</i> = d(½<i>L i</i>²)/d<i>t</i>. En intégrant de <i>i</i> = 0 jusqu’à l’intensité <i>i</i>, on obtient :</p>
+<div class="law"><b>Expression de l’énergie magnétique</b><br><i>E</i><sub>m</sub> = ½ · <i>L</i> · <i>i</i>²<br><span style="font-size:.95rem;color:#d8ecff"><i>E</i><sub>m</sub> en joule (J) · <i>L</i> en henry (H) · <i>i</i> en ampère (A)</span></div>
+<div class="callout"><b>À retenir :</b>
+<ul style="margin:6px 0 0;padding-left:20px">
+<li>L’énergie magnétique est toujours <b>positive</b> et <b>proportionnelle à <i>L</i></b> et au <b>carré de l’intensité</b>.</li>
+<li>Elle ne dépend que de l’intensité <b>à l’instant considéré</b> : elle ne peut pas varier brusquement, car <i>i</i> est continue dans une bobine.</li>
+<li>Seule l’inductance <i>L</i> emmagasine de l’énergie : le résistor <i>r</i> de la bobine, lui, <b>dissipe</b> l’énergie par effet Joule (<i>r</i>·<i>i</i>²).</li>
+</ul></div>
+<p class="muted"><b>Exemple :</b> une bobine d’inductance <i>L</i> = 0,50 H parcourue par un courant <i>i</i> = 0,20 A emmagasine <i>E</i><sub>m</sub> = ½ × 0,50 × (0,20)² = 1,0 × 10⁻² J.</p>
 </div></section>
 
 <section id="applications"><div class="st"><span class="num">08</span><h2>Applications</h2></div>
