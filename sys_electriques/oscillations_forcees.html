@@ -169,6 +169,8 @@
   .toolbar-check.ch2 input { accent-color: var(--out-color); }
   .toolbar-check.ch3 { color: var(--ur-color); }
   .toolbar-check.ch3 input { accent-color: var(--ur-color); }
+  .toolbar-check.chB { color: #54a0ff; } .toolbar-check.chB input { accent-color: #54a0ff; }
+  .color-dot.blue { background-color: #54a0ff; }
   .toolbar-check.chBR { color: #ff6b6b; } .toolbar-check.chBR input { accent-color: #ff6b6b; }
   .toolbar-check.chBC { color: #f368e0; } .toolbar-check.chBC input { accent-color: #f368e0; }
   .toolbar-check.chRC { color: #b8e04a; } .toolbar-check.chRC input { accent-color: #b8e04a; }
@@ -485,6 +487,7 @@
             <span class="legend-item"><span class="color-dot orange"></span>Y2 : u(t)</span>
             <span class="legend-item"><span class="color-dot green"></span>Y1 : u<sub>R0</sub>(t) = R<sub>0</sub>·i(t)</span>
             <span class="legend-item"><span class="color-dot purple"></span>Y1 : u<sub>C</sub>(t)</span>
+            <span class="legend-item"><span class="color-dot blue"></span>Y1 : u<sub>B</sub>(t)</span>
             <span class="legend-item"><span class="color-dot red"></span>Y1 : u<sub>BR</sub>(t)</span>
             <span class="legend-item"><span class="color-dot pink"></span>Y1 : u<sub>BC</sub>(t)</span>
             <span class="legend-item"><span class="color-dot lime"></span>Y1 : u<sub>RC</sub>(t)</span>
@@ -492,7 +495,7 @@
         </div>
 
         <div class="top-screen-bar">
-          <div class="ctrl-hint">Excitateur GBF : u(t) = U<sub>m</sub>·sin(2π N t) | <b>Espace</b>/<b>P</b> : pause · <b>S</b> : enregistrer les courbes I<sub>m</sub>(N), U<sub>Cm</sub>(N) · <b>I</b> : imprimer</div>
+          <div class="ctrl-hint">Excitateur GBF : u(t) = U<sub>m</sub>·sin(2π N t) | <b>Espace</b>/<b>P</b> : pause · <b>S</b> : enregistrer les courbes I(N), U<sub>C</sub>(N) · <b>I</b> : imprimer</div>
           <div class="top-buttons">
             <button id="playPauseBtn" class="btn-pause">|| Pause <small style="opacity:.6">(Espace)</small></button>
             <button id="resetBtn" class="btn-reset">↺ Réinitialiser</button>
@@ -530,6 +533,17 @@
             </select>
           </div>
           <label class="toolbar-check ch3"><input type="checkbox" id="showChan3Check"> u<sub>C</sub>(t)</label>
+
+          <div class="control-group" style="margin-left: 10px;">
+            <label style="color:#54a0ff">CH1 (u<sub>B</sub>):</label>
+            <select id="vBSensSelect">
+              <option value="1">1 V/div</option>
+              <option value="2" selected>2 V/div</option>
+              <option value="5">5 V/div</option>
+              <option value="10">10 V/div</option>
+            </select>
+          </div>
+          <label class="toolbar-check chB"><input type="checkbox" id="showChanBCheck"> u<sub>B</sub>(t) <small style="opacity:.7">bobine (L, r)</small></label>
 
         </div>
 
@@ -608,19 +622,19 @@
       </div>
 
       <!-- COURBES DE RÉSONANCE -->
-      <button id="toggleBodeBtn" class="btn-theory-toggle" aria-expanded="false" aria-controls="bodePanel">AFFICHER LES GRAPHES I<sub>m</sub>(N) ET U<sub>Cm</sub>(N)</button>
+      <button id="toggleBodeBtn" class="btn-theory-toggle" aria-expanded="false" aria-controls="bodePanel">AFFICHER LES GRAPHES I(N) ET U<sub>C</sub>(N) (VALEURS EFFICACES)</button>
       <div class="oscillo-panel panel-collapsed" id="bodePanel">
         <div class="oscillo-header">
-          <span class="oscillo-title">RÉPONSE EN FRÉQUENCE — RÉSONANCES D'INTENSITÉ ET DE CHARGE</span>
+          <span class="oscillo-title">RÉPONSE EN FRÉQUENCE — RÉSONANCES D'INTENSITÉ ET DE CHARGE (VALEURS EFFICACES)</span>
           <div class="oscillo-legend">
-            <span class="legend-item"><span class="color-dot cyan"></span>I<sub>m</sub>(N)</span>
-            <span class="legend-item"><span class="color-dot purple"></span>U<sub>Cm</sub>(N)</span>
+            <span class="legend-item"><span class="color-dot cyan"></span>I(N)</span>
+            <span class="legend-item"><span class="color-dot purple"></span>U<sub>C</sub>(N)</span>
           </div>
         </div>
 
         <div class="oscillo-toolbar">
-          <label class="toolbar-check bode1"><input type="checkbox" id="showBodeI" checked> I<sub>m</sub>(N) [Intensité]</label>
-          <label class="toolbar-check bode2" style="margin-left: 15px;"><input type="checkbox" id="showBodeUc" checked> U<sub>Cm</sub>(N) [Charge / Tension C]</label>
+          <label class="toolbar-check bode1"><input type="checkbox" id="showBodeI" checked> I(N) [Intensité efficace]</label>
+          <label class="toolbar-check bode2" style="margin-left: 15px;"><input type="checkbox" id="showBodeUc" checked> U<sub>C</sub>(N) [Tension efficace aux bornes de C]</label>
           <span class="bode-actions">
             <button id="saveCurveBtn" class="btn-reset" title="Enregistrer les courbes affichées pour les comparer ensuite avec d'autres (après avoir changé un paramètre) — touche S">💾 Enregistrer les courbes</button>
             <button id="printBtn" class="btn-reset" title="Imprimer les graphes de résonance (touche I)">🖨 Imprimer</button>
@@ -869,6 +883,7 @@
   const Y1_CHANNELS = [
     { key: 'uR0', chk: 'showChan2Check',  sens: 'v2SensSelect',  color: '#2bbd8e', lw: 2,   lab: 'u<sub>R0</sub>' },
     { key: 'uC',  chk: 'showChan3Check',  sens: 'v3SensSelect',  color: '#c792ea', lw: 1.5, lab: 'u<sub>C</sub>' },
+    { key: 'uB',  chk: 'showChanBCheck',  sens: 'vBSensSelect',  color: '#54a0ff', lw: 2,   lab: 'u<sub>B</sub>' },
     { key: 'uBR', chk: 'showChanBRCheck', sens: 'vBRSensSelect', color: '#ff6b6b', lw: 2,   lab: 'u<sub>BR</sub>' },
     { key: 'uBC', chk: 'showChanBCCheck', sens: 'vBCSensSelect', color: '#f368e0', lw: 2,   lab: 'u<sub>BC</sub>' },
     { key: 'uRC', chk: 'showChanRCCheck', sens: 'vRCSensSelect', color: '#b8e04a', lw: 2,   lab: 'u<sub>RC</sub>' }
@@ -888,13 +903,14 @@
     const zR0 = cx(R0 * Im, phi);
     const zC  = cx(Im / (C * om), phi - Math.PI / 2);
     const zB  = add(cx(r * Im, phi), cx(L * om * Im, phi + Math.PI / 2));   // bobine (L, r)
-    return { uR0: P(zR0), uC: P(zC), uBR: P(add(zB, zR0)), uBC: P(add(zB, zC)), uRC: P(add(zR0, zC)) };
+    return { uR0: P(zR0), uC: P(zC), uB: P(zB), uBR: P(add(zB, zR0)), uBC: P(add(zB, zC)), uRC: P(add(zR0, zC)) };
   }
 
   // Schéma : l'ordre des dipôles est choisi pour que Y1 (masse à gauche) mesure la tension voulue
   const SCH_SPEC = {
     uR0: { order: ['R', 'L', 'C'], tap: 1, color: 'var(--out-color)', name: 'R0' },
     uC:  { order: ['C', 'L', 'R'], tap: 1, color: 'var(--ur-color)',  name: 'C' },
+    uB:  { order: ['L', 'R', 'C'], tap: 1, color: '#54a0ff', name: 'B' },
     uBR: { order: ['R', 'L', 'C'], tap: 2, color: '#ff6b6b', name: 'BR' },
     uBC: { order: ['L', 'C', 'R'], tap: 2, color: '#f368e0', name: 'BC' },
     uRC: { order: ['R', 'C', 'L'], tap: 2, color: '#b8e04a', name: 'RC' }
@@ -1214,16 +1230,16 @@
 
     const maxN = 600;
     // Échelles verticales : celles du circuit actuel, élargies si besoin pour afficher les courbes enregistrées
-    let maxI = Um / Rtotal;
+    let maxI = Um / Rtotal / Math.SQRT2;
     let maxUcm = ucmScale(Um, L, C, Rtotal);
     const visSaved = savedCurves.filter(sc => sc.visible);
     visSaved.forEach(sc => {
       const Rt = sc.R0 + sc.r;
-      if (sc.showI)  maxI = Math.max(maxI, sc.Um / Rt);
+      if (sc.showI)  maxI = Math.max(maxI, sc.Um / Rt / Math.SQRT2);
       if (sc.showUc) maxUcm = Math.max(maxUcm, ucmScale(sc.Um, sc.L, sc.C, Rt));
     });
 
-    // Courbe 1 : Im(N)
+    // Courbe 1 : I(N), valeur efficace
     if (showBodeI) {
       bCtx.strokeStyle = "#4fc3e8"; bCtx.lineWidth = 2; bCtx.beginPath();
       for (let px = 40; px < w - 10; px++) {
@@ -1232,7 +1248,7 @@
         const om = 2 * Math.PI * freq;
         const X = L * om - 1 / (C * om);
         const Z = Math.sqrt(Rtotal * Rtotal + X * X);
-        const Im = Um / Z;
+        const Im = Um / Z / Math.SQRT2;
 
         const py = (h - 25) - (Im / maxI) * (h - 40);
         if (px === 40) bCtx.moveTo(px, py); else bCtx.lineTo(px, py);
@@ -1240,7 +1256,7 @@
       bCtx.stroke();
     }
 
-    // Courbe 2 : Ucm(N)
+    // Courbe 2 : U_C(N), valeur efficace
     if (showBodeUc) {
       bCtx.strokeStyle = "#c792ea"; bCtx.lineWidth = 2; bCtx.beginPath();
       for (let px = 40; px < w - 10; px++) {
@@ -1249,7 +1265,7 @@
         const om = 2 * Math.PI * freq;
         const X = L * om - 1 / (C * om);
         const Z = Math.sqrt(Rtotal * Rtotal + X * X);
-        const Im = Um / Z;
+        const Im = Um / Z / Math.SQRT2;
         const Ucm = Im / (C * om);
 
         const py = (h - 25) - (Ucm / maxUcm) * (h - 40);
@@ -1258,7 +1274,7 @@
       bCtx.stroke();
     }
 
-    // Courbes enregistrées (pointillés) : Im(N) en tirets, Ucm(N) en pointillés fins
+    // Courbes enregistrées (pointillés) : I(N) en tirets, U_C(N) en pointillés fins
     visSaved.forEach(sc => {
       const Rt = sc.R0 + sc.r;
       [{ on: sc.showI, key: "I", dash: [7, 4], max: maxI }, { on: sc.showUc, key: "U", dash: [2, 3], max: maxUcm }].forEach(c => {
@@ -1275,7 +1291,7 @@
       bCtx.setLineDash([]);
     });
     if (visSaved.length) {
-      bCtx.fillStyle = "#7c8a92"; bCtx.font = "10px sans-serif"; bCtx.fillText("Échelle : Im max = " + (maxI * 1000).toFixed(0) + " mA · Ucm max = " + maxUcm.toFixed(1) + " V", 48, 22);
+      bCtx.fillStyle = "#7c8a92"; bCtx.font = "10px sans-serif"; bCtx.fillText("Échelle : I max = " + (maxI * 1000).toFixed(0) + " mA · U_C max = " + maxUcm.toFixed(1) + " V", 48, 22);
     }
 
     bCtx.fillStyle = "#7c8a92"; bCtx.font = "10px sans-serif";
@@ -1290,7 +1306,7 @@
       const om = 2 * Math.PI * freqHover;
       const X = L * om - 1 / (C * om);
       const Z = Math.sqrt(Rtotal * Rtotal + X * X);
-      const ImHover = Um / Z;
+      const ImHover = Um / Z / Math.SQRT2;
       const UcmHover = ImHover / (C * om);
 
       bCtx.strokeStyle = "rgba(255, 255, 255, 0.4)"; bCtx.lineWidth = 1; bCtx.setLineDash([4, 4]);
@@ -1302,20 +1318,20 @@
       if (showBodeI) {
         const pyI = (h - 25) - (ImHover / maxI) * (h - 40);
         bCtx.fillStyle = "#4fc3e8"; bCtx.beginPath(); bCtx.arc(mx, pyI, 4, 0, Math.PI * 2); bCtx.fill();
-        html += `<span style="color:var(--accent)"><strong>I<sub>m</sub> :</strong> ${(ImHover * 1000).toFixed(1)} mA</span><br/>`;
+        html += `<span style="color:var(--accent)"><strong>I :</strong> ${(ImHover * 1000).toFixed(1)} mA</span><br/>`;
       }
 
       if (showBodeUc) {
         const pyUc = (h - 25) - (UcmHover / maxUcm) * (h - 40);
         bCtx.fillStyle = "#c792ea"; bCtx.beginPath(); bCtx.arc(mx, pyUc, 4, 0, Math.PI * 2); bCtx.fill();
-        html += `<span style="color:var(--ur-color)"><strong>U<sub>Cm</sub> :</strong> ${UcmHover.toFixed(2)} V</span><br/>`;
+        html += `<span style="color:var(--ur-color)"><strong>U<sub>C</sub> :</strong> ${UcmHover.toFixed(2)} V</span><br/>`;
       }
 
       visSaved.forEach(sc => {
         const v = savedValueAt(sc, freqHover, sc.R0 + sc.r);
         let parts = [];
-        if (sc.showI)  parts.push("Im = " + (v.I * 1000).toFixed(1) + " mA");
-        if (sc.showUc) parts.push("Ucm = " + v.U.toFixed(2) + " V");
+        if (sc.showI)  parts.push("I = " + (v.I * 1000).toFixed(1) + " mA");
+        if (sc.showUc) parts.push("U_C = " + v.U.toFixed(2) + " V");
         if (parts.length) html += `<span style="color:${sc.color}">#${sc.id} : ${parts.join(" · ")}</span><br/>`;
       });
       html += `<span style="color:var(--text-dim)">Z = ${Math.round(Z)} Ω</span>`;
@@ -1419,7 +1435,7 @@
                      document.getElementById('v2SensSelect'),
                      document.getElementById('v3SensSelect'),
                      document.getElementById('hSensSelect'),
-                     document.getElementById('vBRSensSelect'), document.getElementById('vBCSensSelect'), document.getElementById('vRCSensSelect'),
+                     document.getElementById('vBSensSelect'), document.getElementById('vBRSensSelect'), document.getElementById('vBCSensSelect'), document.getElementById('vRCSensSelect'),
                      document.getElementById('showChan1Check'),
                      document.getElementById('showBodeI'),
                      document.getElementById('showBodeUc')];
@@ -1477,8 +1493,8 @@
     const collapsed = panel.classList.toggle('panel-collapsed');
     this.setAttribute('aria-expanded', String(!collapsed));
     this.innerHTML = collapsed
-      ? 'AFFICHER LES GRAPHES I<sub>m</sub>(N) ET U<sub>Cm</sub>(N)'
-      : 'MASQUER LES GRAPHES I<sub>m</sub>(N) ET U<sub>Cm</sub>(N)';
+      ? 'AFFICHER LES GRAPHES I(N) ET U<sub>C</sub>(N) (VALEURS EFFICACES)'
+      : 'MASQUER LES GRAPHES I(N) ET U<sub>C</sub>(N) (VALEURS EFFICACES)';
     if (!collapsed && !isRunning) drawBode(1 / (2 * Math.PI * Math.sqrt(L * C)), R0 + r);
   });
 
@@ -1663,12 +1679,12 @@
     const Q_ = (1 / Rt) * Math.sqrt(L_ / C_);
     let m = Um_ * (Q_ > 1 ? Q_ : 1) * 1.2;
     if (m < Um_) m = Um_ * 1.5;
-    return m;
+    return m / Math.SQRT2;                 // échelle en valeur efficace
   }
   function savedValueAt(sc, freq, Rt){
     const om = 2 * Math.PI * freq;
     const X = sc.L * om - 1 / (sc.C * om);
-    const I = sc.Um / Math.sqrt(Rt * Rt + X * X);
+    const I = sc.Um / Math.sqrt(Rt * Rt + X * X) / Math.SQRT2;   // valeur efficace
     return { I, U: I / (sc.C * om) };
   }
   const bodeRedraw = () => { if (!isRunning) drawBode(1 / (2 * Math.PI * Math.sqrt(L * C)), R0 + r); };
@@ -1764,12 +1780,13 @@
     const sheet = document.getElementById('printSheet');
     const esc = t => String(t).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
     const Rt = R0 + r, N0 = 1 / (2 * Math.PI * Math.sqrt(L * C)), Q = (1 / Rt) * Math.sqrt(L / C);
-    let html = "<h1>Oscillations forcées — résonances d'intensité I<sub>m</sub>(N) et de charge U<sub>Cm</sub>(N)</h1>" +
+    const kk = circ(N);
+    let html = "<h1>Oscillations forcées — résonances d'intensité I(N) et de charge U<sub>C</sub>(N) (valeurs efficaces)</h1>" +
       '<div class="ps-meta">' + esc(new Date().toLocaleString("fr-FR")) +
       " · U<sub>m</sub> = " + Um.toFixed(1) + " V · L = " + L.toFixed(2) + " H · C = " + (C * 1e6).toFixed(1) + " µF · R<sub>0</sub> = " + R0 +
       " Ω · r = " + r + " Ω · R totale = " + Rt + " Ω<br>N₀ = " + engHz(N0) + " · Q = " + Q.toFixed(2) +
-      " · N<sub>r</sub> = " + esc(nrRead.innerText) + " · fréquence du GBF N = " + N + " Hz · I<sub>m</sub>(N) = " + esc(imRead.innerText) +
-      " · U<sub>Cm</sub>(N) = " + esc(ucmRead.innerText) + "</div>" +
+      " · N<sub>r</sub> = " + esc(nrRead.innerText) + " · fréquence du GBF N = " + N + " Hz · I(N) = " + (kk.Im / Math.SQRT2 * 1000).toFixed(1) + " mA" +
+      " · U<sub>C</sub>(N) = " + (kk.Im / (C * kk.w) / Math.SQRT2).toFixed(2) + " V (valeurs efficaces)</div>" +
       '<img alt="Graphes de résonance" src="' + bodeCanvas.toDataURL("image/png") + '">';
     const vis = savedCurves.filter(c => c.visible);
     if (vis.length) html += '<div class="ps-saved"><b>Courbes enregistrées (pointillés) :</b><br>' + vis.map(c => esc(c.label)).join("<br>") + "</div>";
