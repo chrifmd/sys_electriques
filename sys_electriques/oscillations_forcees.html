@@ -3,23 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#11161a">
+<meta name="theme-color" content="#f3f6f8">
 <title>Oscillations Forcées dans un Circuit RLC Série</title>
 <style>
   :root {
-    --bg: #11161a;
-    --panel: #161d22;
-    --panel-alt: #1c242a;
-    --line: #2a353c;
-    --line-soft: #202a30;
-    --text: #dbe4e8;
-    --text-dim: #7c8a92;
-    --text-faint: #52616a;
-    --in-color: #e5a93b;
-    --out-color: #2bbd8e;
-    --ur-color: #c792ea;
-    --time-color: #38bdf8;
-    --accent: #4fc3e8;
+    color-scheme: light;
+    --bg: #f3f6f8;
+    --panel: #ffffff;
+    --panel-alt: #eef2f5;
+    --line: #ccd6dc;
+    --line-soft: #e3e9ed;
+    --text: #1b252b;
+    --text-dim: #5a6972;
+    --text-faint: #6f7e87;
+    --in-color: #c27c00;
+    --out-color: #0f9a6b;
+    --ur-color: #9b4fd1;
+    --time-color: #0284c7;
+    --accent: #0a82b0;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
     --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --radius: 4px;
@@ -132,11 +133,11 @@
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+    background: var(--accent); border: 2px solid #ffffff; cursor: pointer; margin-top: -5px;
   }
   input[type=range]::-moz-range-thumb {
     width: 14px; height: 14px; border-radius: 50%;
-    background: var(--accent); border: 2px solid #0d1215; cursor: pointer;
+    background: var(--accent); border: 2px solid #ffffff; cursor: pointer;
   }
 
   .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
@@ -149,7 +150,7 @@
   .oscillo-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
   .oscillo-title { text-transform: uppercase; color: var(--text-dim); }
   .oscillo-legend { display: flex; gap: 16px; font-size: 12px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0b0c0; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #5a6972; }
   .color-dot { width: 12px; height: 2px; display: inline-block; }
   .color-dot.purple { background-color: var(--ur-color); }
   .color-dot.green { background-color: var(--out-color); }
@@ -157,7 +158,7 @@
   .color-dot.cyan { background-color: var(--accent); }
 
   .oscillo-toolbar {
-    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    background-color: #f1f5f8; border: 1px solid #e3eaef; border-radius: 6px;
     padding: 6px 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px;
   }
 
@@ -169,39 +170,39 @@
   .toolbar-check.ch2 input { accent-color: var(--out-color); }
   .toolbar-check.ch3 { color: var(--ur-color); }
   .toolbar-check.ch3 input { accent-color: var(--ur-color); }
-  .toolbar-check.chB { color: #54a0ff; } .toolbar-check.chB input { accent-color: #54a0ff; }
-  .color-dot.blue { background-color: #54a0ff; }
-  .toolbar-check.chBR { color: #ff6b6b; } .toolbar-check.chBR input { accent-color: #ff6b6b; }
-  .toolbar-check.chBC { color: #f368e0; } .toolbar-check.chBC input { accent-color: #f368e0; }
-  .toolbar-check.chRC { color: #b8e04a; } .toolbar-check.chRC input { accent-color: #b8e04a; }
-  .color-dot.red { background-color: #ff6b6b; } .color-dot.pink { background-color: #f368e0; } .color-dot.lime { background-color: #b8e04a; }
+  .toolbar-check.chB { color: #2b78e4; } .toolbar-check.chB input { accent-color: #2b78e4; }
+  .color-dot.blue { background-color: #2b78e4; }
+  .toolbar-check.chBR { color: #e04848; } .toolbar-check.chBR input { accent-color: #e04848; }
+  .toolbar-check.chBC { color: #c43bb5; } .toolbar-check.chBC input { accent-color: #c43bb5; }
+  .toolbar-check.chRC { color: #7aa30f; } .toolbar-check.chRC input { accent-color: #7aa30f; }
+  .color-dot.red { background-color: #e04848; } .color-dot.pink { background-color: #c43bb5; } .color-dot.lime { background-color: #7aa30f; }
   .toolbar-check.bode1 { color: var(--accent); }
   .toolbar-check.bode1 input { accent-color: var(--accent); }
   .toolbar-check.bode2 { color: var(--ur-color); }
   .toolbar-check.bode2 input { accent-color: var(--ur-color); }
 
   .oscillo-toolbar select {
-    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; color: #1b252b; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer;
   }
 
   .btn-pause, .btn-reset {
-    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; color: #1b252b; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 4px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
   }
-  .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
+  .btn-pause:hover, .btn-reset:hover { background-color: #e3eaef; }
 
   /* Courbes de résonance enregistrées (superposition pour comparaison) */
   .saved-panel { display: none; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 8px; }
   .saved-item {
     display: flex; align-items: center; gap: 6px;
-    background: #141c22; border: 1px solid #232d39; border-radius: 4px;
+    background: #f1f5f8; border: 1px solid #e3eaef; border-radius: 4px;
     padding: 3px 6px 3px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text);
   }
   .saved-item.off { opacity: 0.45; }
   .saved-item .swatch { width: 16px; height: 0; border-top: 2px dashed; display: inline-block; }
   .saved-item button {
-    background: transparent; border: 1px solid #2a3644; border-radius: 3px; color: var(--text-dim);
+    background: transparent; border: 1px solid #c3cfd7; border-radius: 3px; color: var(--text-dim);
     font-size: 11px; line-height: 1; padding: 2px 5px; cursor: pointer;
   }
   .saved-item button:hover { color: var(--accent); border-color: var(--accent); }
@@ -237,29 +238,29 @@
   .scope-side input[type=range] { margin: 8px 0; }
   .scope-side .mini-steps { display: flex; gap: 8px; }
   .scope-side .mini-steps button { flex: 1; height: 32px; font-size: 18px; line-height: 1; color: var(--text);
-    background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
+    background: #ffffff; border: 1px solid #c3cfd7; border-radius: 6px; cursor: pointer; }
   .scope-side .mini-steps button:hover { border-color: var(--accent); }
-  .scope-side .mini-steps button:active { background: #232d39; }
+  .scope-side .mini-steps button:active { background: #e3eaef; }
   .scope-side { gap: 10px; }
   .scope-side .side-sep { border-top: 1px solid var(--line-soft); }
   .scope-side .side-block { display: flex; flex-direction: column; gap: 4px; }
-  .scope-side .side-block select { background:#0e1318; color:#fff; border:1px solid #2a3644; border-radius:4px; padding:5px 6px; font-size:12px; width:100%; }
+  .scope-side .side-block select { background:#ffffff; color:#1b252b; border:1px solid #c3cfd7; border-radius:4px; padding:5px 6px; font-size:12px; width:100%; }
   .scope-side .posval { float: right; font-family: var(--font-mono); color: var(--text); }
   .scope-side .btn-reset { width: 100%; }
-  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; cursor: crosshair; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe; cursor: crosshair; }
 
   .montage-row { display: flex; gap: 12px; align-items: stretch; }
-  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
+  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe; padding: 10px; }
   .schematic-wrap svg { display: block; width: 100%; max-height: 300px; height: auto; margin: 0 auto; }
 
-  .volt-panel { width: 190px; flex: none; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .volt-panel { width: 190px; flex: none; border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
   .volt-panel label { font-size: 12px; font-weight: 600; color: var(--text); }
-  .volt-panel select { background:#0e1318; color:#fff; border:1px solid #2a3644; border-radius:4px; padding:5px 6px; font-size:12px; width:100%; }
+  .volt-panel select { background:#ffffff; color:#1b252b; border:1px solid #c3cfd7; border-radius:4px; padding:5px 6px; font-size:12px; width:100%; }
   .volt-note { font-size: 10.5px; color: var(--text-dim); line-height: 1.4; display: none; }
   @media (max-width: 700px) { .montage-row { flex-direction: column; } .volt-panel { width: auto; } }
 
   .sch-wire { stroke: var(--text-dim); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .sch-comp { stroke: #4fc3e8; stroke-width: 1.8; fill: rgba(79,195,232,0.12); }
+  .sch-comp { stroke: #0a82b0; stroke-width: 1.8; fill: rgba(10,130,176,0.12); }
   .sch-node { fill: var(--text); }
   .sch-label { fill: var(--text); font-size: 13px; font-weight: 600; font-family: var(--font-sans); }
   .sch-arrow { stroke-width: 1.5; fill: none; }
@@ -275,7 +276,7 @@
   .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   @media (max-width: 760px) { .theory-grid { grid-template-columns: 1fr; } }
   .theory-card {
-    border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316;
+    border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe;
     padding: 12px 14px; font-size: 12px; line-height: 1.4; color: var(--text-dim);
   }
   .theory-card h3 { margin: 0 0 6px; font-size: 12.5px; color: var(--accent); }
@@ -289,7 +290,7 @@
   #tooltip {
     position: fixed;
     display: none;
-    background: rgba(14, 19, 24, 0.92);
+    background: rgba(255, 255, 255, 0.96);
     border: 1px solid var(--accent);
     color: var(--text);
     padding: 8px 12px;
@@ -297,7 +298,7 @@
     font-family: var(--font-mono);
     font-size: 12px;
     pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
     z-index: 1000;
     line-height: 1.5;
   }
@@ -305,28 +306,28 @@
   /* ===== Aperçu théorique enrichi ===== */
   .fres-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:8px 0 10px; }
   .fres-tools label { font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
-  .fres-tools select { background:#0e1318; color:#fff; border:1px solid #2a3644; border-radius:4px; padding:4px 6px; font-size:12px; }
+  .fres-tools select { background:#ffffff; color:#1b252b; border:1px solid #c3cfd7; border-radius:4px; padding:4px 6px; font-size:12px; }
   .fres-grid { display:grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap:12px; }
   @media (max-width:760px){ .fres-grid { grid-template-columns:1fr; } }
-  #fresCanvas { cursor:default; background:#0a0f12; }
+  #fresCanvas { cursor:default; background:#fcfdfe; }
   .nature { padding:8px 10px; border-radius:var(--radius); border:1px solid var(--line); font-size:12px; line-height:1.4; color:var(--text); margin-bottom:10px; }
   .nature b { font-size:13px; }
-  .nature.ind { border-color:#4fc3e8; background:rgba(79,195,232,.10); }
-  .nature.cap { border-color:#c792ea; background:rgba(199,146,234,.10); }
-  .nature.res { border-color:#2bbd8e; background:rgba(43,189,142,.12); }
+  .nature.ind { border-color:#0a82b0; background:rgba(10,130,176,.10); }
+  .nature.cap { border-color:#9b4fd1; background:rgba(155,79,209,.10); }
+  .nature.res { border-color:#0f9a6b; background:rgba(15,154,107,.12); }
   .formula.b { display:block; overflow-x:auto; white-space:nowrap; margin:4px 0; }
   .theory-card ul { margin:4px 0 4px 16px; padding:0; }
   .theory-card li { margin:2px 0; }
   .theory-card table { width:100%; border-collapse:collapse; margin:6px 0; font-size:11.5px; }
   .theory-card th, .theory-card td { border:1px solid var(--line); padding:4px 6px; text-align:left; vertical-align:top; }
   .theory-card th { color:var(--text); background:var(--panel-alt); font-weight:600; }
-  .theory-card tr.on td { background:rgba(79,195,232,.14); color:var(--text); }
+  .theory-card tr.on td { background:rgba(10,130,176,.14); color:var(--text); }
   .theory-card td.num { font-family:var(--font-mono); color:var(--out-color); white-space:nowrap; }
   .c-r { color:var(--out-color); } .c-l { color:var(--accent); } .c-c { color:var(--ur-color); } .c-u { color:var(--in-color); }
 
   .signature {
     text-align: center; font-family: "Arial"; font-size: 12px; font-weight: bold;
-    color: rgb(170, 221, 241); margin-top: 30px;
+    color: rgb(40, 110, 150); margin-top: 30px;
   }
 
   /* ===== Optimisation mobile ===== */
@@ -396,8 +397,8 @@
     .slider-line { display: flex; align-items: center; gap: 12px; }
     .slider-line input { flex: 1; min-width: 0; }
     .step-btn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px;
-      font-size: 20px; line-height: 1; color: var(--text); background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
-    .step-btn:active { background: #232d39; border-color: var(--accent); }
+      font-size: 20px; line-height: 1; color: var(--text); background: #ffffff; border: 1px solid #c3cfd7; border-radius: 6px; cursor: pointer; }
+    .step-btn:active { background: #e3eaef; border-color: var(--accent); }
     .ctrl-row .name, .ctrl-row .val { font-size: 14px; }
     .readout-grid .item .k { font-size: 11px; }
     .readout-grid .item .v { font-size: 13px; }
@@ -535,7 +536,7 @@
           <label class="toolbar-check ch3"><input type="checkbox" id="showChan3Check"> u<sub>C</sub>(t)</label>
 
           <div class="control-group" style="margin-left: 10px;">
-            <label style="color:#54a0ff">CH1 (u<sub>B</sub>):</label>
+            <label style="color:#2b78e4">CH1 (u<sub>B</sub>):</label>
             <select id="vBSensSelect">
               <option value="1">1 V/div</option>
               <option value="2" selected>2 V/div</option>
@@ -549,13 +550,13 @@
 
         <div class="oscillo-toolbar">
           <span style="font-size:11.5px;color:var(--text-faint)">Tensions composées (une seule à la fois sur CH1) :</span>
-          <div class="control-group"><label style="color:#ff6b6b">CH1 (u<sub>BR</sub>):</label>
+          <div class="control-group"><label style="color:#e04848">CH1 (u<sub>BR</sub>):</label>
             <select id="vBRSensSelect"><option value="1">1 V/div</option><option value="2" selected>2 V/div</option><option value="5">5 V/div</option><option value="10">10 V/div</option></select></div>
           <label class="toolbar-check chBR"><input type="checkbox" id="showChanBRCheck"> u<sub>BR</sub>(t) <small style="opacity:.7">bobine + R<sub>0</sub></small></label>
-          <div class="control-group"><label style="color:#f368e0">CH1 (u<sub>BC</sub>):</label>
+          <div class="control-group"><label style="color:#c43bb5">CH1 (u<sub>BC</sub>):</label>
             <select id="vBCSensSelect"><option value="1">1 V/div</option><option value="2" selected>2 V/div</option><option value="5">5 V/div</option><option value="10">10 V/div</option></select></div>
           <label class="toolbar-check chBC"><input type="checkbox" id="showChanBCCheck"> u<sub>BC</sub>(t) <small style="opacity:.7">bobine + C</small></label>
-          <div class="control-group"><label style="color:#b8e04a">CH1 (u<sub>RC</sub>):</label>
+          <div class="control-group"><label style="color:#7aa30f">CH1 (u<sub>RC</sub>):</label>
             <select id="vRCSensSelect"><option value="1">1 V/div</option><option value="2" selected>2 V/div</option><option value="5">5 V/div</option><option value="10">10 V/div</option></select></div>
           <label class="toolbar-check chRC"><input type="checkbox" id="showChanRCCheck"> u<sub>RC</sub>(t) <small style="opacity:.7">R<sub>0</sub> + C</small></label>
         </div>
@@ -785,7 +786,7 @@
 
     <!-- PANNEAU DES CONTRÔLES -->
     <div class="controls">
-       <p class="kbd-note" style="color:#5f9bd8; font-size:14px; font-style:italic;"> (pour une faible variation de l'un des paramètres, cliquez sur le bouton correspondant et utilisez les fléches haut et bas du clavier)</p>
+       <p class="kbd-note" style="color:#2b6cb0; font-size:14px; font-style:italic;"> (pour une faible variation de l'un des paramètres, cliquez sur le bouton correspondant et utilisez les fléches haut et bas du clavier)</p>
       <div class="section-title">GÉNÉRATEUR GBF</div>
       
       <div class="ctrl">
@@ -840,7 +841,7 @@
 
   // Courbes de résonance enregistrées (paramètres du circuit : les courbes sont analytiques)
   const SAVE_KEY = "oscForcees_savedCurves_v1";
-  const SAVE_COLORS = ["#ff9f43", "#f368e0", "#54a0ff", "#feca57", "#ff6b6b", "#1dd1a1"];
+  const SAVE_COLORS = ["#e07a10", "#c43bb5", "#2b78e4", "#d99a00", "#e04848", "#0fa37a"];
   const MAX_SAVED = 6;
   let savedCurves = [];
   let savedCounter = 0;
@@ -881,12 +882,12 @@
 
   // Canaux CH1 (Y1) : une seule tension à la fois (masse commune)
   const Y1_CHANNELS = [
-    { key: 'uR0', chk: 'showChan2Check',  sens: 'v2SensSelect',  color: '#2bbd8e', lw: 2,   lab: 'u<sub>R0</sub>' },
-    { key: 'uC',  chk: 'showChan3Check',  sens: 'v3SensSelect',  color: '#c792ea', lw: 1.5, lab: 'u<sub>C</sub>' },
-    { key: 'uB',  chk: 'showChanBCheck',  sens: 'vBSensSelect',  color: '#54a0ff', lw: 2,   lab: 'u<sub>B</sub>' },
-    { key: 'uBR', chk: 'showChanBRCheck', sens: 'vBRSensSelect', color: '#ff6b6b', lw: 2,   lab: 'u<sub>BR</sub>' },
-    { key: 'uBC', chk: 'showChanBCCheck', sens: 'vBCSensSelect', color: '#f368e0', lw: 2,   lab: 'u<sub>BC</sub>' },
-    { key: 'uRC', chk: 'showChanRCCheck', sens: 'vRCSensSelect', color: '#b8e04a', lw: 2,   lab: 'u<sub>RC</sub>' }
+    { key: 'uR0', chk: 'showChan2Check',  sens: 'v2SensSelect',  color: '#0f9a6b', lw: 2,   lab: 'u<sub>R0</sub>' },
+    { key: 'uC',  chk: 'showChan3Check',  sens: 'v3SensSelect',  color: '#9b4fd1', lw: 1.5, lab: 'u<sub>C</sub>' },
+    { key: 'uB',  chk: 'showChanBCheck',  sens: 'vBSensSelect',  color: '#2b78e4', lw: 2,   lab: 'u<sub>B</sub>' },
+    { key: 'uBR', chk: 'showChanBRCheck', sens: 'vBRSensSelect', color: '#e04848', lw: 2,   lab: 'u<sub>BR</sub>' },
+    { key: 'uBC', chk: 'showChanBCCheck', sens: 'vBCSensSelect', color: '#c43bb5', lw: 2,   lab: 'u<sub>BC</sub>' },
+    { key: 'uRC', chk: 'showChanRCCheck', sens: 'vRCSensSelect', color: '#7aa30f', lw: 2,   lab: 'u<sub>RC</sub>' }
   ];
   Y1_CHANNELS.forEach(c => { c.el = document.getElementById(c.chk); c.selEl = document.getElementById(c.sens); });
   const activeY1 = () => Y1_CHANNELS.find(c => c.el.checked) || null;
@@ -910,10 +911,10 @@
   const SCH_SPEC = {
     uR0: { order: ['R', 'L', 'C'], tap: 1, color: 'var(--out-color)', name: 'R0' },
     uC:  { order: ['C', 'L', 'R'], tap: 1, color: 'var(--ur-color)',  name: 'C' },
-    uB:  { order: ['L', 'R', 'C'], tap: 1, color: '#54a0ff', name: 'B' },
-    uBR: { order: ['R', 'L', 'C'], tap: 2, color: '#ff6b6b', name: 'BR' },
-    uBC: { order: ['L', 'C', 'R'], tap: 2, color: '#f368e0', name: 'BC' },
-    uRC: { order: ['R', 'C', 'L'], tap: 2, color: '#b8e04a', name: 'RC' }
+    uB:  { order: ['L', 'R', 'C'], tap: 1, color: '#2b78e4', name: 'B' },
+    uBR: { order: ['R', 'L', 'C'], tap: 2, color: '#e04848', name: 'BR' },
+    uBC: { order: ['L', 'C', 'R'], tap: 2, color: '#c43bb5', name: 'BC' },
+    uRC: { order: ['R', 'C', 'L'], tap: 2, color: '#7aa30f', name: 'RC' }
   };
   function updateSchematic(key) {
     const sp = SCH_SPEC[key] || SCH_SPEC.uR0;
@@ -922,7 +923,7 @@
     const LAB = { R: 'R' + sub('0'), L: 'L,r', C: 'C' };
     const gap = (200 - sp.order.reduce((a, k) => a + W[k], 0)) / 4;
     let s = `
-        <circle cx="140" cy="30" r="16" fill="#0d1316" stroke="var(--in-color)" stroke-width="2"/>
+        <circle cx="140" cy="30" r="16" fill="#fcfdfe" stroke="var(--in-color)" stroke-width="2"/>
         <text x="140" y="34" font-size="11" font-weight="bold" fill="var(--in-color)" text-anchor="middle" font-family="sans-serif">GBF</text>
         <path d="M 40,30 L 124,30" class="sch-wire"/>
         <path d="M 156,30 L 240,30 L 240,140" class="sch-wire"/>
@@ -991,14 +992,14 @@
     const Uveff = Ieff * VAL[vk];
     const txtI = Ieff >= 1 ? Ieff.toFixed(3) + ' A' : (Ieff * 1000).toFixed(1) + ' mA';
     const txtU = Uveff.toFixed(2) + ' V';
-    const mcol = '#c792ea';
+    const mcol = '#9b4fd1';
     const lcd = (bx, by, label, capBelow) => `
         <text x="${bx + 42}" y="${capBelow ? by + 33 : by - 4}" font-size="8" fill="var(--text-dim)" text-anchor="middle" font-family="sans-serif">valeur efficace</text>
-        <rect x="${bx}" y="${by}" width="84" height="22" rx="3" fill="#06100c" stroke="#2b4a3a" stroke-width="1.2"/>
-        <text x="${bx + 42}" y="${by + 15}" font-size="11" font-weight="bold" fill="#7dfca0" text-anchor="middle" font-family="monospace">${label}</text>`;
+        <rect x="${bx}" y="${by}" width="84" height="22" rx="3" fill="#f2faf6" stroke="#9ccfb7" stroke-width="1.2"/>
+        <text x="${bx + 42}" y="${by + 15}" font-size="11" font-weight="bold" fill="#1fa855" text-anchor="middle" font-family="monospace">${label}</text>`;
     // Ampèremètre : dans la branche de droite, en série avec le circuit
     s += `
-        <circle cx="240" cy="108" r="12" fill="#0d1316" stroke="var(--text)" stroke-width="2"/>
+        <circle cx="240" cy="108" r="12" fill="#fcfdfe" stroke="var(--text)" stroke-width="2"/>
         <text x="240" y="108" font-size="12" font-weight="bold" fill="var(--text)" text-anchor="middle" font-family="sans-serif">A</text>
         <text x="240" y="118" font-size="9" fill="var(--text)" text-anchor="middle" font-family="sans-serif">~</text>
         <path d="M 252,108 L 262,108" stroke="var(--text-dim)" stroke-width="1.2" stroke-dasharray="2 2"/>`
@@ -1018,7 +1019,7 @@
     s += `
         <circle cx="${xa}" cy="140" r="2.5" class="sch-node"/><circle cx="${xb}" cy="140" r="2.5" class="sch-node"/>
         ${leads}
-        <circle cx="${vcx}" cy="${vcy}" r="12" fill="#0d1316" stroke="${mcol}" stroke-width="2"/>
+        <circle cx="${vcx}" cy="${vcy}" r="12" fill="#fcfdfe" stroke="${mcol}" stroke-width="2"/>
         <text x="${vcx}" y="${vcy}" font-size="12" font-weight="bold" fill="${mcol}" text-anchor="middle" font-family="sans-serif">V</text>
         <text x="${vcx}" y="${vcy + 10}" font-size="9" fill="${mcol}" text-anchor="middle" font-family="sans-serif">~</text>`
         + lcd(vcx - 42, vcy + 16, 'U' + (VNAME[vk] ? sub(VNAME[vk]) : '') + ' = ' + txtU, true);
@@ -1097,17 +1098,17 @@
     sCtx.clearRect(0, 0, w, h);
 
     // Grille
-    sCtx.strokeStyle = "#202a30"; sCtx.lineWidth = 1;
+    sCtx.strokeStyle = "#e3e9ed"; sCtx.lineWidth = 1;
     for (let i = 0; i <= 10; i++) { const x = i * w / 10; sCtx.beginPath(); sCtx.moveTo(x, 0); sCtx.lineTo(x, h); sCtx.stroke(); }
     for (let i = 0; i <= 10; i++) { const y = i * h / 10; sCtx.beginPath(); sCtx.moveTo(0, y); sCtx.lineTo(w, y); sCtx.stroke(); }
 
     // Axes centraux
-    sCtx.strokeStyle = "#3a4a54";
+    sCtx.strokeStyle = "#bcc8d0";
     sCtx.beginPath(); sCtx.moveTo(0, h/2); sCtx.lineTo(w, h/2); sCtx.stroke();
     sCtx.beginPath(); sCtx.moveTo(w/2, 0); sCtx.lineTo(w/2, h); sCtx.stroke();
 
     // Sous-divisions : 5 graduations par division (2 mm) sur les deux axes centraux
-    sCtx.strokeStyle = "#6f818c"; sCtx.lineWidth = 1; sCtx.beginPath();
+    sCtx.strokeStyle = "#7c8b94"; sCtx.lineWidth = 1; sCtx.beginPath();
     for (let i = 0; i <= 50; i++) {
       const len = (i % 5 === 0) ? 6 : 3.5;
       const x = i * w / 50, y = i * h / 50;
@@ -1136,7 +1137,7 @@
 
     // u(t)
     if (show1) {
-      sCtx.strokeStyle = "#e5a93b"; sCtx.lineWidth = 2; sCtx.beginPath();
+      sCtx.strokeStyle = "#c27c00"; sCtx.lineWidth = 2; sCtx.beginPath();
       for (let px = 0; px < w; px++) {
         const t = time + (px / w) * tSpan - tShift;
         const py = yOf(Um * Math.sin(2 * Math.PI * N * t), v1Sens, posY1);
@@ -1159,17 +1160,17 @@
     const marker = (y, color, txt) => {
       sCtx.fillStyle = color;
       sCtx.beginPath(); sCtx.moveTo(0, y - 6); sCtx.lineTo(10, y); sCtx.lineTo(0, y + 6); sCtx.closePath(); sCtx.fill();
-      sCtx.fillStyle = "#0d1316"; sCtx.font = "bold 8px sans-serif"; sCtx.fillText(txt, 1, y + 3);
+      sCtx.fillStyle = "#ffffff"; sCtx.font = "bold 8px sans-serif"; sCtx.fillText(txt, 1, y + 3);
     };
-    if (show1) marker(yOf(0, v1Sens, posY1), "#e5a93b", "2");
+    if (show1) marker(yOf(0, v1Sens, posY1), "#c27c00", "2");
     if (ch) marker(yOf(0, chSens, posY2), ch.color, "1");
 
     // 2e curseur : origine des temps t′ définie au clic
     if (originFrac !== null) {
       const ox = originFrac * w;
-      sCtx.strokeStyle = "#ffffff"; sCtx.lineWidth = 1.5;
+      sCtx.strokeStyle = "#1b252b"; sCtx.lineWidth = 1.5;
       sCtx.beginPath(); sCtx.moveTo(ox, 0); sCtx.lineTo(ox, h); sCtx.stroke();
-      sCtx.fillStyle = "#ffffff";
+      sCtx.fillStyle = "#1b252b";
       sCtx.beginPath(); sCtx.moveTo(ox - 5, 0); sCtx.lineTo(ox + 5, 0); sCtx.lineTo(ox, 8); sCtx.closePath(); sCtx.fill();
       sCtx.font = "11px sans-serif"; sCtx.fillText("t′ = 0", ox + 6, 18);
     }
@@ -1179,7 +1180,7 @@
       const mx = mouseScope.x;
       const my = mouseScope.y;
 
-      sCtx.strokeStyle = "rgba(255, 255, 255, 0.4)"; sCtx.lineWidth = 1; sCtx.setLineDash([4, 4]);
+      sCtx.strokeStyle = "rgba(27, 37, 43, 0.4)"; sCtx.lineWidth = 1; sCtx.setLineDash([4, 4]);
       sCtx.beginPath(); sCtx.moveTo(mx, 0); sCtx.lineTo(mx, h); sCtx.stroke();
       sCtx.beginPath(); sCtx.moveTo(0, my); sCtx.lineTo(w, my); sCtx.stroke();
       sCtx.setLineDash([]);
@@ -1190,7 +1191,7 @@
 
       let html = `<strong>t :</strong> ${(tRel * 1000).toFixed(2)} ms<br/>`;
       if (show1) {
-        sCtx.fillStyle = "#e5a93b"; sCtx.beginPath(); sCtx.arc(mx, yOf(eVal, v1Sens, posY1), 4, 0, Math.PI * 2); sCtx.fill();
+        sCtx.fillStyle = "#c27c00"; sCtx.beginPath(); sCtx.arc(mx, yOf(eVal, v1Sens, posY1), 4, 0, Math.PI * 2); sCtx.fill();
         html += `<span style="color:var(--in-color)">u(t) : ${eVal.toFixed(2)} V</span><br/>`;
       }
       if (ch) {
@@ -1202,7 +1203,7 @@
       if (originFrac !== null) {
         const ox = originFrac * w;
         const dt = Math.abs(tRel - originFrac * tSpan);
-        sCtx.strokeStyle = "#ffffff"; sCtx.lineWidth = 1.5;
+        sCtx.strokeStyle = "#1b252b"; sCtx.lineWidth = 1.5;
         const by = h - 12;
         sCtx.beginPath(); sCtx.moveTo(ox, by); sCtx.lineTo(mx, by);
         sCtx.moveTo(ox, by - 5); sCtx.lineTo(ox, by + 5); sCtx.moveTo(mx, by - 5); sCtx.lineTo(mx, by + 5); sCtx.stroke();
@@ -1225,7 +1226,7 @@
     const showBodeI = document.getElementById('showBodeI').checked;
     const showBodeUc = document.getElementById('showBodeUc').checked;
 
-    bCtx.strokeStyle = "#2a353c"; bCtx.lineWidth = 1;
+    bCtx.strokeStyle = "#ccd6dc"; bCtx.lineWidth = 1;
     bCtx.beginPath(); bCtx.moveTo(40, 10); bCtx.lineTo(40, h - 25); bCtx.lineTo(w - 10, h - 25); bCtx.stroke();
 
     const maxN = 600;
@@ -1241,7 +1242,7 @@
 
     // Courbe 1 : I(N), valeur efficace
     if (showBodeI) {
-      bCtx.strokeStyle = "#4fc3e8"; bCtx.lineWidth = 2; bCtx.beginPath();
+      bCtx.strokeStyle = "#0a82b0"; bCtx.lineWidth = 2; bCtx.beginPath();
       for (let px = 40; px < w - 10; px++) {
         const freq = ((px - 40) / (w - 50)) * maxN;
         if (freq <= 0) continue;
@@ -1258,7 +1259,7 @@
 
     // Courbe 2 : U_C(N), valeur efficace
     if (showBodeUc) {
-      bCtx.strokeStyle = "#c792ea"; bCtx.lineWidth = 2; bCtx.beginPath();
+      bCtx.strokeStyle = "#9b4fd1"; bCtx.lineWidth = 2; bCtx.beginPath();
       for (let px = 40; px < w - 10; px++) {
         const freq = ((px - 40) / (w - 50)) * maxN;
         if (freq <= 0) continue;
@@ -1291,10 +1292,10 @@
       bCtx.setLineDash([]);
     });
     if (visSaved.length) {
-      bCtx.fillStyle = "#7c8a92"; bCtx.font = "10px sans-serif"; bCtx.fillText("Échelle : I max = " + (maxI * 1000).toFixed(0) + " mA · U_C max = " + maxUcm.toFixed(1) + " V", 48, 22);
+      bCtx.fillStyle = "#5a6972"; bCtx.font = "10px sans-serif"; bCtx.fillText("Échelle : I max = " + (maxI * 1000).toFixed(0) + " mA · U_C max = " + maxUcm.toFixed(1) + " V", 48, 22);
     }
 
-    bCtx.fillStyle = "#7c8a92"; bCtx.font = "10px sans-serif";
+    bCtx.fillStyle = "#5a6972"; bCtx.font = "10px sans-serif";
     bCtx.fillText("0 Hz", 35, h - 10);
     bCtx.fillText(maxN + " Hz", w - 35, h - 10);
 
@@ -1309,7 +1310,7 @@
       const ImHover = Um / Z / Math.SQRT2;
       const UcmHover = ImHover / (C * om);
 
-      bCtx.strokeStyle = "rgba(255, 255, 255, 0.4)"; bCtx.lineWidth = 1; bCtx.setLineDash([4, 4]);
+      bCtx.strokeStyle = "rgba(27, 37, 43, 0.4)"; bCtx.lineWidth = 1; bCtx.setLineDash([4, 4]);
       bCtx.beginPath(); bCtx.moveTo(mx, 10); bCtx.lineTo(mx, h - 25); bCtx.stroke();
       bCtx.setLineDash([]);
 
@@ -1317,13 +1318,13 @@
 
       if (showBodeI) {
         const pyI = (h - 25) - (ImHover / maxI) * (h - 40);
-        bCtx.fillStyle = "#4fc3e8"; bCtx.beginPath(); bCtx.arc(mx, pyI, 4, 0, Math.PI * 2); bCtx.fill();
+        bCtx.fillStyle = "#0a82b0"; bCtx.beginPath(); bCtx.arc(mx, pyI, 4, 0, Math.PI * 2); bCtx.fill();
         html += `<span style="color:var(--accent)"><strong>I :</strong> ${(ImHover * 1000).toFixed(1)} mA</span><br/>`;
       }
 
       if (showBodeUc) {
         const pyUc = (h - 25) - (UcmHover / maxUcm) * (h - 40);
-        bCtx.fillStyle = "#c792ea"; bCtx.beginPath(); bCtx.arc(mx, pyUc, 4, 0, Math.PI * 2); bCtx.fill();
+        bCtx.fillStyle = "#9b4fd1"; bCtx.beginPath(); bCtx.arc(mx, pyUc, 4, 0, Math.PI * 2); bCtx.fill();
         html += `<span style="color:var(--ur-color)"><strong>U<sub>C</sub> :</strong> ${UcmHover.toFixed(2)} V</span><br/>`;
       }
 
@@ -1613,9 +1614,9 @@
     // Axe des phases (φ = 0) porté par u, et direction de i
     const far = Math.max(w, h);
     fCtx.lineWidth = 1; fCtx.setLineDash([4, 4]);
-    fCtx.strokeStyle = '#4a3b1c';
+    fCtx.strokeStyle = '#e6d3a3';
     fCtx.beginPath(); fCtx.moveTo(O[0] - far * Math.cos(th), O[1] + far * Math.sin(th)); fCtx.lineTo(O[0] + far * Math.cos(th), O[1] - far * Math.sin(th)); fCtx.stroke();
-    fCtx.strokeStyle = '#2a353c';
+    fCtx.strokeStyle = '#ccd6dc';
     fCtx.beginPath(); fCtx.moveTo(O[0], O[1]); fCtx.lineTo(O[0] + far * Math.cos(th + al), O[1] - far * Math.sin(th + al)); fCtx.stroke();
     fCtx.setLineDash([]);
 
@@ -1623,23 +1624,23 @@
     const txt = (x, y, t, col, dx, dy) => { fCtx.fillStyle = col; fCtx.fillText(t, x + dx, y + dy); };
     const edge = Math.min(w, h) / 2 - 16;
     const refPos = rot ? [ox + edge * Math.cos(th), oy - edge * Math.sin(th)] : [w - 70, O[1]];
-    txt(refPos[0], refPos[1], 'axe φ = 0 (u)', '#b88a2e', -30, -8);
+    txt(refPos[0], refPos[1], 'axe φ = 0 (u)', '#9a6b00', -30, -8);
     const iPos = rot ? [ox + edge * Math.cos(th + al), oy - edge * Math.sin(th + al)] : [w - 40, O[1] - Math.tan(al) * (w - 40 - O[0])];
-    if (rot || (iPos[1] > 12 && iPos[1] < h - 12)) txt(iPos[0], iPos[1], 'i', '#7c8a92', -12, -6);
+    if (rot || (iPos[1] > 12 && iPos[1] < h - 12)) txt(iPos[0], iPos[1], 'i', '#5a6972', -12, -6);
 
     // Ligne brisée U_R → U_L → U_C, puis résultante U_m
     const arrow = (a, b, col, lw, dash) => fArrow(a[0], a[1], b[0], b[1], col, lw, dash);
-    arrow(D, O, '#e5a93b55', 1, [3, 4]);
-    arrow(O, A, '#2bbd8e', 2.5);
-    arrow(A, B, '#4fc3e8', 2.5);
-    arrow(B, D, '#c792ea', 2.5);
-    arrow(O, D, '#e5a93b', 3);
+    arrow(D, O, '#c27c0055', 1, [3, 4]);
+    arrow(O, A, '#0f9a6b', 2.5);
+    arrow(A, B, '#0a82b0', 2.5);
+    arrow(B, D, '#9b4fd1', 2.5);
+    arrow(O, D, '#c27c00', 3);
 
     // Arc Δφi entre l'axe de u et la direction de i
     const rad = 40;
-    fCtx.strokeStyle = '#8a9aa3'; fCtx.lineWidth = 1.5; fCtx.beginPath();
+    fCtx.strokeStyle = '#6b7a83'; fCtx.lineWidth = 1.5; fCtx.beginPath();
     fCtx.arc(O[0], O[1], rad, -th, -(th + al), al > 0); fCtx.stroke();
-    txt(O[0] + (rad + 6) * Math.cos(th + al / 2), O[1] - (rad + 6) * Math.sin(th + al / 2), 'Δφi', '#8a9aa3', -2, 4);
+    txt(O[0] + (rad + 6) * Math.cos(th + al / 2), O[1] - (rad + 6) * Math.sin(th + al / 2), 'Δφi', '#6b7a83', -2, 4);
 
     // Étiquettes, décalées vers l'extérieur du polygone
     const cx = (O[0] + A[0] + B[0] + D[0]) / 4, cy = (O[1] + A[1] + B[1] + D[1]) / 4;
@@ -1654,12 +1655,12 @@
       fCtx.fillText(t, mx + 8 * nx, my + 8 * ny + 4);
       fCtx.textAlign = 'left';
     };
-    segLabel(O, A, nm[0] + ' = ' + f(vR) + unit, '#2bbd8e');
-    segLabel(A, B, nm[1] + ' = ' + f(vL) + unit, '#4fc3e8');
-    segLabel(B, D, nm[2] + ' = ' + f(vC) + unit, '#c792ea');
-    segLabel(D, O, nm[3] + ' = ' + f(vU) + unit, '#e5a93b');
+    segLabel(O, A, nm[0] + ' = ' + f(vR) + unit, '#0f9a6b');
+    segLabel(A, B, nm[1] + ' = ' + f(vL) + unit, '#0a82b0');
+    segLabel(B, D, nm[2] + ' = ' + f(vC) + unit, '#9b4fd1');
+    segLabel(D, O, nm[3] + ' = ' + f(vU) + unit, '#c27c00');
 
-    fCtx.fillStyle = '#52616a'; fCtx.font = '11px sans-serif';
+    fCtx.fillStyle = '#6f7e87'; fCtx.font = '11px sans-serif';
     fCtx.fillText('Δφi = φi − φu = ' + al.toFixed(2) + ' rad', 8, h - 8);
   }
 

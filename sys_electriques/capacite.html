@@ -3,22 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#11161a">
+<meta name="theme-color" content="#f3f6f8">
 <title>TP : Détermination de la capacité d'un condensateur</title>
 <style>
   :root{
-    --bg: #11161a;
-    --panel: #161d22;
-    --panel-alt: #1c242a;
-    --line: #2a353c;
-    --line-soft: #202a30;
-    --text: #dbe4e8;
-    --text-dim: #7c8a92;
-    --text-faint: #52616a;
-    --in-color: #e5a93b; 
-    --out-color: #2bbd8e; 
-    --time-color: #38bdf8;
-    --accent: #4fc3e8;
+    color-scheme: light;
+    --bg: #f3f6f8;
+    --panel: #ffffff;
+    --panel-alt: #eef2f5;
+    --line: #ccd6dc;
+    --line-soft: #e3e9ed;
+    --text: #1b252b;
+    --text-dim: #5a6972;
+    --text-faint: #6f7e87;
+    --in-color: #c27c00; 
+    --out-color: #0f9a6b; 
+    --time-color: #0284c7;
+    --accent: #0a82b0;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
     --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --radius: 4px;
@@ -91,7 +92,7 @@
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+    background: var(--accent); border: 2px solid #ffffff; cursor: pointer; margin-top: -5px;
   }
 
   .btn-switch {
@@ -100,15 +101,15 @@
     background: var(--panel-alt); color: var(--text-dim); cursor: pointer;
     transition: all 0.2s;
   }
-  .btn-switch.closed { background: #e8574f; color: #fff; }
+  .btn-switch.closed { background: #d63b33; color: #fff; }
 
   .btn-action {
     width: 100%; padding: 8px 12px; font-size: 12px; font-weight: 600;
-    color: #fff; background: #232d39; border: 1px solid var(--line);
+    color: #1b252b; background: #e3eaef; border: 1px solid var(--line);
     border-radius: var(--radius); cursor: pointer; margin-top: 8px;
     transition: background 0.2s;
   }
-  .btn-action:hover { background: #2f3d4d; }
+  .btn-action:hover { background: #d8e2e9; }
 
   .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
   .readout-grid .item .k { font-size: 10px; color: var(--text-faint); }
@@ -121,7 +122,7 @@
   
   .schematic-wrap { 
     border: 1px solid var(--line); border-radius: var(--radius); 
-    background: #0d1316; padding: 10px; flex: 1; 
+    background: #fcfdfe; padding: 10px; flex: 1; 
     display: flex; flex-direction: column; justify-content: space-between;
   }
   .schematic-wrap svg { display: block; width: 100%; max-height: 190px; height: auto; margin: 0 auto; }
@@ -136,30 +137,30 @@
     margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line-soft);
   }
   .digital-meter {
-    background: #06090b; border: 1px solid var(--line); border-radius: 4px;
+    background: #f7fafb; border: 1px solid var(--line); border-radius: 4px;
     padding: 6px 10px; text-align: center; flex: 1;
   }
   .digital-meter .m-label { font-size: 10px; color: var(--text-dim); font-weight: bold; margin-bottom: 2px; }
   .digital-meter .m-display { 
     font-family: var(--font-mono); font-size: 16px; font-weight: bold; 
-    color: #10b981; text-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+    color: #0f8a62; text-shadow: 0 0 5px rgba(15, 138, 98, 0.3);
   }
-  .digital-meter.amp .m-display { color: var(--in-color); text-shadow: 0 0 5px rgba(229, 169, 59, 0.3); }
+  .digital-meter.amp .m-display { color: var(--in-color); text-shadow: 0 0 5px rgba(194, 124, 0, 0.3); }
 
   .chrono-panel {
     width: 220px; flex-shrink: 0; border: 1px solid var(--line); border-radius: var(--radius);
-    background: #0d1316; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 8px;
+    background: #fcfdfe; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 8px;
   }
   .chrono-display {
     font-family: var(--font-mono); font-size: 28px; color: var(--time-color);
-    background: #080c0e; border: 1px solid var(--line); border-radius: 4px;
+    background: #f7fafb; border: 1px solid var(--line); border-radius: 4px;
     padding: 8px; text-align: center;
   }
 
   /* Tableau de mesures */
   .table-wrap {
     border: 1px solid var(--line); border-radius: var(--radius);
-    background: #0d1316; max-height: 180px; overflow-y: auto;
+    background: #fcfdfe; max-height: 180px; overflow-y: auto;
   }
   table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; text-align: center; }
   th { background: var(--panel-alt); color: var(--accent); padding: 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; }
@@ -168,22 +169,22 @@
   /* Section Graphes */
   .graph-container {
     border: 1px solid var(--line); border-radius: var(--radius);
-    background: #0d1316; padding: 12px; display: none; position: relative;
+    background: #fcfdfe; padding: 12px; display: none; position: relative;
   }
-  canvas { display: block; width: 100%; background: #0d1316; border-radius: var(--radius); cursor: crosshair; }
+  canvas { display: block; width: 100%; background: #fcfdfe; border-radius: var(--radius); cursor: crosshair; }
 
   /* Section Aperçu Théorique */
   .theory-panel {
     border: 1px solid var(--line); border-radius: var(--radius);
-    background: #0d1316; padding: 14px 16px; display: none;
+    background: #fcfdfe; padding: 14px 16px; display: none;
     font-size: 12.5px; line-height: 1.5; color: var(--text-dim);
   }
   .theory-panel h3 { margin: 18px 0 8px 0; font-size: 13.5px; color: var(--accent); }
   .theory-panel h3:first-child { margin-top: 0; }
   .theory-panel h4 { margin: 0 0 6px 0; font-size: 12.5px; color: var(--out-color); }
-  .theory-panel code { font-family: var(--font-mono); color: var(--in-color); background: #162026; padding: 2px 4px; border-radius: 3px; }
+  .theory-panel code { font-family: var(--font-mono); color: var(--in-color); background: #eaf2f6; padding: 2px 4px; border-radius: 3px; }
   .theory-panel .formula-box {
-    background: #162026; border: 1px solid var(--line); border-left: 3px solid var(--out-color);
+    background: #eaf2f6; border: 1px solid var(--line); border-left: 3px solid var(--out-color);
     border-radius: 3px; padding: 8px 12px; margin: 8px 0; font-family: var(--font-mono);
     color: var(--text); font-size: 13px;
   }
@@ -235,7 +236,7 @@ text-align: center;
 font-family: "Arial";
 font-size: 12px;
 font-weight: bold;
-color: rgb(170, 221, 241);
+color: rgb(40, 110, 150);
 margin-top: 30px;
 }
 
@@ -265,8 +266,8 @@ margin-top: 30px;
     .slider-line { display: flex; align-items: center; gap: 12px; }
     .slider-line input { flex: 1; min-width: 0; }
     .step-btn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px;
-      font-size: 20px; line-height: 1; color: var(--text); background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
-    .step-btn:active { background: #232d39; border-color: var(--accent); }
+      font-size: 20px; line-height: 1; color: var(--text); background: #ffffff; border: 1px solid #c3cfd7; border-radius: 6px; cursor: pointer; }
+    .step-btn:active { background: #e3eaef; border-color: var(--accent); }
     .ctrl-row .name, .ctrl-row .val { font-size: 14px; }
     .readout-grid .item .k { font-size: 11px; }
     .readout-grid .item .v { font-size: 13px; }
@@ -330,7 +331,7 @@ margin-top: 30px;
         <div class="schematic-wrap">
           <svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg">
             <!-- Générateur de courant -->
-            <circle cx="40" cy="90" r="18" stroke="var(--in-color)" stroke-width="1.8" fill="#16222a"/>
+            <circle cx="40" cy="90" r="18" stroke="var(--in-color)" stroke-width="1.8" fill="#eaf2f6"/>
             <line x1="28" y1="90" x2="52" y2="90" stroke="var(--in-color)" stroke-width="1.8"/>
             <text x="12" y="94" font-size="13" font-weight="700" fill="var(--in-color)">I</text>
 
@@ -346,7 +347,7 @@ margin-top: 30px;
             <path d="M 100,20 L 130,20" class="sch-wire"/>
 
             <!-- Ampèremètre -->
-            <circle cx="150" cy="20" r="14" stroke="var(--text)" stroke-width="1.5" fill="#16222a"/>
+            <circle cx="150" cy="20" r="14" stroke="var(--text)" stroke-width="1.5" fill="#eaf2f6"/>
             <text x="150" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text)">A</text>
             <path d="M 130,20 L 136,20" class="sch-wire"/>
             <path d="M 164,20 L 190,20 L 190,55" class="sch-wire"/>
@@ -360,7 +361,7 @@ margin-top: 30px;
 
             <!-- Voltmètre -->
             <path d="M 190,45 L 240,45 L 240,76" class="sch-wire"/>
-            <circle cx="240" cy="90" r="14" stroke="var(--out-color)" stroke-width="1.5" fill="#16222a"/>
+            <circle cx="240" cy="90" r="14" stroke="var(--out-color)" stroke-width="1.5" fill="#eaf2f6"/>
             <text x="240" y="95" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--out-color)">V</text>
             <path d="M 240,104 L 240,135 L 190,135" class="sch-wire"/>
             <circle cx="190" cy="45" r="2.5" class="sch-node"/>
@@ -421,7 +422,7 @@ margin-top: 30px;
 
       <!-- BOUTON & SECTION : APERÇU THÉORIQUE (SOUS LE GRAPHE) -->
       <div>
-        <button id="btnToggleTheory" class="btn-action" style="background:#1c242a; border-color:var(--accent); color:var(--accent);">
+        <button id="btnToggleTheory" class="btn-action" style="background:#eef2f5; border-color:var(--accent); color:var(--accent);">
           📘 Afficher / Masquer l'aperçu théorique (Rappel)
         </button>
         <div id="theoryPanel" class="theory-panel" style="margin-top:10px;">
@@ -733,14 +734,14 @@ margin-top: 30px;
     const plotH = cssH - padT - padB;
 
     // AXES
-    ctx.strokeStyle = "#2a353c";
+    ctx.strokeStyle = "#ccd6dc";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(padL, padT); ctx.lineTo(padL, cssH - padB); ctx.lineTo(cssW - padR, cssH - padB);
     ctx.stroke();
 
     if (state.measures.length === 0) {
-      ctx.fillStyle = "#52616a";
+      ctx.fillStyle = "#6f7e87";
       ctx.font = "12px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("Aucune donnée enregistrée", cssW / 2, cssH / 2);
@@ -751,14 +752,14 @@ margin-top: 30px;
     const maxUc = Math.max(2, state.measures[state.measures.length - 1].uc * 1.2);
 
     // Grille légère
-    ctx.strokeStyle = "#162026";
+    ctx.strokeStyle = "#eaf2f6";
     for (let i = 1; i <= 5; i++) {
       let y = padT + plotH - (i / 5) * plotH;
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(cssW - padR, y); ctx.stroke();
     }
 
     // Courbe
-    ctx.strokeStyle = "#2bbd8e";
+    ctx.strokeStyle = "#0f9a6b";
     ctx.lineWidth = 2;
     ctx.beginPath();
     state.measures.forEach((pt, idx) => {
@@ -770,7 +771,7 @@ margin-top: 30px;
     ctx.stroke();
 
     // Points
-    ctx.fillStyle = "#38bdf8";
+    ctx.fillStyle = "#0284c7";
     state.measures.forEach(pt => {
       let x = padL + (pt.t / maxT) * plotW;
       let y = padT + plotH - (pt.uc / maxUc) * plotH;
@@ -788,7 +789,7 @@ margin-top: 30px;
 
       if (my >= padT && my <= cssH - padB) {
         // Lignes du réticule
-        ctx.strokeStyle = "#e5a93b";
+        ctx.strokeStyle = "#c27c00";
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
 
@@ -800,7 +801,7 @@ margin-top: 30px;
         ctx.setLineDash([]); // Reset trait plein
 
         // Point sur la droite
-        ctx.fillStyle = "#e5a93b";
+        ctx.fillStyle = "#c27c00";
         ctx.beginPath(); ctx.arc(mx, my, 4, 0, 2 * Math.PI); ctx.fill();
 
         // Info-bulle (Tooltip)
@@ -813,20 +814,20 @@ margin-top: 30px;
         if (boxX + textWidth + 12 > cssW - padR) boxX = mx - textWidth - 15;
         if (boxY < padT) boxY = my + 15;
 
-        ctx.fillStyle = "rgba(22, 29, 34, 0.9)";
-        ctx.strokeStyle = "#e5a93b";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.94)";
+        ctx.strokeStyle = "#c27c00";
         ctx.lineWidth = 1;
         ctx.fillRect(boxX, boxY, textWidth + 12, 20);
         ctx.strokeRect(boxX, boxY, textWidth + 12, 20);
 
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#1b252b";
         ctx.textAlign = "left";
         ctx.fillText(label, boxX + 6, boxY + 14);
       }
     }
 
     // Labels axes
-    ctx.fillStyle = "#7c8a92";
+    ctx.fillStyle = "#5a6972";
     ctx.font = "10px monospace";
     ctx.textAlign = "center";
     ctx.fillText("t (s)", cssW - padR, cssH - 8);

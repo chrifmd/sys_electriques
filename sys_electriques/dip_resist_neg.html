@@ -2,10 +2,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#11161a">
+<meta name="theme-color" content="#f3f6f8">
 <title>Entretien des Oscillations - Circuit RLC + AOP</title>
 <style>
-:root{--bg:#11161a;--panel:#161d22;--alt:#1c242a;--line:#2a353c;--text:#dbe4e8;--dim:#7c8a92;--faint:#52616a;--in:#e5a93b;--out:#2bbd8e;--ur:#bfedf5;--accent:#4fc3e8;--mono:ui-monospace,"SF Mono",Consolas,monospace;--sans:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+:root{
+    color-scheme: light;--bg:#f3f6f8;--panel:#ffffff;--alt:#eef2f5;--line:#ccd6dc;--text:#1b252b;--dim:#5a6972;--faint:#6f7e87;--in:#c27c00;--out:#0f9a6b;--ur:#0e7490;--accent:#0a82b0;--mono:ui-monospace,"SF Mono",Consolas,monospace;--sans:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
 body{padding:18px}
@@ -29,28 +30,28 @@ body{padding:18px}
 .layout{display:grid;grid-template-columns:1fr 280px}@media(max-width:850px){.layout{grid-template-columns:1fr}.controls{border-left:none!important;border-top:1px solid var(--line)}}
 .scopes{padding:18px 20px;display:flex;flex-direction:column;gap:18px}
 .controls{border-left:1px solid var(--line);padding:18px;background:var(--panel)}
-.st{font-size:11px;color:var(--faint);margin:20px 0 10px;padding-bottom:5px;border-bottom:1px solid #202a30;text-transform:uppercase}.st:first-child{margin-top:0}
+.st{font-size:11px;color:var(--faint);margin:20px 0 10px;padding-bottom:5px;border-bottom:1px solid #e3e9ed;text-transform:uppercase}.st:first-child{margin-top:0}
 .ctrl{margin-bottom:14px}.row{display:flex;justify-content:space-between;margin-bottom:5px;font-size:12.5px}.row .val{font-family:var(--mono);color:var(--out)}
 input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--line);border-radius:2px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #0d1215;cursor:pointer}
-input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #0d1215}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #ffffff;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #ffffff}
 .ot{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:8px}
-.tb{background:#141c22;border:1px solid #232d39;border-radius:6px;padding:6px 12px;display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:12.5px;font-weight:600}
-.tb select{background:#0e1318;color:#fff;border:1px solid #2a3644;border-radius:4px;padding:4px 6px;font-size:12px}
-.c1{color:var(--ur)}.c2{color:var(--out)}.ct{color:#38bdf8}
-canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px;background:#0d1316}
-.sw{border:1px solid var(--line);border-radius:4px;background:#0d1316;padding:10px}.sw svg{display:block;width:100%;max-height:330px;margin:0 auto}
+.tb{background:#f1f5f8;border:1px solid #e3eaef;border-radius:6px;padding:6px 12px;display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:12.5px;font-weight:600}
+.tb select{background:#ffffff;color:#1b252b;border:1px solid #c3cfd7;border-radius:4px;padding:4px 6px;font-size:12px}
+.c1{color:var(--ur)}.c2{color:var(--out)}.ct{color:#0284c7}
+canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px;background:#fcfdfe}
+.sw{border:1px solid var(--line);border-radius:4px;background:#fcfdfe;padding:10px}.sw svg{display:block;width:100%;max-height:330px;margin:0 auto}
 .sch-wire{stroke:var(--dim);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.sch-res{stroke:#4fc3e8;stroke-width:1.6;fill:rgba(79,195,232,.12)}.sch-node{fill:var(--text)}.sch-label{fill:var(--text);font-size:13px;font-weight:600}
+.sch-res{stroke:#0a82b0;stroke-width:1.6;fill:rgba(10,130,176,.12)}.sch-node{fill:var(--text)}.sch-label{fill:var(--text);font-size:13px;font-weight:600}
 .rg{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}.rg .k{font-size:10px;color:var(--faint)}.rg .v{font-family:var(--mono);font-size:13px}
 .btn-theory-toggle{width:100%;padding:8px 12px;font-size:11.5px;font-weight:600;letter-spacing:.5px;color:var(--accent);background:var(--alt);border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s}
 .btn-theory-toggle:hover{background:var(--line);border-color:var(--accent)}.theory-container.hidden{display:none}
 .theory-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.theory-grid{grid-template-columns:1fr}}
-.theory-card{border:1px solid var(--line);border-radius:4px;background:#0d1316;padding:12px 14px;font-size:12px;line-height:1.4;color:var(--dim)}
+.theory-card{border:1px solid var(--line);border-radius:4px;background:#fcfdfe;padding:12px 14px;font-size:12px;line-height:1.4;color:var(--dim)}
 .theory-card h3{margin:0 0 6px;font-size:12.5px;color:var(--accent)}.theory-card p{margin:3px 0}.theory-wide{grid-column:1/-1}
 .formula{font-family:var(--mono);color:var(--text);background:var(--alt);padding:3px 6px;border-radius:3px;display:inline-block;margin:3px 0}
 .theory-card ol{margin:4px 0 6px;padding-left:20px}.theory-card li{margin:3px 0}.theory-card b{color:var(--text)}
-.theory-card .note{margin-top:6px;padding:5px 8px;border-left:2px solid #e0b040;background:var(--alt);color:var(--text);font-size:11.5px}
+.theory-card .note{margin-top:6px;padding:5px 8px;border-left:2px solid #c27c00;background:var(--alt);color:var(--text);font-size:11.5px}
 .theory-card .live{margin-top:8px;padding:6px 8px;border-left:2px solid var(--accent);background:var(--alt);font-family:var(--mono);font-size:11.5px;color:var(--text)}
 .theory-card table{border-collapse:collapse;margin:6px 0;font-size:11.5px}.theory-card th,.theory-card td{border:1px solid var(--line);padding:3px 8px;text-align:center;color:var(--text)}.theory-card th{background:var(--alt);color:var(--accent)}
 
@@ -70,9 +71,9 @@ canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px;b
             align-items: center;
             gap: 6px;
             text-decoration: none;
-            color: #bcd6ff;
-            background: #252424;
-            border: 1px solid #4f5153;
+            color: #1f4e8c;
+            background: #e9eef5;
+            border: 1px solid #c3cfd7;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 600;
@@ -81,15 +82,15 @@ canvas{display:block;width:100%;border:1px solid var(--line);border-radius:4px;b
             transition: border-color 0.2s, color 0.2s;
         }
         .btn-home:hover {
-            border-color: #7C9EF0;
-            color: #7C9EF0;
+            border-color: #3b5fc4;
+            color: #3b5fc4;
         }
          .signature{
 text-align: center;
 font-family: "Arial";
 font-size: 12px;
 font-weight: bold;
-color: rgb(170, 221, 241);
+color: rgb(40, 110, 150);
 margin-top: 30px;
 }
 
@@ -130,15 +131,15 @@ html{-webkit-text-size-adjust:100%}
  input[type=range]::-webkit-slider-thumb{width:28px;height:28px;margin-top:-11px}
  input[type=range]::-moz-range-thumb{width:28px;height:28px}
  .slider-line{display:flex;align-items:center;gap:12px}.slider-line input{flex:1;min-width:0}
- .step-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;font-size:20px;line-height:1;color:var(--text);background:#0e1318;border:1px solid #2a3644;border-radius:6px;cursor:pointer}
- .step-btn:active{background:#232d39;border-color:var(--accent)}
+ .step-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;font-size:20px;line-height:1;color:var(--text);background:#ffffff;border:1px solid #c3cfd7;border-radius:6px;cursor:pointer}
+ .step-btn:active{background:#e3eaef;border-color:var(--accent)}
  .rg .k{font-size:11px}
  .btn-theory-toggle{padding:12px;font-size:12px;line-height:1.4}
  .theory-grid{gap:12px}.theory-card{padding:10px 12px}
  .signature{margin-top:4px;padding:0 12px 14px;font-size:11px;line-height:1.4}
 }
 </style></head>
-<a class="btn-home" href="https://simphysique.blogspot.com/">← Retour au site SimPhysique</a>
+<a class="btn-home" href="https://simphysique.tn/">← Retour au site SimPhysique</a>
 <body><div 
     
     class="rig">
@@ -163,13 +164,13 @@ html{-webkit-text-size-adjust:100%}
 <div class="layout"><div class="scopes">
 <div><div class="ot">Schéma du montage</div><div class="sw">
 <svg viewBox="-5 -10 450 300" xmlns="http://www.w3.org/2000/svg">
-<rect x="185" y="-6" width="190" height="256" rx="6" fill="rgba(79,195,232,.06)" stroke="#4fc3e8" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="185" y="-6" width="190" height="256" rx="6" fill="rgba(10,130,176,.06)" stroke="#0a82b0" stroke-width="1.6" stroke-dasharray="7 5"/>
 <text x="280" y="283" text-anchor="middle" class="sch-label" fill="var(--accent)">dipôle (D)</text>
 <g class="sch-wire">
 <path d="M40,60 L125,60 M160,60 L230,60"/><path d="M40,60 L40,85 M40,115 L40,175 M40,220 L40,260 L350,260"/>
 <path d="M200,60 L200,20 L250,20 M294,20 L350,20 L350,80 M310,80 L350,80 M350,80 L350,115 M350,155 L350,190 M350,235 L350,260"/>
 <path d="M230,100 L205,100 L205,170 L350,170"/></g>
-<text id="tVcc" x="240" y="136" font-size="11" fill="var(--in)">±15 V</text><polygon points="230,40 230,120 310,80" fill="rgba(79,195,232,.12)" stroke="#4fc3e8" stroke-width="2"/>
+<text id="tVcc" x="240" y="136" font-size="11" fill="var(--in)">±15 V</text><polygon points="230,40 230,120 310,80" fill="rgba(10,130,176,.12)" stroke="#0a82b0" stroke-width="2"/>
 <text x="236" y="65" font-size="16" fill="var(--text)">−</text><text x="236" y="105" font-size="15" fill="var(--text)">+</text>
 <text x="212" y="54" font-size="11" fill="var(--text)">i⁻</text><text x="212" y="94" font-size="11" fill="var(--text)">i⁺</text>
 <rect class="sch-res" x="250" y="12" width="44" height="16"/><text x="263" y="6" class="sch-label">R<tspan baseline-shift="sub">1</tspan></text>
@@ -177,15 +178,15 @@ html{-webkit-text-size-adjust:100%}
 <circle cx="350" cy="80" r="2.5" class="sch-node"/><text x="360" y="76" class="sch-label">S</text>
 <rect class="sch-res" x="342" y="115" width="16" height="40"/><text x="364" y="140" class="sch-label">R<tspan baseline-shift="sub">2</tspan></text>
 <circle cx="350" cy="170" r="2.5" class="sch-node"/><text x="330" y="164" class="sch-label" id="tD">D</text>
-<path d="M350,170 L405,170 M399,166 L407,170 L399,174" stroke="#c792ea" stroke-width="1.5" fill="#c792ea"/><text x="412" y="174" font-size="12" font-weight="bold" fill="var(--ur)">Y<tspan baseline-shift="sub">1</tspan></text>
+<path d="M350,170 L405,170 M399,166 L407,170 L399,174" stroke="#9b4fd1" stroke-width="1.5" fill="#9b4fd1"/><text x="412" y="174" font-size="12" font-weight="bold" fill="var(--ur)">Y<tspan baseline-shift="sub">1</tspan></text>
 <rect class="sch-res" x="342" y="190" width="16" height="45"/>
 <line x1="332" y1="238" x2="368" y2="188" stroke="var(--accent)" stroke-width="1.5"/><path d="M363,187 L369,186 L366,192" fill="var(--accent)"/>
 <text x="318" y="222" class="sch-label">R′</text><text x="364" y="214" font-size="11" fill="var(--text)">i<tspan baseline-shift="sub">2</tspan></text>
-<circle cx="40" cy="60" r="2.5" class="sch-node"/><path d="M40,60 L15,60 M21,56 L13,60 L21,64" stroke="#2bbd8e" stroke-width="1.5" fill="#2bbd8e"/><text x="-5" y="52" font-size="12" font-weight="bold" fill="var(--out)">Y<tspan baseline-shift="sub">2</tspan></text>
+<circle cx="40" cy="60" r="2.5" class="sch-node"/><path d="M40,60 L15,60 M21,56 L13,60 L21,64" stroke="#0f9a6b" stroke-width="1.5" fill="#0f9a6b"/><text x="-5" y="52" font-size="12" font-weight="bold" fill="var(--out)">Y<tspan baseline-shift="sub">2</tspan></text>
 <circle cx="90" cy="60" r="2.5" class="sch-node"/><text x="84" y="50" class="sch-label">A</text>
 <g id="swGroup" style="cursor:pointer"><rect x="115" y="30" width="55" height="55" fill="transparent"/><line id="swBlade" x1="125" y1="60" x2="160" y2="60" stroke="var(--text)" stroke-width="2.2" stroke-linecap="round"/><circle cx="125" cy="60" r="3" class="sch-node"/><circle cx="160" cy="60" r="3" class="sch-node"/><text x="136" y="82" class="sch-label">K</text></g>
 <path d="M165,48 L185,48 M180,44 L188,48 L180,52" stroke="var(--text)" fill="var(--text)"/><text x="170" y="40" font-size="11" fill="var(--text)">i</text>
-<circle cx="40" cy="100" r="15" fill="rgba(79,195,232,.12)" stroke="#4fc3e8" stroke-width="1.6"/><text x="40" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text)">GBF</text>
+<circle cx="40" cy="100" r="15" fill="rgba(10,130,176,.12)" stroke="#0a82b0" stroke-width="1.6"/><text x="40" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text)">GBF</text>
 <rect class="sch-res" x="32" y="175" width="16" height="45"/><text x="10" y="202" class="sch-label">R</text>
 <path d="M90,66 L90,254 M86,72 L90,64 L94,72" stroke="var(--in)" stroke-width="1.5" fill="var(--in)"/><text x="98" y="160" font-size="14" font-weight="700" fill="var(--in)">u</text>
 <circle cx="90" cy="260" r="2.5" class="sch-node"/><text x="98" y="256" class="sch-label">M</text>
@@ -193,7 +194,7 @@ html{-webkit-text-size-adjust:100%}
 </svg></div></div>
 <div><div class="ot">Oscilloscope</div>
 <div class="tb"><label>Mode <select id="mode"><option value="yt">YT</option><option value="xy" selected>XY : u = f(u′)</option></select></label>
-<label>Voie Y1 / axe X <select id="xs"><option value="up">u′ (aux bornes de R′)</option><option value="i">i (courant du dipôle)</option></select></label><label class="c1"><select id="v1"></select></label><label class="c1" style="cursor:pointer"><input type="checkbox" id="inv" style="accent-color:#c792ea"> Inverse Y1</label><label style="cursor:pointer"><input type="checkbox" id="cur" checked> Curseurs</label><button id="kbtn" style="background:#0e1318;color:#fff;border:1px solid #2a3644;border-radius:4px;padding:4px 12px;font-size:12px;cursor:pointer"></button><label class="c2">Y2 (u) <select id="v2"></select></label>
+<label>Voie Y1 / axe X <select id="xs"><option value="up">u′ (aux bornes de R′)</option><option value="i">i (courant du dipôle)</option></select></label><label class="c1"><select id="v1"></select></label><label class="c1" style="cursor:pointer"><input type="checkbox" id="inv" style="accent-color:#9b4fd1"> Inverse Y1</label><label style="cursor:pointer"><input type="checkbox" id="cur" checked> Curseurs</label><button id="kbtn" style="background:#ffffff;color:#1b252b;border:1px solid #c3cfd7;border-radius:4px;padding:4px 12px;font-size:12px;cursor:pointer"></button><label class="c2">Y2 (u) <select id="v2"></select></label>
 <label class="ct">Base de temps <select id="td"><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option></select> ms/div</label></div>
 <canvas id="cv" style="touch-action:pan-y" width="800" height="520"></canvas></div>
 <div><button id="thb" class="btn-theory-toggle">APERÇU THÉORIQUE — RÉSISTANCE NÉGATIVE &amp; CARACTÉRISTIQUES</button>
@@ -232,7 +233,7 @@ html{-webkit-text-size-adjust:100%}
 <div class="st">Montage</div><div id="c2"></div>
 <div class="st">Mesures</div>
 <div class="rg"><div><div class="k">R₋ = −R₁R′/R₂</div><div class="v" id="o1"></div></div><div><div class="k">Seuil sat. |u|</div><div class="v" id="o2"></div></div>
-<div><div class="k">|X| max</div><div class="v" id="o3"></div></div><div><div class="k">u max</div><div class="v" id="o4"></div></div><div><div class="k">ΔX (curseurs)</div><div class="v" id="o5">—</div></div><div><div class="k">Δu (curseurs)</div><div class="v" id="o6">—</div></div><div><div class="k">Pente mesurée Δu/ΔX</div><div class="v" id="o7" style="color:#4fc3e8">—</div></div><div><div class="k">Pente théorique</div><div class="v" id="o8" style="color:#e5a93b">—</div></div></div>
+<div><div class="k">|X| max</div><div class="v" id="o3"></div></div><div><div class="k">u max</div><div class="v" id="o4"></div></div><div><div class="k">ΔX (curseurs)</div><div class="v" id="o5">—</div></div><div><div class="k">Δu (curseurs)</div><div class="v" id="o6">—</div></div><div><div class="k">Pente mesurée Δu/ΔX</div><div class="v" id="o7" style="color:#0a82b0">—</div></div><div><div class="k">Pente théorique</div><div class="v" id="o8" style="color:#c27c00">—</div></div></div>
 </div></div>
 <div class="signature"> TP Simulation Physique - Dipôle à résistance négative - chrif.md@gmail.com - Octobre 2026 </div>
 </div>
@@ -279,28 +280,28 @@ function draw(){const{A,N,R,Rp,R1,R2}=P,T=1/N;
   if(i>=0){const up=(xi?(e-r.u)/R*1e3:r.Vs*Rp/(R2+Rp))*sgn;pts.push([t,up,r.u]);m1=Math.max(m1,Math.abs(up));m2=Math.max(m2,Math.abs(r.u))}}
  $('o3').textContent=m1.toFixed(3)+(xi?' mA':' V');$('o4').textContent=m2.toFixed(3)+' V';
  const c=$('cv'),g=c.getContext('2d'),W=c.width,H=c.height,dx=W/10,dy=H/8,sc=Math.max(1,W/(c.clientWidth||W)/1.2);g.clearRect(0,0,W,H);
- g.strokeStyle='#1d2a31';g.lineWidth=1;g.beginPath();for(let i=0;i<=10;i++){g.moveTo(i*dx,0);g.lineTo(i*dx,H)}for(let j=0;j<=8;j++){g.moveTo(0,j*dy);g.lineTo(W,j*dy)}g.stroke();
- g.strokeStyle='#33444d';g.beginPath();g.moveTo(W/2,0);g.lineTo(W/2,H);g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();
+ g.strokeStyle='#e5ebef';g.lineWidth=1;g.beginPath();for(let i=0;i<=10;i++){g.moveTo(i*dx,0);g.lineTo(i*dx,H)}for(let j=0;j<=8;j++){g.moveTo(0,j*dy);g.lineTo(W,j*dy)}g.stroke();
+ g.strokeStyle='#c8d2d9';g.beginPath();g.moveTo(W/2,0);g.lineTo(W/2,H);g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();
  const tr=(col,f)=>{g.strokeStyle=col;g.lineWidth=2*sc;g.beginPath();pts.forEach((p,i)=>{const[x,y]=f(p);i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()};
- if(mode==='xy')tr('#4fc3e8',p=>[W/2+p[1]/k1*dx,H/2-p[2]/k2*dy]);
- else{tr('#c792ea',p=>[p[0]/span*W,H/2-p[1]/k1*dy]);tr('#2bbd8e',p=>[p[0]/span*W,H/2-p[2]/k2*dy])}
+ if(mode==='xy')tr('#0a82b0',p=>[W/2+p[1]/k1*dx,H/2-p[2]/k2*dy]);
+ else{tr('#9b4fd1',p=>[p[0]/span*W,H/2-p[1]/k1*dy]);tr('#0f9a6b',p=>[p[0]/span*W,H/2-p[2]/k2*dy])}
  const sg=$('inv').checked?-1:1,X=v=>W/2+sg*v/k1*dx,Y=v=>H/2-v/k2*dy;
  const xi2=xi,U1=xi?'mA':'V';
  $('o8').textContent=mode==='xy'&&thOpen?(xi?rn.toFixed(1)+' Ω':'1 (∞ en sat.)'):'—';
- if(mode==='xy'&&thOpen){g.setLineDash([8,6]);g.strokeStyle='#e5a93b';g.lineWidth=1.5;g.beginPath();
+ if(mode==='xy'&&thOpen){g.setLineDash([8,6]);g.strokeStyle='#c27c00';g.lineWidth=1.5;g.beginPath();
   const den=1-R*R2/(R1*Rp),ul=Math.min(th,A/2/Math.max(Math.abs(den),1e-9)),q=R1/R;
   const xv=(u,sn)=>xi?(sn===0?u/rn:(u-sn*P.Vcc)/R1)*1e3:(sn===0?u:sn*th);
   g.moveTo(X(xv(-ul,0)),Y(-ul));g.lineTo(X(xv(ul,0)),Y(ul));
   let lo=Math.max(-th,(-P.Vcc-q*A/2)/(1+q)),hi=(-P.Vcc+q*A/2)/(1+q);if(hi>lo){g.moveTo(X(xv(lo,-1)),Y(lo));g.lineTo(X(xv(hi,-1)),Y(hi))}
   lo=(P.Vcc-q*A/2)/(1+q);hi=Math.min(th,(P.Vcc+q*A/2)/(1+q));if(hi>lo){g.moveTo(X(xv(lo,1)),Y(lo));g.lineTo(X(xv(hi,1)),Y(hi))}
   g.stroke();g.setLineDash([])}
- if(mode==='xy'&&$('cur').checked){const px=C.map(c=>[W/2+c[0]/k1*dx,H/2-c[1]/k2*dy]);g.lineWidth=1;g.setLineDash([5,4]);g.strokeStyle='#e5a93b';g.beginPath();
+ if(mode==='xy'&&$('cur').checked){const px=C.map(c=>[W/2+c[0]/k1*dx,H/2-c[1]/k2*dy]);g.lineWidth=1;g.setLineDash([5,4]);g.strokeStyle='#c27c00';g.beginPath();
   px.forEach(p=>{g.moveTo(p[0],0);g.lineTo(p[0],H);g.moveTo(0,p[1]);g.lineTo(W,p[1])});g.stroke();g.setLineDash([]);
-  g.strokeStyle='#fff';g.beginPath();g.moveTo(px[0][0],px[0][1]);g.lineTo(px[1][0],px[1][1]);g.stroke();
-  px.forEach((p,i)=>{g.fillStyle='#e5a93b';g.beginPath();g.arc(p[0],p[1],6*sc,0,7);g.fill();g.fillStyle='#000';g.font=(11*sc)+'px monospace';g.fillText(i+1,p[0]-3*sc,p[1]+4*sc)});
+  g.strokeStyle='#1b252b';g.beginPath();g.moveTo(px[0][0],px[0][1]);g.lineTo(px[1][0],px[1][1]);g.stroke();
+  px.forEach((p,i)=>{g.fillStyle='#c27c00';g.beginPath();g.arc(p[0],p[1],6*sc,0,7);g.fill();g.fillStyle='#000';g.font=(11*sc)+'px monospace';g.fillText(i+1,p[0]-3*sc,p[1]+4*sc)});
   const a=C[1][0]-C[0][0],b=C[1][1]-C[0][1];$('o5').textContent=a.toFixed(3)+' '+U1;$('o6').textContent=b.toFixed(3)+' V';$('o7').textContent=Math.abs(a)<1e-6?'∞':xi?(b/a*1e3).toFixed(1)+' Ω':(b/a).toFixed(3)}
  else{['o5','o6','o7'].forEach(i=>$(i).textContent='—')}
- g.fillStyle='#7c8a92';g.font=(13*sc)+'px monospace';g.fillText(mode==='xy'?`X = ${xi?'i':'u′'} : ${k1} ${U1}/div   Y = u : ${k2} V/div`:`Y1 (${xi?'i':'u′'}) ${k1} ${U1}/div · Y2 (u) ${k2} V/div · ${$('td').value} ms/div`,10,18*sc,W-20)}
+ g.fillStyle='#5a6972';g.font=(13*sc)+'px monospace';g.fillText(mode==='xy'?`X = ${xi?'i':'u′'} : ${k1} ${U1}/div   Y = u : ${k2} V/div`:`Y1 (${xi?'i':'u′'}) ${k1} ${U1}/div · Y2 (u) ${k2} V/div · ${$('td').value} ms/div`,10,18*sc,W-20)}
 
   // Réglage fin sans clavier : boutons − / + autour des curseurs (visibles sur mobile uniquement)
   document.querySelectorAll(".controls input[type=range]").forEach(inp => {

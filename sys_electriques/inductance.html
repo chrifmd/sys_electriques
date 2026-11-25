@@ -3,24 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#11161a">
+<meta name="theme-color" content="#f3f6f8">
 <title>Détermination de l'inductance d'une bobine - Dipôle RL</title>
 <style>
   :root{
-    --bg: #11161a;
-    --panel: #161d22;
-    --panel-alt: #1c242a;
-    --line: #2a353c;
-    --line-soft: #202a30;
-    --text: #dbe4e8;
-    --text-dim: #7c8a92;
-    --text-faint: #52616a;
-    --in-color: #e5a93b;
-    --out-color: #2bbd8e;
-    --ur-color: #c792ea;
-    --time-color: #38bdf8;
-    --cutoff-color: #e8574f;
-    --accent: #4fc3e8;
+    color-scheme: light;
+    --bg: #f3f6f8;
+    --panel: #ffffff;
+    --panel-alt: #eef2f5;
+    --line: #ccd6dc;
+    --line-soft: #e3e9ed;
+    --text: #1b252b;
+    --text-dim: #5a6972;
+    --text-faint: #6f7e87;
+    --in-color: #c27c00;
+    --out-color: #0f9a6b;
+    --ur-color: #9b4fd1;
+    --time-color: #0284c7;
+    --cutoff-color: #d63b33;
+    --accent: #0a82b0;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
     --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --radius: 4px;
@@ -135,11 +136,11 @@
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+    background: var(--accent); border: 2px solid #ffffff; cursor: pointer; margin-top: -5px;
   }
   input[type=range]::-moz-range-thumb {
     width: 14px; height: 14px; border-radius: 50%;
-    background: var(--accent); border: 2px solid #0d1215; cursor: pointer;
+    background: var(--accent); border: 2px solid #ffffff; cursor: pointer;
   }
 
   .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
@@ -152,18 +153,18 @@
   .oscillo-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
   .oscillo-title { text-transform: uppercase; color: var(--text-dim); }
   .oscillo-legend { display: flex; gap: 16px; font-size: 12px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0b0c0; transition: opacity 0.2s; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #5a6972; transition: opacity 0.2s; }
   .color-dot { width: 12px; height: 2px; display: inline-block; }
   .color-dot.purple { background-color: var(--ur-color); }
   .color-dot.green { background-color: var(--out-color); }
   .legend-item.dim { opacity: 0.35; }
 
   .oscillo-toolbar {
-    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    background-color: #f1f5f8; border: 1px solid #e3eaef; border-radius: 6px;
     padding: 6px 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px;
   }
   .position-toolbar {
-    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    background-color: #f1f5f8; border: 1px solid #e3eaef; border-radius: 6px;
     padding: 6px 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 8px;
   }
   .control-group { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
@@ -183,27 +184,27 @@
   .toolbar-check.ch2 input { accent-color: var(--out-color); }
 
   .oscillo-toolbar select {
-    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; color: #1b252b; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer;
   }
   .oscillo-toolbar select:focus { border-color: var(--time-color); }
 
   .btn-inv {
-    background-color: #0e1318; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 3px 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
   }
   .btn-inv.ch1-btn { color: var(--ur-color); }
-  .btn-inv.ch1-btn.active { background-color: var(--ur-color); color: #0b1114; border-color: var(--ur-color); }
+  .btn-inv.ch1-btn.active { background-color: var(--ur-color); color: #ffffff; border-color: var(--ur-color); }
   .btn-inv.ch2-btn { color: var(--out-color); }
-  .btn-inv.ch2-btn.active { background-color: var(--out-color); color: #0b1114; border-color: var(--out-color); }
+  .btn-inv.ch2-btn.active { background-color: var(--out-color); color: #ffffff; border-color: var(--out-color); }
   .btn-inv:hover { opacity: 0.85; }
 
   .btn-pause, .btn-reset {
-    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; color: #1b252b; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 4px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
     transition: background-color 0.2s;
   }
-  .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
+  .btn-pause:hover, .btn-reset:hover { background-color: #e3eaef; }
   .pause-icon { font-size: 10px; font-weight: bold; }
 
   .top-screen-bar {
@@ -213,20 +214,20 @@
   .top-buttons { display: flex; align-items: center; gap: 8px; }
 
   .canvas-wrapper { position: relative; width: 100%; }
-  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; cursor: crosshair; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe; cursor: crosshair; }
 
   /* Info-bulle pour le réticule */
   .scope-tooltip {
     position: absolute;
     pointer-events: none;
-    background: rgba(14, 20, 26, 0.94);
+    background: rgba(255, 255, 255, 0.96);
     border: 1px solid var(--accent);
     border-radius: 4px;
     padding: 6px 10px;
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--text);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
     display: none;
     z-index: 10;
     line-height: 1.4;
@@ -236,10 +237,10 @@
   .montage-row { display: flex; gap: 12px; align-items: stretch; }
   @media (max-width: 700px) { .montage-row { flex-direction: column; } }
   
-  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
+  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe; padding: 10px; }
   .schematic-wrap svg { display: block; width: 100%; max-height: 250px; height: auto; margin: 0 auto; }
   .sch-wire   { stroke: var(--text-dim); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .sch-comp   { stroke: #4fc3e8; stroke-width: 1.6; fill: rgba(79,195,232,0.12); }
+  .sch-comp   { stroke: #0a82b0; stroke-width: 1.6; fill: rgba(10,130,176,0.12); }
   .sch-node   { fill: var(--text); }
   .sch-label  { fill: var(--text); font-size: 13px; font-weight: 600; }
   .sch-label.r  { fill: var(--ur-color); font-size: 15px; font-weight: bold; }
@@ -255,7 +256,7 @@
   .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   @media (max-width: 760px) { .theory-grid { grid-template-columns: 1fr; } }
   .theory-card {
-    border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316;
+    border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe;
     padding: 12px 14px; font-size: 12px; line-height: 1.4; color: var(--text-dim);
   }
   .theory-card h3 { margin: 0 0 6px; font-size: 12.5px; color: var(--accent); }
@@ -273,7 +274,7 @@
     font-family: "Arial";
     font-size: 12px;
     font-weight: bold;
-    color: rgb(170, 221, 241);
+    color: rgb(40, 110, 150);
     margin-top: 30px;
   }
   #scopeCanvas { touch-action: pan-y; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
@@ -330,8 +331,8 @@
     .slider-line { display: flex; align-items: center; gap: 12px; }
     .slider-line > input, .slider-line > .rp-wrap { flex: 1; min-width: 0; }
     .step-btn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px;
-      font-size: 20px; line-height: 1; color: var(--text); background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
-    .step-btn:active { background: #232d39; border-color: var(--accent); }
+      font-size: 20px; line-height: 1; color: var(--text); background: #ffffff; border: 1px solid #c3cfd7; border-radius: 6px; cursor: pointer; }
+    .step-btn:active { background: #e3eaef; border-color: var(--accent); }
     .ctrl-row .name, .ctrl-row .val { font-size: 14px; }
     .readout-grid .item .k { font-size: 11px; }
     .readout-grid .item .v { font-size: 13px; }
@@ -385,14 +386,14 @@
             <svg viewBox="0 0 240 250" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <marker id="arrow-blue" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 0 L 6 3 L 0 6 z" fill="#38bdf8" />
+                  <path d="M 0 0 L 6 3 L 0 6 z" fill="#0284c7" />
                 </marker>
                 <marker id="arrow-black" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                   <path d="M 0 0 L 6 3 L 0 6 z" fill="var(--text)" />
                 </marker>
               </defs>
 
-              <circle cx="40" cy="120" r="16" stroke="var(--in-color)" stroke-width="1.6" fill="#16222a"/>
+              <circle cx="40" cy="120" r="16" stroke="var(--in-color)" stroke-width="1.6" fill="#eaf2f6"/>
               <path d="M 31,120 L 36,113 L 44,127 L 49,120" stroke="var(--in-color)" stroke-width="1.5" fill="none"/>
               <text x="5" y="124" font-size="11" font-weight="700" fill="var(--in-color)">GBF</text>
 
@@ -415,7 +416,7 @@
               <path d="M 115,30 L 115,55" class="sch-wire"/>
               <path d="M 115,100 L 115,125" class="sch-wire"/>
 
-              <path d="M 92,110 L 92,40" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+              <path d="M 92,110 L 92,40" stroke="#0284c7" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
               <text x="84" y="78" text-anchor="end" font-size="12" font-weight="600" fill="var(--text)">u<tspan baseline-shift="sub" font-size="9">AB</tspan></text>
 
               <circle cx="115" cy="125" r="2.8" class="sch-node"/>
@@ -431,7 +432,7 @@
               <path d="M 115,185 L 115,220" class="sch-wire"/>
               <text x="135" y="168" class="sch-label l">(L, r)</text>
 
-              <path d="M 92,210 L 92,135" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+              <path d="M 92,210 L 92,135" stroke="#0284c7" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
               <text x="84" y="175" text-anchor="end" font-size="12" font-weight="600" fill="var(--text)">u<tspan baseline-shift="sub" font-size="9">BC</tspan></text>
 
               <circle cx="115" cy="220" r="2.8" class="sch-node"/>
@@ -984,7 +985,7 @@
     const padL = 44, padR = 10, padT = 10, padB = 10;
     const plotW = w - padL - padR, plotH = h - padT - padB;
 
-    ctx.strokeStyle = "#1a242a";
+    ctx.strokeStyle = "#e5ebef";
     ctx.lineWidth = 1;
     for (let i = 0; i <= numHDivs; i++){
       const x = padL + i * (plotW / numHDivs);
@@ -996,7 +997,7 @@
     }
 
     const yZero = padT + plotH / 2;
-    ctx.strokeStyle = "#2e3c46";
+    ctx.strokeStyle = "#cbd5db";
     ctx.beginPath(); ctx.moveTo(padL, yZero); ctx.lineTo(w - padR, yZero); ctx.stroke();
 
     const divPixV = plotH / numVDivs, divPixH = plotW / numHDivs;
@@ -1024,14 +1025,14 @@
       ctx.stroke();
     }
 
-    if (state.showChan1) traceChannel(uAB_at, state.v1Sens, state.posY1, "#c792ea", state.invY1);
-    if (state.showChan2) traceChannel(uBC_at, state.v2Sens, state.posY2, "#2bbd8e", !state.invY2);
+    if (state.showChan1) traceChannel(uAB_at, state.v1Sens, state.posY1, "#9b4fd1", state.invY1);
+    if (state.showChan2) traceChannel(uBC_at, state.v2Sens, state.posY2, "#0f9a6b", !state.invY2);
 
     // Ligne de référence d'origine t0 si elle existe
     if (!state.playing && state.tOrigin !== null) {
       const xOrigin = padL + ((state.tOrigin - windowStart) / windowDuration) * plotW + xOffset;
       if (xOrigin >= padL && xOrigin <= w - padR) {
-        ctx.strokeStyle = "rgba(232, 87, 79, 0.8)";
+        ctx.strokeStyle = "rgba(214, 59, 51, 0.8)";
         ctx.lineWidth = 1.5;
         ctx.setLineDash([2, 2]);
         ctx.beginPath(); ctx.moveTo(xOrigin, padT); ctx.lineTo(xOrigin, h - padB); ctx.stroke();
@@ -1044,7 +1045,7 @@
       const mx = state.mouseX;
       const my = state.mouseY;
 
-      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+      ctx.strokeStyle = "rgba(2, 132, 199, 0.6)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
 
@@ -1060,12 +1061,12 @@
 
       if (state.showChan2) {
         const yUbc = vToY(state.invY2 ? ubcHover : -ubcHover, state.v2Sens, state.posY2);
-        ctx.fillStyle = "#2bbd8e";
+        ctx.fillStyle = "#0f9a6b";
         ctx.beginPath(); ctx.arc(mx, yUbc, 4, 0, 2 * Math.PI); ctx.fill();
       }
       if (state.showChan1) {
         const yUab = vToY(state.invY1 ? -uabHover : uabHover, state.v1Sens, state.posY1);
-        ctx.fillStyle = "#c792ea";
+        ctx.fillStyle = "#9b4fd1";
         ctx.beginPath(); ctx.arc(mx, yUab, 4, 0, 2 * Math.PI); ctx.fill();
       }
 
@@ -1102,7 +1103,7 @@
     ctx.restore();
 
     ctx.font = "10px monospace";
-    ctx.fillStyle = "#7c8a92";
+    ctx.fillStyle = "#5a6972";
     ctx.textAlign = "left";
     ctx.fillText(state.v1Sens + "/" + state.v2Sens + " V/div · " + fmtEng(state.hSens, "s") + "/div", padL + 2, h - padB - 4);
   }

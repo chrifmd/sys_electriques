@@ -3,26 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#11161a">
+<meta name="theme-color" content="#f3f6f8">
 <title>Oscillations Libres dans un Circuit RLC Série</title>
 <style>
   :root{
-    --bg: #11161a;
-    --panel: #161d22;
-    --panel-alt: #1c242a;
-    --line: #2a353c;
-    --line-soft: #202a30;
-    --text: #dbe4e8;
-    --text-dim: #7c8a92;
-    --text-faint: #52616a;
-    --in-color: #e5a93b;
-    --out-color: #2bbd8e;
-    --ur-color: #c792ea;
-    --time-color: #38bdf8;
-    --energy-e: #38bdf8;
-    --energy-m: #f59e0b;
-    --energy-tot: #ef4444;
-    --accent: #4fc3e8;
+    color-scheme: light;
+    --bg: #f3f6f8;
+    --panel: #ffffff;
+    --panel-alt: #eef2f5;
+    --line: #ccd6dc;
+    --line-soft: #e3e9ed;
+    --text: #1b252b;
+    --text-dim: #5a6972;
+    --text-faint: #6f7e87;
+    --in-color: #c27c00;
+    --out-color: #0f9a6b;
+    --ur-color: #9b4fd1;
+    --time-color: #0284c7;
+    --energy-e: #0284c7;
+    --energy-m: #d97706;
+    --energy-tot: #dc2626;
+    --accent: #0a82b0;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
     --font-sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --radius: 4px;
@@ -136,11 +137,11 @@
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--accent); border: 2px solid #0d1215; cursor: pointer; margin-top: -5px;
+    background: var(--accent); border: 2px solid #ffffff; cursor: pointer; margin-top: -5px;
   }
   input[type=range]::-moz-range-thumb {
     width: 14px; height: 14px; border-radius: 50%;
-    background: var(--accent); border: 2px solid #0d1215; cursor: pointer;
+    background: var(--accent); border: 2px solid #ffffff; cursor: pointer;
   }
 
   .readout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 4px; }
@@ -153,7 +154,7 @@
   .oscillo-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
   .oscillo-title { text-transform: uppercase; color: var(--text-dim); }
   .oscillo-legend { display: flex; gap: 16px; font-size: 12px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; color: #a0b0c0; transition: opacity 0.2s; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #5a6972; transition: opacity 0.2s; }
   .color-dot { width: 12px; height: 2px; display: inline-block; }
   .color-dot.purple { background-color: var(--ur-color); }
   .color-dot.green { background-color: var(--out-color); }
@@ -164,11 +165,11 @@
   .legend-item.dim { opacity: 0.35; }
 
   .oscillo-toolbar {
-    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    background-color: #f1f5f8; border: 1px solid #e3eaef; border-radius: 6px;
     padding: 6px 12px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 6px;
   }
   .position-toolbar {
-    background-color: #141c22; border: 1px solid #232d39; border-radius: 6px;
+    background-color: #f1f5f8; border: 1px solid #e3eaef; border-radius: 6px;
     padding: 6px 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 8px;
   }
   .control-group { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
@@ -197,40 +198,40 @@
   .toolbar-check.etot input { accent-color: var(--energy-tot); }
 
   .oscillo-toolbar select {
-    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; color: #1b252b; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer;
   }
 
   .btn-inv {
-    background-color: #0e1318; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 3px 8px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
   }
   .btn-inv.ch1-btn { color: var(--ur-color); }
-  .btn-inv.ch1-btn.active { background-color: var(--ur-color); color: #0b1114; border-color: var(--ur-color); }
+  .btn-inv.ch1-btn.active { background-color: var(--ur-color); color: #ffffff; border-color: var(--ur-color); }
   .btn-inv.ch2-btn { color: var(--out-color); }
-  .btn-inv.ch2-btn.active { background-color: var(--out-color); color: #0b1114; border-color: var(--out-color); }
+  .btn-inv.ch2-btn.active { background-color: var(--out-color); color: #ffffff; border-color: var(--out-color); }
   .btn-inv.ch3-btn { color: var(--in-color); }
-  .btn-inv.ch3-btn.active { background-color: var(--in-color); color: #0b1114; border-color: var(--in-color); }
+  .btn-inv.ch3-btn.active { background-color: var(--in-color); color: #ffffff; border-color: var(--in-color); }
 
   .btn-pause, .btn-reset {
-    background-color: #0e1318; color: #ffffff; border: 1px solid #2a3644; border-radius: 4px;
+    background-color: #ffffff; color: #1b252b; border: 1px solid #c3cfd7; border-radius: 4px;
     padding: 4px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;
     transition: background-color 0.2s;
   }
-  .btn-pause:hover, .btn-reset:hover { background-color: #232d39; }
+  .btn-pause:hover, .btn-reset:hover { background-color: #e3eaef; }
   .btn-reset:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* Courbes enregistrées (superposition pour comparaison) */
   .saved-panel { display: none; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 8px; }
   .saved-item {
     display: flex; align-items: center; gap: 6px;
-    background: #141c22; border: 1px solid #232d39; border-radius: 4px;
+    background: #f1f5f8; border: 1px solid #e3eaef; border-radius: 4px;
     padding: 3px 6px 3px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text);
   }
   .saved-item.off { opacity: 0.45; }
   .saved-item .swatch { width: 16px; height: 0; border-top: 2px dashed; display: inline-block; }
   .saved-item button {
-    background: transparent; border: 1px solid #2a3644; border-radius: 3px; color: var(--text-dim);
+    background: transparent; border: 1px solid #c3cfd7; border-radius: 3px; color: var(--text-dim);
     font-size: 11px; line-height: 1; padding: 2px 5px; cursor: pointer;
   }
   .saved-item button:hover { color: var(--accent); border-color: var(--accent); }
@@ -257,26 +258,26 @@
   .top-buttons { display: flex; align-items: center; gap: 8px; }
 
   .canvas-wrapper { position: relative; width: 100%; }
-  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; }
+  canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe; }
 
   .scope-tooltip {
-    position: absolute; pointer-events: none; background: rgba(14, 20, 26, 0.92);
+    position: absolute; pointer-events: none; background: rgba(255, 255, 255, 0.96);
     border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px;
     font-family: var(--font-mono); font-size: 11px; color: var(--text);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; z-index: 10; line-height: 1.4; white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18); display: none; z-index: 10; line-height: 1.4; white-space: nowrap;
   }
 
   .montage-row { display: flex; gap: 12px; align-items: stretch; }
   @media (max-width: 700px) { .montage-row { flex-direction: column; } }
   
-  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316; padding: 10px; }
+  .schematic-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe; padding: 10px; }
   .schematic-wrap svg { display: block; width: 100%; max-height: 290px; height: auto; margin: 0 auto; }
   
   .switch-clickable { cursor: pointer; }
-  .switch-clickable:hover .sch-switch-line { stroke: #38bdf8; stroke-width: 2.5; }
+  .switch-clickable:hover .sch-switch-line { stroke: #0284c7; stroke-width: 2.5; }
 
   .sch-wire   { stroke: var(--text-dim); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .sch-comp   { stroke: #4fc3e8; stroke-width: 1.6; fill: rgba(79,195,232,0.12); }
+  .sch-comp   { stroke: #0a82b0; stroke-width: 1.6; fill: rgba(10,130,176,0.12); }
   .sch-node   { fill: var(--text); }
   .sch-label  { fill: var(--text); font-size: 13px; font-weight: 600; }
   .sch-label.r  { fill: var(--out-color); font-size: 14px; font-weight: bold; }
@@ -288,7 +289,7 @@
   }
   @media (max-width: 600px) { .energy-card-grid { grid-template-columns: 1fr; } }
   .energy-stat {
-    background: #141c22; border: 1px solid var(--line); border-radius: var(--radius);
+    background: #f1f5f8; border: 1px solid var(--line); border-radius: var(--radius);
     padding: 8px 12px; text-align: center;
   }
   .energy-stat .lbl { font-size: 11px; color: var(--text-dim); }
@@ -305,7 +306,7 @@
   .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   @media (max-width: 760px) { .theory-grid { grid-template-columns: 1fr; } }
   .theory-card {
-    border: 1px solid var(--line); border-radius: var(--radius); background: #0d1316;
+    border: 1px solid var(--line); border-radius: var(--radius); background: #fcfdfe;
     padding: 12px 14px; font-size: 12px; line-height: 1.4; color: var(--text-dim);
   }
   .theory-card h3 { margin: 0 0 6px; font-size: 12.5px; color: var(--accent); }
@@ -321,7 +322,7 @@
   .theory-card ol li { margin: 3px 0; }
   .theory-card b { color: var(--text); }
   .theory-card .note {
-    margin-top: 6px; padding: 5px 8px; border-left: 2px solid #e0b040;
+    margin-top: 6px; padding: 5px 8px; border-left: 2px solid #c27c00;
     background: var(--panel-alt); color: var(--text); font-size: 11.5px;
   }
   .theory-card .live {
@@ -359,7 +360,7 @@
   .curve-legend .ln.c-et { border-color: var(--energy-tot); }
   .signature{
     text-align: center; font-family: "Arial"; font-size: 12px; font-weight: bold;
-    color: rgb(170, 221, 241); margin-top: 30px;
+    color: rgb(40, 110, 150); margin-top: 30px;
   }
   .remarque {
 color: #0066cc;
@@ -439,8 +440,8 @@ border-radius: 5px;
     .slider-line { display: flex; align-items: center; gap: 12px; }
     .slider-line input { flex: 1; min-width: 0; }
     .step-btn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px;
-      font-size: 20px; line-height: 1; color: var(--text); background: #0e1318; border: 1px solid #2a3644; border-radius: 6px; cursor: pointer; }
-    .step-btn:active { background: #232d39; border-color: var(--accent); }
+      font-size: 20px; line-height: 1; color: var(--text); background: #ffffff; border: 1px solid #c3cfd7; border-radius: 6px; cursor: pointer; }
+    .step-btn:active { background: #e3eaef; border-color: var(--accent); }
     #kPos1Btn, #kPos2Btn, #toggleKBtn { min-height: 44px; font-size: 14px; }
     .ctrl-row .name, .ctrl-row .val { font-size: 14px; }
     .readout-grid .item .k { font-size: 11px; }
@@ -891,7 +892,7 @@ border-radius: 5px;
         </div>
         <button id="toggleKBtn" style="width:100%; padding:8px; background:var(--panel-alt); color:var(--accent); border:1px solid var(--line); border-radius:4px; cursor:pointer; font-weight:bold;">Basculer K (1 ↔ 2) <small style="opacity:.6">(K)</small></button>
       </div>
-      <p class="kbd-note" style="color:#5f9bd8; font-size:14px; font-style:italic;"> (pour une faible variation de l'un des paramètres, cliquez sur le bouton correspondant et utilisez les fléches haut et bas du clavier)</p>
+      <p class="kbd-note" style="color:#2b6cb0; font-size:14px; font-style:italic;"> (pour une faible variation de l'un des paramètres, cliquez sur le bouton correspondant et utilisez les fléches haut et bas du clavier)</p>
 
       <div class="section-title">GÉNÉRATEUR</div>
 
@@ -1475,7 +1476,7 @@ border-radius: 5px;
 
   // ---- Courbes enregistrées : copie des segments (courbes exactes, rejouables à toute échelle) ----
   const SAVE_KEY = "dipoleRLC_savedCurves_v1";
-  const SAVE_COLORS = ["#ff9f43", "#f368e0", "#54a0ff", "#feca57", "#ff6b6b", "#1dd1a1"];
+  const SAVE_COLORS = ["#e07a10", "#c43bb5", "#2b78e4", "#d99a00", "#e04848", "#0fa37a"];
   const MAX_SAVED = 6;
   let savedCurves = [];
   let savedCounter = 0;
@@ -1672,7 +1673,7 @@ border-radius: 5px;
     const plotW = w - padL - padR, plotH = h - padT - padB;
 
     // Grille de l'oscilloscope
-    ctx.strokeStyle = "#1a242a";
+    ctx.strokeStyle = "#e5ebef";
     ctx.lineWidth = 1;
     for (let i = 0; i <= numHDivs; i++){
       const x = padL + i * (plotW / numHDivs);
@@ -1684,7 +1685,7 @@ border-radius: 5px;
     }
 
     const yZero = padT + plotH / 2;
-    ctx.strokeStyle = "#2e3c46";
+    ctx.strokeStyle = "#cbd5db";
     ctx.beginPath(); ctx.moveTo(padL, yZero); ctx.lineTo(w - padR, yZero); ctx.stroke();
 
     const divPixV = plotH / numVDivs, divPixH = plotW / numHDivs;
@@ -1716,9 +1717,9 @@ border-radius: 5px;
       ctx.stroke();
     }
 
-    if (state.showChan1) traceChannel(calcUC, state.v1Sens, state.posY1, "#c792ea", state.invY1);
-    if (state.showChan2) traceChannel(calcUR0, state.v2Sens, state.posY2, "#2bbd8e", state.invY2);
-    if (state.showChan3) traceChannel(calcUL, state.v3Sens, state.posY3, "#e5a93b", state.invY3);
+    if (state.showChan1) traceChannel(calcUC, state.v1Sens, state.posY1, "#9b4fd1", state.invY1);
+    if (state.showChan2) traceChannel(calcUR0, state.v2Sens, state.posY2, "#0f9a6b", state.invY2);
+    if (state.showChan3) traceChannel(calcUL, state.v3Sens, state.posY3, "#c27c00", state.invY3);
 
     // Courbes enregistrées (pointillés), tracées avec les réglages actuels de l'écran, sur le même axe de temps
     savedCurves.forEach(sc => {
@@ -1748,7 +1749,7 @@ border-radius: 5px;
     // Balayage lumineux
     const currentX = padL + (Math.min(tScope, windowDuration) / windowDuration) * plotW + xOffset;
     if (currentX >= padL && currentX <= w - padR) {
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.strokeStyle = "rgba(27, 37, 43, 0.55)";
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(currentX, padT); ctx.lineTo(currentX, h - padB); ctx.stroke();
     }
@@ -1758,7 +1759,7 @@ border-radius: 5px;
       const mx = state.mouseX;
       const my = state.mouseY;
 
-      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+      ctx.strokeStyle = "rgba(2, 132, 199, 0.6)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
 
@@ -1777,17 +1778,17 @@ border-radius: 5px;
 
       if (hasData && state.showChan1) {
         const yUc = vToY(state.invY1 ? -ucHover : ucHover, state.v1Sens, state.posY1);
-        ctx.fillStyle = "#c792ea";
+        ctx.fillStyle = "#9b4fd1";
         ctx.beginPath(); ctx.arc(mx, yUc, 4, 0, 2 * Math.PI); ctx.fill();
       }
       if (hasData && state.showChan2) {
         const yUr = vToY(state.invY2 ? -urHover : urHover, state.v2Sens, state.posY2);
-        ctx.fillStyle = "#2bbd8e";
+        ctx.fillStyle = "#0f9a6b";
         ctx.beginPath(); ctx.arc(mx, yUr, 4, 0, 2 * Math.PI); ctx.fill();
       }
       if (hasData && state.showChan3) {
         const yUl = vToY(state.invY3 ? -ulHover : ulHover, state.v3Sens, state.posY3);
-        ctx.fillStyle = "#e5a93b";
+        ctx.fillStyle = "#c27c00";
         ctx.beginPath(); ctx.arc(mx, yUl, 4, 0, 2 * Math.PI); ctx.fill();
       }
 
@@ -1818,7 +1819,7 @@ border-radius: 5px;
     ctx.restore();
 
     ctx.font = "10px monospace";
-    ctx.fillStyle = "#7c8a92";
+    ctx.fillStyle = "#5a6972";
     ctx.textAlign = "left";
     ctx.fillText(state.v1Sens + "/" + state.v2Sens + (state.showChan3 ? "/" + state.v3Sens : "") + " V/div · " + fmtEng(state.hSens, "s") + "/div", padL + 2, h - padB - 4);
   }
@@ -1848,7 +1849,7 @@ border-radius: 5px;
     }
 
     // Grille Énergie
-    ctx.strokeStyle = "#1a242a";
+    ctx.strokeStyle = "#e5ebef";
     ctx.lineWidth = 1;
     for (let i = 0; i <= numHDivs; i++){
       const x = padL + i * (plotW / numHDivs);
@@ -1860,7 +1861,7 @@ border-radius: 5px;
     }
 
     const yZero = h - padB; // 0 Joules en bas de l'écran
-    ctx.strokeStyle = "#2e3c46";
+    ctx.strokeStyle = "#cbd5db";
     ctx.beginPath(); ctx.moveTo(padL, yZero); ctx.lineTo(w - padR, yZero); ctx.stroke();
 
     const divPixH = plotW / numHDivs;
@@ -1890,9 +1891,9 @@ border-radius: 5px;
       ctx.stroke();
     }
 
-    if (state.showEe) traceEnergy(t => calcEnergies(t).Ee, "#38bdf8");
-    if (state.showEm) traceEnergy(t => calcEnergies(t).Em, "#f59e0b");
-    if (state.showEtot) traceEnergy(t => calcEnergies(t).Etot, "#ef4444");
+    if (state.showEe) traceEnergy(t => calcEnergies(t).Ee, "#0284c7");
+    if (state.showEm) traceEnergy(t => calcEnergies(t).Em, "#d97706");
+    if (state.showEtot) traceEnergy(t => calcEnergies(t).Etot, "#dc2626");
 
     // Énergies des courbes enregistrées (pointillés)
     savedCurves.forEach(sc => {
@@ -1920,7 +1921,7 @@ border-radius: 5px;
     // Balayage lumineux
     const currentX = padL + (Math.min(tScope, windowDuration) / windowDuration) * plotW + xOffset;
     if (currentX >= padL && currentX <= w - padR) {
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.strokeStyle = "rgba(27, 37, 43, 0.55)";
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(currentX, padT); ctx.lineTo(currentX, h - padB); ctx.stroke();
     }
@@ -1930,7 +1931,7 @@ border-radius: 5px;
       const mx = state.mouseXEnergy;
       const my = state.mouseYEnergy;
 
-      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+      ctx.strokeStyle = "rgba(2, 132, 199, 0.6)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
 
@@ -1943,15 +1944,15 @@ border-radius: 5px;
       const en = hasData ? calcEnergies(tHover) : { Ee: maxE_tot, Em: 0, Etot: maxE_tot };
 
       if (hasData && state.showEe) {
-        ctx.fillStyle = "#38bdf8";
+        ctx.fillStyle = "#0284c7";
         ctx.beginPath(); ctx.arc(mx, eToY(en.Ee), 4, 0, 2 * Math.PI); ctx.fill();
       }
       if (hasData && state.showEm) {
-        ctx.fillStyle = "#f59e0b";
+        ctx.fillStyle = "#d97706";
         ctx.beginPath(); ctx.arc(mx, eToY(en.Em), 4, 0, 2 * Math.PI); ctx.fill();
       }
       if (hasData && state.showEtot) {
-        ctx.fillStyle = "#ef4444";
+        ctx.fillStyle = "#dc2626";
         ctx.beginPath(); ctx.arc(mx, eToY(en.Etot), 4, 0, 2 * Math.PI); ctx.fill();
       }
 
@@ -1975,7 +1976,7 @@ border-radius: 5px;
     ctx.restore();
 
     ctx.font = "10px monospace";
-    ctx.fillStyle = "#7c8a92";
+    ctx.fillStyle = "#5a6972";
     ctx.textAlign = "left";
     ctx.fillText(fmtEng(sensV, "J") + "/div · " + fmtEng(state.hSens, "s") + "/div", padL + 2, h - 4);
   }

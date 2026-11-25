@@ -6,17 +6,18 @@
   <title>Simulation C.N.A. à 3 bits - Caractéristique us = f(N)</title>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent: #38bdf8;
-      --accent-hover: #0284c7;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-      --wire-off: #64748b;
-      --wire-on: #38bdf8;
-      --switch-on: #22c55e;
-      --switch-off: #ef4444;
+    color-scheme: light;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+      --wire-off: #94a3b8;
+      --wire-on: #0284c7;
+      --switch-on: #16a34a;
+      --switch-off: #dc2626;
     }
 
     * {
@@ -90,7 +91,7 @@
     /* SVG Styling */
     .circuit-container {
       width: 100%;
-      background: #090d16;
+      background: #ffffff;
       border-radius: 8px;
       border: 1px solid var(--border);
       padding: 10px;
@@ -118,7 +119,7 @@
     }
 
     .metric-box {
-      background: #090d16;
+      background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 10px;
@@ -138,7 +139,7 @@
     }
 
     .metric-value.highlight {
-      color: #4ade80;
+      color: #15803d;
     }
 
     /* Controls */
@@ -148,7 +149,7 @@
       gap: 12px;
       align-items: center;
       justify-content: space-between;
-      background: #090d16;
+      background: #ffffff;
       padding: 12px;
       border-radius: 8px;
       border: 1px solid var(--border);
@@ -207,7 +208,7 @@
     /* Canvas Graph */
     .graph-container {
       width: 100%;
-      background: #090d16;
+      background: #ffffff;
       border-radius: 8px;
       border: 1px solid var(--border);
       padding: 10px;
@@ -238,7 +239,7 @@
     }
 
     th {
-      background: #090d16;
+      background: #ffffff;
       color: var(--accent);
     }
 
@@ -247,12 +248,12 @@
     .empty-row td { color: var(--text-muted); font-style: italic; padding: 16px; }
     tr.new-row { animation: rowIn 0.5s ease-out; }
     @keyframes rowIn {
-      from { opacity: 0; transform: translateY(-8px); background: rgba(74,222,128,0.35); }
+      from { opacity: 0; transform: translateY(-8px); background: rgba(21,128,61,0.3); }
       to   { opacity: 1; transform: none; }
     }
     .btn-small { padding: 6px 12px; font-size: 0.8rem; }
     tr.selected {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(2, 132, 199, 0.15);
       font-weight: bold;
     }
       .table-container { max-height: 380px; overflow: auto; }
@@ -266,7 +267,7 @@
     .n-select-row { margin-bottom: 12px; font-size: 0.95rem; color: var(--text-main); }
     .n-select-row select { font-size: 1rem; padding: 4px 10px; margin-left: 6px; }
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100;
       display: none; align-items: flex-start; justify-content: center;
       padding: 30px 16px; overflow-y: auto;
     }
@@ -278,19 +279,19 @@
     .modal-head { display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px; }
     .modal h2 { color: var(--accent); font-size: 1.2rem; }
-    .modal h3 { color: #4ade80; font-size: 1rem; margin: 16px 0 6px; }
+    .modal h3 { color: #15803d; font-size: 1rem; margin: 16px 0 6px; }
     .modal p, .modal li { font-size: 0.92rem; color: var(--text-main); }
     .modal ul { padding-left: 20px; }
-    .formula { background: #090d16; border: 1px solid var(--border); border-radius: 8px;
+    .formula { background: #ffffff; border: 1px solid var(--border); border-radius: 8px;
       padding: 8px 12px; margin: 8px 0; text-align: center; font-size: 1rem; overflow-x: auto; }
-    .num { color: #4ade80; font-weight: 600; }
+    .num { color: #15803d; font-weight: 600; }
     .note { color: var(--text-muted); font-size: 0.85rem; }
     .signature{
     text-align: center;
     font-family: "Arial";
     font-size: 12px;
     font-weight: bold;
-    color: rgb(170, 221, 241);
+    color: rgb(40, 110, 150);
     margin-top: 30px;
   }
      .btn-home {
@@ -298,9 +299,9 @@
             align-items: center;
             gap: 6px;
             text-decoration: none;
-            color: #bcd6ff;
-            background: #252424;
-            border: 1px solid #4f5153;
+            color: #1f4e8c;
+            background: #e9eef5;
+            border: 1px solid #c3cfd7;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 600;
@@ -309,8 +310,8 @@
             transition: border-color 0.2s, color 0.2s;
         }
         .btn-home:hover {
-            border-color: #7C9EF0;
-            color: #7C9EF0;
+            border-color: #3b5fc4;
+            color: #3b5fc4;
         }
   </style>
 </head>
@@ -455,13 +456,13 @@
 
     function gnd(x, y) {
       return `<g transform="translate(${x}, ${y})">
-        <line x1="0" y1="0" x2="0" y2="10" stroke="#f8fafc" stroke-width="2"/>
-        <line x1="-12" y1="10" x2="12" y2="10" stroke="#f8fafc" stroke-width="2"/>
-        <line x1="-8" y1="14" x2="8" y2="14" stroke="#f8fafc" stroke-width="2"/>
-        <line x1="-4" y1="18" x2="4" y2="18" stroke="#f8fafc" stroke-width="2"/></g>`;
+        <line x1="0" y1="0" x2="0" y2="10" stroke="#1e293b" stroke-width="2"/>
+        <line x1="-12" y1="10" x2="12" y2="10" stroke="#1e293b" stroke-width="2"/>
+        <line x1="-8" y1="14" x2="8" y2="14" stroke="#1e293b" stroke-width="2"/>
+        <line x1="-4" y1="18" x2="4" y2="18" stroke="#1e293b" stroke-width="2"/></g>`;
     }
     const W = (x1, y1, x2, y2, extra = '') =>
-      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#f8fafc" stroke-width="2" ${extra}/>`;
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1e293b" stroke-width="2" ${extra}/>`;
 
     function buildCircuit() {
       const yBot = Y0 + (n - 1) * SP;
@@ -472,20 +473,20 @@
       let h = '';
 
       // masse globale
-      h += `<line x1="30" y1="${yG}" x2="480" y2="${yG}" stroke="#475569" stroke-width="2" stroke-dasharray="4"/>`;
+      h += `<line x1="30" y1="${yG}" x2="480" y2="${yG}" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4"/>`;
       h += gnd(60, yG) + gnd(290, yG) + gnd(470, yG);
 
       // Générateur inversé : borne + côté masse (trait long), borne − côté rail (trait court)
       h += W(60, yG, 60, yG - 68);
-      h += `<line x1="40" y1="${yG - 68}" x2="80" y2="${yG - 68}" stroke="#f8fafc" stroke-width="1.5"/>`;
-      h += `<line x1="48" y1="${yG - 80}" x2="72" y2="${yG - 80}" stroke="#f8fafc" stroke-width="3"/>`;
-      h += `<text x="88" y="${yG - 56}" fill="#f8fafc" font-size="14">+</text>`;
-      h += `<text x="88" y="${yG - 74}" fill="#f8fafc" font-size="14">−</text>`;
+      h += `<line x1="40" y1="${yG - 68}" x2="80" y2="${yG - 68}" stroke="#1e293b" stroke-width="1.5"/>`;
+      h += `<line x1="48" y1="${yG - 80}" x2="72" y2="${yG - 80}" stroke="#1e293b" stroke-width="3"/>`;
+      h += `<text x="88" y="${yG - 56}" fill="#1e293b" font-size="14">+</text>`;
+      h += `<text x="88" y="${yG - 74}" fill="#1e293b" font-size="14">−</text>`;
       h += W(60, yG - 80, 60, 60);
 
       // Flèche Uref (du rail vers la masse)
-      h += `<line x1="30" y1="62" x2="30" y2="${yG - 6}" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow-blue)"/>`;
-      h += `<text transform="translate(18,${(62 + yG) / 2}) rotate(-90)" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Uref</text>`;
+      h += `<line x1="30" y1="62" x2="30" y2="${yG - 6}" stroke="#0284c7" stroke-width="2" marker-end="url(#arrow-blue)"/>`;
+      h += `<text transform="translate(18,${(62 + yG) / 2}) rotate(-90)" fill="#0284c7" font-size="12" font-weight="bold" text-anchor="middle">Uref</text>`;
 
       // Rail Uref
       h += W(60, 60, 110, 60) + W(110, 60, 110, yBot);
@@ -497,49 +498,49 @@
         h += `<g id="branch-${j}">
           ${W(110, y, 135, y)}
           <g class="interactive-switch" onclick="toggleBit(${j})">
-            <circle cx="135" cy="${y}" r="3" fill="#f8fafc"/>
-            <circle cx="165" cy="${y}" r="3" fill="#f8fafc"/>
-            <line id="sw-line-${j}" x1="135" y1="${y}" x2="163" y2="${y - 10}" stroke="#ef4444" stroke-width="3"/>
+            <circle cx="135" cy="${y}" r="3" fill="#1e293b"/>
+            <circle cx="165" cy="${y}" r="3" fill="#1e293b"/>
+            <line id="sw-line-${j}" x1="135" y1="${y}" x2="163" y2="${y - 10}" stroke="#dc2626" stroke-width="3"/>
             <rect x="125" y="${y - 25}" width="45" height="40" fill="transparent"/>
           </g>
-          <text x="150" y="${y - 18}" fill="#94a3b8" font-size="11" text-anchor="middle">K${sub(j)} (a${sub(j)})</text>
-          <line id="w-in-${j}" x1="165" y1="${y}" x2="190" y2="${y}" stroke="#64748b" stroke-width="2"/>
-          <rect x="190" y="${y - 10}" width="40" height="20" fill="#1e293b" stroke="#f8fafc" stroke-width="2"/>
-          <text x="210" y="${y + 4}" fill="#f8fafc" font-size="9" text-anchor="middle">${rlab}</text>
-          <line id="w-out-${j}" x1="230" y1="${y}" x2="270" y2="${y}" stroke="#64748b" stroke-width="2"/>
+          <text x="150" y="${y - 18}" fill="#64748b" font-size="11" text-anchor="middle">K${sub(j)} (a${sub(j)})</text>
+          <line id="w-in-${j}" x1="165" y1="${y}" x2="190" y2="${y}" stroke="#94a3b8" stroke-width="2"/>
+          <rect x="190" y="${y - 10}" width="40" height="20" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+          <text x="210" y="${y + 4}" fill="#1e293b" font-size="9" text-anchor="middle">${rlab}</text>
+          <line id="w-out-${j}" x1="230" y1="${y}" x2="270" y2="${y}" stroke="#94a3b8" stroke-width="2"/>
         </g>`;
       }
 
       // Nœud sommateur et résistance de contre-réaction R'
       h += W(270, Y0, 270, yBot) + W(270, yMid, 300, yMid);
-      h += `<circle cx="270" cy="${yMid}" r="3.5" fill="#f8fafc"/>`;
-      h += W(285, yMid, 285, 50) + `<circle cx="285" cy="${yMid}" r="3" fill="#f8fafc"/>`;
+      h += `<circle cx="270" cy="${yMid}" r="3.5" fill="#1e293b"/>`;
+      h += W(285, yMid, 285, 50) + `<circle cx="285" cy="${yMid}" r="3" fill="#1e293b"/>`;
       h += W(285, 50, 320, 50);
-      h += `<rect x="320" y="40" width="40" height="20" fill="#1e293b" stroke="#f8fafc" stroke-width="2"/>`;
-      h += `<text x="340" y="54" fill="#f8fafc" font-size="11" text-anchor="middle">R'</text>`;
+      h += `<rect x="320" y="40" width="40" height="20" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>`;
+      h += `<text x="340" y="54" fill="#1e293b" font-size="11" text-anchor="middle">R'</text>`;
       h += W(360, 50, 425, 50) + W(425, 50, 425, yOut);
 
       // AOP 741
-      h += `<polygon points="300,${yMid - 30} 300,${yMid + 70} 370,${yOut}" fill="#1e293b" stroke="#f8fafc" stroke-width="2"/>`;
-      h += `<text x="306" y="${yMid + 5}" fill="#f8fafc" font-size="16" font-weight="bold">-</text>`;
-      h += `<text x="306" y="${yMid + 45}" fill="#f8fafc" font-size="16" font-weight="bold">+</text>`;
-      h += `<text x="330" y="${yOut + 3}" fill="#94a3b8" font-size="10">741</text>`;
+      h += `<polygon points="300,${yMid - 30} 300,${yMid + 70} 370,${yOut}" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>`;
+      h += `<text x="306" y="${yMid + 5}" fill="#1e293b" font-size="16" font-weight="bold">-</text>`;
+      h += `<text x="306" y="${yMid + 45}" fill="#1e293b" font-size="16" font-weight="bold">+</text>`;
+      h += `<text x="330" y="${yOut + 3}" fill="#64748b" font-size="10">741</text>`;
       h += W(290, yMid + 40, 300, yMid + 40) + W(290, yMid + 40, 290, yG);
 
       // Sortie + voltmètre
-      h += W(370, yOut, 470, yOut) + `<circle cx="425" cy="${yOut}" r="3" fill="#f8fafc"/>`;
+      h += W(370, yOut, 470, yOut) + `<circle cx="425" cy="${yOut}" r="3" fill="#1e293b"/>`;
       h += W(470, yOut, 470, yV - 25);
-      h += `<circle cx="470" cy="${yV}" r="22" fill="#090d16" stroke="#38bdf8" stroke-width="2"/>`;
-      h += `<text x="470" y="${yV + 6}" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">V</text>`;
+      h += `<circle cx="470" cy="${yV}" r="22" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>`;
+      h += `<text x="470" y="${yV + 6}" fill="#0284c7" font-size="16" font-weight="bold" text-anchor="middle">V</text>`;
       h += W(470, yV + 22, 470, yG);
 
       // Flèche us
-      h += `<line x1="500" y1="${yG - 10}" x2="500" y2="${yOut + 15}" stroke="#4ade80" stroke-width="2" marker-end="url(#arrow-green)"/>`;
-      h += `<text x="510" y="${yV}" fill="#4ade80" font-size="14" font-weight="bold">us</text>`;
+      h += `<line x1="500" y1="${yG - 10}" x2="500" y2="${yOut + 15}" stroke="#15803d" stroke-width="2" marker-end="url(#arrow-green)"/>`;
+      h += `<text x="510" y="${yV}" fill="#15803d" font-size="14" font-weight="bold">us</text>`;
 
       h += `<defs>
-        <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/></marker>
-        <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4ade80"/></marker>
+        <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0284c7"/></marker>
+        <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#15803d"/></marker>
       </defs>`;
 
       const svg = document.getElementById('circuit-svg');
@@ -675,14 +676,14 @@
         const wout = document.getElementById(`w-out-${j}`);
         if (bits[j] === 1) {
           line.setAttribute('y2', y);
-          line.setAttribute('stroke', '#22c55e');
-          win.setAttribute('stroke', '#38bdf8');
-          wout.setAttribute('stroke', '#38bdf8');
+          line.setAttribute('stroke', '#16a34a');
+          win.setAttribute('stroke', '#0284c7');
+          wout.setAttribute('stroke', '#0284c7');
         } else {
           line.setAttribute('y2', y - 10);
-          line.setAttribute('stroke', '#ef4444');
-          win.setAttribute('stroke', '#64748b');
-          wout.setAttribute('stroke', '#64748b');
+          line.setAttribute('stroke', '#dc2626');
+          win.setAttribute('stroke', '#94a3b8');
+          wout.setAttribute('stroke', '#94a3b8');
         }
       }
 
@@ -745,9 +746,9 @@
       const getX = (v) => padding.left + (v / NM) * graphW;
       const getY = (val) => height - padding.bottom - (val / maxUs) * graphH;
 
-      ctx.strokeStyle = '#334155';
+      ctx.strokeStyle = '#cbd5e1';
       ctx.lineWidth = 1;
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = '#64748b';
       ctx.font = '11px Segoe UI';
 
       const stepX = n <= 4 ? 1 : (n === 5 ? 2 : 4);
@@ -783,7 +784,7 @@
       ctx.restore();
 
       // Escalier us = f(N)
-      ctx.strokeStyle = '#38bdf8';
+      ctx.strokeStyle = '#0284c7';
       ctx.lineWidth = 3;
       ctx.beginPath();
       for (let v = 0; v <= NM; v++) {
@@ -801,7 +802,7 @@
       ctx.stroke();
 
       // Points mesurés
-      ctx.fillStyle = '#f8fafc';
+      ctx.fillStyle = '#1e293b';
       measures.forEach(v => {
         ctx.beginPath();
         ctx.arc(getX(v), getY(calculateUs(v)), n <= 4 ? 4 : 3, 0, Math.PI * 2);
@@ -811,7 +812,7 @@
       // Point courant
       const currX = getX(currentN);
       const currY = getY(calculateUs(currentN));
-      ctx.strokeStyle = '#4ade80';
+      ctx.strokeStyle = '#15803d';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -821,11 +822,11 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = '#4ade80';
+      ctx.fillStyle = '#15803d';
       ctx.beginPath();
       ctx.arc(currX, currY, 6, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#090d16';
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.stroke();
     }
